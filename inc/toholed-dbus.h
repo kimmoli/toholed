@@ -8,11 +8,15 @@
 class Toholed: public QObject
 {
     Q_OBJECT
+    Q_CLASSINFO("D-Bus Interface", SERVICE_NAME)
 public slots:
-    Q_SCRIPTABLE QString ping(const QString &arg);
-    Q_SCRIPTABLE QString setVddState(const QString &arg);
-    Q_SCRIPTABLE QString enableOled(const QString &arg);
-    Q_SCRIPTABLE QString kill(const QString &arg);
+    QString ping(const QString &arg);
+    QString setVddState(const QString &arg);
+    QString enableOled(const QString &arg);
+    QString frontLed(const QString &arg);
+    QString kill(const QString &arg);
+
+    //Q_SCRIPTABLE
 
 private:
     static bool oled_init_done;

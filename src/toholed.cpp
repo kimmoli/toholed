@@ -46,7 +46,8 @@ int main(int argc, char **argv)
     if (!QDBusConnection::systemBus().registerService(SERVICE_NAME))
     {
         fprintf(stderr, "%s\n", qPrintable(QDBusConnection::systemBus().lastError().message()));
-        writeToLog("Cannot register service to sessionBus");
+        writeToLog("Cannot register service to systemBus");
+        writeToLog(qPrintable(QDBusConnection::systemBus().lastError().message()));
         exit(EXIT_FAILURE);
     }
 
@@ -63,7 +64,7 @@ void writeToLog(const char *buf)
 {
 	int logFile;
 	char ts[20];
-	char tmp[80];
+    char tmp[1024];
 	
 	time_t t;
 	struct tm *tnow;

@@ -1,0 +1,10 @@
+[Unit]
+Description=The Other Half OLED
+Requires=dbus.service
+
+[Service]
+ExecStart=/home/nemo/test/toholed
+#Restart=always
+
+[Install]
+WantedBy=multi-user.target
