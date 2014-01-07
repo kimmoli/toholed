@@ -2,12 +2,34 @@
 #include <QtCore/QDebug>
 #include <QtCore/QString>
 #include <QtDBus/QtDBus>
+#include <QtCore/QTimer>
 
 #include "toholed-dbus.h"
 #include "toholed.h"
 #include "toh.h"
 #include "oled.h"
 #include "frontled.h"
+
+Toholed::Toholed()
+{
+    timer = new QTimer(this);
+    timer->setInterval(1000);
+    connect(timer, SIGNAL(timeout()), this, SLOT(timerTimeout()));
+    timer->start();
+}
+
+void Toholed::timerTimeout()
+{
+//    char tmp[20];
+
+//    sprintf(tmp, "timerCount %d", timerCount);
+//    writeToLog(tmp);
+
+    if (oled_init_done)
+        updateOledScreen(timerCount & 1);
+
+    timerCount++;
+}
 
 QString Toholed::ping(const QString &arg)
 {

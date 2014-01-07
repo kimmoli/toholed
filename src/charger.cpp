@@ -14,38 +14,38 @@ int chargerGetPowerMW()
 }
 
 
-long chargerGetCurrent() 
+long long chargerGetCurrent()
 {
 	
 	int fd;
 	char buf[20];
-	long now = 0;
+    long long now = 0;
 
 	fd = open("/sys/devices/platform/msm_ssbi.0/pm8038-core/pm8921-charger/power_supply/battery/current_now", O_RDONLY);
 	
 	if (fd != -1)
 	{
 		read(fd, buf, sizeof(buf)-1);
-		now = atoi(buf);
+        now = atoll(buf);
 		close(fd);
 	}
 	
 	return now;
 }
 
-long chargerGetVoltage() 
+long long chargerGetVoltage()
 {
 	
 	int fd;
 	char buf[20];
-	long now = 0;
+    long long now = 0;
 
 	fd = open("/sys/devices/platform/msm_ssbi.0/pm8038-core/pm8921-charger/power_supply/battery/voltage_now", O_RDONLY);
 	
 	if (fd != -1)
 	{
 		read(fd, buf, sizeof(buf)-1);
-		now = atoi(buf);
+        now = atoll(buf);
 		close(fd);
 	}
 	

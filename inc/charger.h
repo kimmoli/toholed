@@ -1,5 +1,5 @@
 long chargerGetTemperature();
 int chargerGetCapacity();
-long chargerGetVoltage();
-long chargerGetCurrent();
+long long chargerGetVoltage();
+long long chargerGetCurrent();
 int chargerGetPowerMW();
