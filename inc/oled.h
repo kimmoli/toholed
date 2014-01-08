@@ -1,7 +1,16 @@
+#ifndef OLED_H
+#define OLED_H
 
-int initOled();
-int clearOled();
-int oledPuts(const char *s);
-int oledPutChar(int file, unsigned char merkki);
-void updateOledScreen(int dot);
+#define OLEDWIDTH 128
+#define OLEDHEIGHT 64
+#define SCREENBUFFERSIZE ((OLEDWIDTH/8)*OLEDHEIGHT)
 
+extern char screenBuffer[];
+
+int initOled(); /* Initializes OLED SSD1306 chip */
+int clearOled(); /* Clears screen buffer */
+int updateOled(); /* Draws screem buffer to OLED */
+void drawTime(const char *tNow); /* Draws clock to screen buffer */
+
+
+#endif

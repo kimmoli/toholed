@@ -9,38 +9,72 @@
 #include <errno.h>
 #include <sys/time.h>
 #include <time.h>
-#include "vincent.h"
 #include "oled.h"
 #include "charger.h"
+#include "jollafontti.h"
 
 
-int oledPutChar(int file, unsigned char merkki)
+char screenBuffer[SCREENBUFFERSIZE] = {0};
+
+/* Draws clock to screen buffer */
+void drawTime(const char *tNow)
 {
-    int n;
-    unsigned char buf[9] = {0};
-    buf[0] = 0x40; // data reg
+    int i,d,off,s,n,b,x,r,c,h;
+    unsigned m;
 
-    merkki = merkki & 0x7f; // only lower 128 chars supported
+    h=0;
 
-    for (n=0; n<8 ; n++)
+    for (m = 0; m<strlen(tNow) ; m++)
     {
-        buf[n+1] = vincent_data[merkki][n];
+        for (x=0; x < 11 ; x++)
+            if ( jollaFonttiMap[x] == tNow[m] )
+            {
+                for (i=0 ; i<jollaFonttiHeightPixels ; i++) // row
+                {
+                    d = (jollaFonttiStart[x]/8); // byte offset
+                    off = (i*jollaFonttiWidthPages) + d;
+                    s = jollaFonttiStart[x] - d*8; // bit offset
+
+                    c = (h)/8; // byte offset
+                    r = (h) - c*8; // bit offset
+
+                    for (n = s; n < (s+jollaFonttiWidth[x]) ; n++)
+                    {
+                        b = jollaFonttiBitmaps[off];
+
+                        if ((b<<(n%8)) & 0x80)
+                            screenBuffer[ (i*(OLEDWIDTH/8)) + c ] = screenBuffer[ (i*(OLEDWIDTH/8)) + c ] | (0x80 >> (r%8));
+
+                        if ( r % 8 == 7 )
+                            c++;
+                        r++;
+
+                        if ( n % 8 == 7 )
+                            off++;
+                    }
+                }
+                h = h + jollaFonttiWidth[x] +2;
+            }
     }
-
-    if (write(file, buf, 9) != 9)
-    {
-        return -4;
-    }
-
-    return 0;
-
 }
 
-int oledPuts(const char *s)
+
+/* Clears screen buffer */
+int clearOled()
 {
-	int file;
-    int i, len;
+    int i;
+    for (i=0; i<SCREENBUFFERSIZE ; i++)
+        screenBuffer[i] = 0;
 	
+    return 0;
+}
+
+/* Draws screem buffer to OLED */
+int updateOled()
+{
+    int file;
+    char buf[1] = { 0x40 };
+
     if ((file = open( "/dev/i2c-1", O_RDWR )) < 0)
     {
         return -1;
@@ -51,47 +85,25 @@ int oledPuts(const char *s)
         return -2;
     }
 
-    len = strlen(s);
 
-    for (i=0 ; i < len ; i++)
-        oledPutChar(file, s[i]);
-    if ( (len % 16) != 0)
-        for (i=(len % 16) ; i < 16 ; i++)
-            oledPutChar(file, ' ');
+    if (write(file, buf, 1) != 1)
+    {
+        close(file);
+        return -4;
+    }
+
+    if (write(file, screenBuffer, SCREENBUFFERSIZE) != SCREENBUFFERSIZE)
+    {
+        close(file);
+        return -4;
+    }
 
     close(file);
 
     return 0;
 }
 
-int clearOled()
-{
-	int file;
-    unsigned char buf[1025] = {0};
-	
-    if ((file = open( "/dev/i2c-1", O_RDWR )) < 0)
-    {
-        return -1;
-    }
-    if (ioctl( file, I2C_SLAVE, 0x3c) < 0)
-    {
-        close(file);
-        return -2;
-    }
-
-    buf[0] = 0x40; // data reg
-	
-    if (write(file, buf, 1025) != 1025)
-    {
-        close(file);
-        return -4;
-    }
-	
-	close(file);
-
-    return 0;
-}
-
+/* Initializes OLED SSD1306 chip */
 int initOled()
 {
     unsigned char init_seq[28] = {0xae, /* display off */
@@ -146,43 +158,3 @@ int initOled()
 }
 
 
-
-void updateOledScreen(int dot)
-{
-    char ts[20];
-
-    time_t t;
-    struct tm *tnow;
-
-    /* 1st row - date and time */
-
-    t = time(NULL);
-    tnow = localtime(&t);
-
-    strftime(ts, sizeof(ts), "%d.%m.%Y %H:%M", tnow);
-    oledPuts(ts);
-
-    /* 2nd row */
-    oledPuts(" ");
-
-    /* 3rd row */
-    sprintf(ts, "Battery: %d %%", chargerGetCapacity() );
-    oledPuts(ts);
-
-    /* 4th row */
-    oledPuts(" ");
-
-    /* 5th row */
-    oledPuts(" ");
-
-    /* 6th row */
-    oledPuts(" ");
-
-    /* 7th row */
-    sprintf(ts, "%d mW", chargerGetPowerMW() );
-    oledPuts(ts);
-
-    /* 8th row */
-    oledPuts(dot ? "               ." : "                ");
-
-}

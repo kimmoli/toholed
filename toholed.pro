@@ -13,15 +13,16 @@ SOURCES += \
     src/oled.cpp \
     src/tca8424.cpp \
     src/toh.cpp \
-    src/toholed-dbus.cpp
+    src/toholed-dbus.cpp \
+    src/jollafontti.cpp
 
 HEADERS += \
-    inc/vincent.h \
     inc/toholed.h \
     inc/toh.h \
     inc/tca8424.h \
     inc/oled.h \
     inc/frontled.h \
     inc/charger.h \
-    inc/toholed-dbus.h
+    inc/toholed-dbus.h \
+    inc/jollafontti.h
 

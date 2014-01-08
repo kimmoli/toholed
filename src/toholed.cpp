@@ -24,7 +24,9 @@
 #include "toholed-dbus.h"
 
 
-bool Toholed::oled_init_done = false;
+bool Toholed::oledInitDone = false;
+bool Toholed::oledAutoUpdate = false;
+bool Toholed::vddEnabled = false;
 int Toholed::timerCount = 0;
 
 int main(int argc, char **argv)
