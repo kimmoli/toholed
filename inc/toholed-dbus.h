@@ -4,6 +4,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QTimer>
 #include <QTime>
+#include "oled.h"
 
 #define SERVICE_NAME "com.kimmoli.toholed"
 
@@ -33,6 +34,7 @@ private:
     static int timerCount;
     QTime prevTime;
     QTimer *timer;
+    //char *screenBuffer;
 };
 
 

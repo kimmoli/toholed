@@ -5,12 +5,11 @@
 #define OLEDHEIGHT 64
 #define SCREENBUFFERSIZE ((OLEDWIDTH/8)*OLEDHEIGHT)
 
-extern char screenBuffer[];
 
 int initOled(); /* Initializes OLED SSD1306 chip */
-int clearOled(); /* Clears screen buffer */
-int updateOled(); /* Draws screem buffer to OLED */
-void drawTime(const char *tNow); /* Draws clock to screen buffer */
+int clearOled(char *screenBuffer); /* Clears screen buffer */
+int updateOled(const char *screenBuffer); /* Draws screem buffer to OLED */
+void drawTime(const char *tNow, char *screenBuffer); /* Draws clock to screen buffer */
 
 
 #endif

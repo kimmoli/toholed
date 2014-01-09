@@ -15,6 +15,8 @@
 #include "oled.h"
 #include "frontled.h"
 
+static char screenBuffer[SCREENBUFFERSIZE] = { 0 };
+
 /* Main */
 Toholed::Toholed()
 {
@@ -23,6 +25,8 @@ Toholed::Toholed()
     connect(timer, SIGNAL(timeout()), this, SLOT(timerTimeout()));
     timer->start();
     prevTime = QTime::currentTime();
+
+    memset(screenBuffer, 0x00, SCREENBUFFERSIZE);
 }
 
 /* Timer routine to update OLED clock */
@@ -37,13 +41,15 @@ void Toholed::timerTimeout()
         prevTime = current;
 
         QString tNow = QString("%1:%2")
-                        .arg((int) current.hour(), 2, 10,QLatin1Char(' '))
-                        .arg((int) current.minute(), 2, 10,QLatin1Char('0'));
+                        .arg((int) current.hour(), 2, 10, QLatin1Char(' '))
+                        .arg((int) current.minute(), 2, 10, QLatin1Char('0'));
         QByteArray baNow = tNow.toLocal8Bit();
 
-        clearOled();
-        drawTime(baNow.data());
-        updateOled();
+        clearOled(screenBuffer);
+        drawTime(baNow.data(), screenBuffer);
+        updateOled(screenBuffer);
+
+        writeToLog(baNow.data());
     }
 
     timerCount++;
@@ -79,8 +85,8 @@ QString Toholed::enableOled(const QString &arg)
     if (vddEnabled)
     {
         initOled();
-        clearOled();
-        updateOled();
+        clearOled(screenBuffer);
+        updateOled(screenBuffer);
 
         oledInitDone = true;
 
@@ -135,3 +141,5 @@ QString Toholed::frontLed(const QString &arg)
 
     return QString("You have been served. %1").arg(arg);
 }
+
+

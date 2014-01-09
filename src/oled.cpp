@@ -13,67 +13,86 @@
 #include "charger.h"
 #include "jollafontti.h"
 
-
-char screenBuffer[SCREENBUFFERSIZE] = {0};
+#define DBGPRINT
 
 /* Draws clock to screen buffer */
-void drawTime(const char *tNow)
+void drawTime(const char *tNow, char *screenBuffer)
 {
-    int i,d,off,s,n,b,x,r,c,h;
+    char* sb = screenBuffer;
+
+    int i,d,off,s,n,x,h,t;
     unsigned m;
 
     h=0;
 
     for (m = 0; m<strlen(tNow) ; m++)
     {
-        for (x=0; x < 11 ; x++)
-            if ( jollaFonttiMap[x] == tNow[m] )
+        if ( tNow[m] == ' ') // space. just proceed cursor
+        {
+            h = h + 15;
+        }
+        else
+        {
+            for (x=0; x < 11 ; x++)
             {
-                for (i=0 ; i<jollaFonttiHeightPixels ; i++) // row
+                if ( tNow[m] == jollaFonttiMap[x] )
                 {
-                    d = (jollaFonttiStart[x]/8); // byte offset
-                    off = (i*jollaFonttiWidthPages) + d;
+                    d = jollaFonttiStart[x] / 8; // byte offset
                     s = jollaFonttiStart[x] - d*8; // bit offset
 
-                    c = (h)/8; // byte offset
-                    r = (h) - c*8; // bit offset
-
-                    for (n = s; n < (s+jollaFonttiWidth[x]) ; n++)
+                    for (i=0 ; i<jollaFonttiWidth[x] ; i++) // merkin leveys
                     {
-                        b = jollaFonttiBitmaps[off];
+                        for (n=0; n<jollaFonttiHeightPixels ; n++) // merkin korkeus
+                        {
+                            off = ( n * jollaFonttiWidthPages ) + d;
+                            t = jollaFonttiBitmaps[off] & ( 0x80 >> ( (s + i) % 8) );
+                            if (t)
+                                (*(sb+(n/8)+((h+i)*8))) = (*(sb+(n/8)+((h+i)*8))) | ( 0x01 << ( n % 8 ) );
+                        }
 
-                        if ((b<<(n%8)) & 0x80)
-                            screenBuffer[ (i*(OLEDWIDTH/8)) + c ] = screenBuffer[ (i*(OLEDWIDTH/8)) + c ] | (0x80 >> (r%8));
+                        if ( ((s+i) % 8) == 7 )
+                            d++;
 
-                        if ( r % 8 == 7 )
-                            c++;
-                        r++;
-
-                        if ( n % 8 == 7 )
-                            off++;
                     }
+                    h = h + jollaFonttiWidth[x] +2; // vaakakoordinaatti johon seuraava merkkitulee
                 }
-                h = h + jollaFonttiWidth[x] +2;
             }
+        }
     }
 }
 
 
 /* Clears screen buffer */
-int clearOled()
+int clearOled(char *screenBuffer)
 {
+    //memset(screenBuffer, 0x00, SCREENBUFFERSIZE);
+    char * sb = screenBuffer;
     int i;
-    for (i=0; i<SCREENBUFFERSIZE ; i++)
-        screenBuffer[i] = 0;
-	
+
+    for (i=0 ; i<SCREENBUFFERSIZE ; i++)
+    {
+        *sb = 0;
+        sb++;
+    }
+
     return 0;
 }
 
 /* Draws screem buffer to OLED */
-int updateOled()
+int updateOled(const char *screenBuffer)
 {
-    int file;
-    char buf[1] = { 0x40 };
+
+    const char * sb = screenBuffer;
+    int file, i;
+    char buf[1025];
+
+    buf[0] = 0x40;
+    for (i=0 ; i < SCREENBUFFERSIZE ; i++)
+    {
+        buf[i+1] = (*sb);
+        sb++;
+    }
+
 
     if ((file = open( "/dev/i2c-1", O_RDWR )) < 0)
     {
@@ -85,14 +104,7 @@ int updateOled()
         return -2;
     }
 
-
-    if (write(file, buf, 1) != 1)
-    {
-        close(file);
-        return -4;
-    }
-
-    if (write(file, screenBuffer, SCREENBUFFERSIZE) != SCREENBUFFERSIZE)
+    if (write(file, buf, SCREENBUFFERSIZE+1) != SCREENBUFFERSIZE+1)
     {
         close(file);
         return -4;
@@ -107,7 +119,7 @@ int updateOled()
 int initOled()
 {
     unsigned char init_seq[28] = {0xae, /* display off */
-                                  0x20,0x00, /* memory addressing mode = Horizontal */
+                                  0x20,0x01, /* memory addressing mode = Vertical 01 Horizontal 00 */
                                   0xb0, /* page start address */
                                   0xc0, /* scan direction */
                                   0x00, /* lower column start address */
