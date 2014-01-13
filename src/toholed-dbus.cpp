@@ -1,3 +1,14 @@
+/*
+ * (C) 2014 Kimmo Lindholm <kimmo.lindholm@gmail.com> Kimmoli
+ *
+ * toholed daemon, d-bus server call method functions.
+ *
+ *
+ *
+ *
+ */
+
+
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDebug>
 #include <QtCore/QString>
@@ -5,9 +16,12 @@
 #include <QtCore/QTimer>
 #include <QColor>
 #include <QTime>
+#include <QThread>
 
 #include <sys/time.h>
 #include <time.h>
+
+#include <poll.h>
 
 #include "toholed-dbus.h"
 #include "toholed.h"
@@ -27,6 +41,17 @@ Toholed::Toholed()
     prevTime = QTime::currentTime();
 
     memset(screenBuffer, 0x00, SCREENBUFFERSIZE);
+
+    thread = new QThread();
+    worker = new Worker();
+
+    worker->moveToThread(thread);
+    connect(worker, SIGNAL(interruptCaptured()), this, SLOT(handleInterrupt()));
+    connect(worker, SIGNAL(workRequested()), thread, SLOT(start()));
+    connect(thread, SIGNAL(started()), worker, SLOT(doWork()));
+    connect(worker, SIGNAL(finished()), thread, SLOT(quit()), Qt::DirectConnection);
+
+
 }
 
 /* Timer routine to update OLED clock */
@@ -65,7 +90,7 @@ QString Toholed::setVddState(const QString &arg)
     fprintf(stdout, "%s\n", ba.data());
     writeToLog(ba.data());
 
-    if (control_vdd( ( QString::localeAwareCompare( turn, "on") ? 0 : 1) ) < 0)
+    if (controlVdd( ( QString::localeAwareCompare( turn, "on") ? 0 : 1) ) < 0)
     {
         vddEnabled = false;
         writeToLog("VDD control FAILED");
@@ -131,7 +156,7 @@ QString Toholed::frontLed(const QString &arg)
     if (QColor::isValidColor(tmp))
     {
         QColor col = QColor(tmp);
-        if (control_frontLed(col.red(), col.green(), col.blue()) < 0)
+        if (controlFrontLed(col.red(), col.green(), col.blue()) < 0)
             writeToLog("front led control FAILED");
         else
             writeToLog("front led control OK");
@@ -142,4 +167,57 @@ QString Toholed::frontLed(const QString &arg)
     return QString("You have been served. %1").arg(arg);
 }
 
+/*
+ *    Interrupt stuff
+ */
+
+
+QString Toholed::setInterruptEnable(const QString &arg)
+{
+    QString turn = QString("%1").arg(arg);
+
+    if(QString::localeAwareCompare( turn, "on") == 0)
+    {
+
+        writeToLog("enabling interrupt");
+
+        gpio_fd = getTohInterrupt();
+
+        writeToLog("got file descriptor ok");
+
+        if (!(gpio_fd < 0 ))
+        {
+            worker->abort();
+            thread->wait(); // If the thread is not running, this will immediately return.
+
+            worker->requestWork(gpio_fd);
+
+            return QString("success");
+        }
+        else
+            return QString("failed");
+    }
+    else
+    {
+
+        writeToLog("disabling interrupt");
+
+        worker->abort();
+        thread->wait();
+        qDebug()<<"Deleting thread and worker in Thread "<<this->QObject::thread()->currentThreadId();
+        delete thread;
+        delete worker;
+
+        releaseTohInterrupt(gpio_fd);
+
+        return QString("disabled");
+    }
+}
+
+
+/* interrupt handler */
+void Toholed::handleInterrupt()
+{
+    writeToLog("handleInterrupt!!!");
+}
 

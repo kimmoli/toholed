@@ -135,7 +135,7 @@ int initOled()
                                   0xd9,0x22, /* precharge period */
                                   0xda,0x12, /* configure COM pins */
                                   0xdb,0x20, /* set VCOM level */
-                                  0x8d,0x10, /* disable charge pump. (0x14 enables) */
+                                  0x8d,0x14, /* disable charge pump. (0x14 enables) */
                                   0xaf}; /* display on*/
 								  
     int i, file;

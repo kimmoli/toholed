@@ -15,11 +15,14 @@
 #include "toh.h"
 #include "oled.h"
 #include "frontled.h"
+#include "handler.h"
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDebug>
 #include <QtCore/QStringList>
 #include <QtDBus/QtDBus>
+#include <QDBusConnection>
+#include <QDBusMessage>
 
 #include "toholed-dbus.h"
 
@@ -57,6 +60,18 @@ int main(int argc, char **argv)
     Toholed toholed;
 
     QDBusConnection::systemBus().registerObject("/", &toholed, QDBusConnection::ExportAllSlots);
+
+    /* Notification listener, see handler.h */
+
+    static const QString service = "org.ofono.MessageManager"; //org.freedesktop.Notifications
+    static const QString path = "/ril_0";
+    static const QString interface = "org.ofono.MessageManager";
+    static const QString name = "IncomingMessage";
+
+    Handler notifyHandler;
+
+    static QDBusConnection conn = QDBusConnection::systemBus();
+    conn.connect(service, path, interface, name, &notifyHandler, SLOT(handleNotification(const QDBusMessage&)));
 
     return app.exec();
 
@@ -123,8 +138,8 @@ void signalHandler(int sig) /* signal handler function */
 		case SIGTERM:
 			/* finalize the server */
 			writeToLog("Received signal SIGTERM");
-			control_vdd(0);
-			control_frontLed(0, 0, 0);
+            controlVdd(0);
+            controlFrontLed(0, 0, 0);
 			exit(0);
 			break;		
 	}	

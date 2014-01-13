@@ -14,7 +14,8 @@ SOURCES += \
     src/tca8424.cpp \
     src/toh.cpp \
     src/toholed-dbus.cpp \
-    src/jollafontti.cpp
+    src/jollafontti.cpp \
+    src/worker.cpp
 
 HEADERS += \
     inc/toholed.h \
@@ -24,5 +25,7 @@ HEADERS += \
     inc/frontled.h \
     inc/charger.h \
     inc/toholed-dbus.h \
-    inc/jollafontti.h
+    inc/jollafontti.h \
+    inc/handler.h \
+    inc/worker.h
 
