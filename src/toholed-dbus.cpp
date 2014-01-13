@@ -218,6 +218,6 @@ QString Toholed::setInterruptEnable(const QString &arg)
 /* interrupt handler */
 void Toholed::handleInterrupt()
 {
-    writeToLog("handleInterrupt!!!");
+    writeToLog("TOH Interrupt reached interrupt handler routine.");
 }
 

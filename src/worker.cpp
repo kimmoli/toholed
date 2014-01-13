@@ -62,9 +62,6 @@ void Worker::doWork()
             break;
         }
 
-
-        qDebug()<<"interrupt poll";
-
         memset((void*)fdset, 0, sizeof(fdset));
 
         fdset[0].fd = _gpio_fd;
@@ -74,7 +71,7 @@ void Worker::doWork()
 
         if (rc < 0)
         {
-            qDebug()<<"poll failure";
+            qDebug()<<"poll failure in Thread "<<thread()->currentThreadId();
         }
 
 //        if (rc == 0)
@@ -84,7 +81,7 @@ void Worker::doWork()
 
         if (fdset[0].revents & POLLPRI)
         {
-            qDebug()<<"toh gpio interrupt";
+            qDebug()<<"toh gpio interrupt in Thread "<<thread()->currentThreadId();
             read(fdset[0].fd, buf, 20);
             emit interruptCaptured();
         }
