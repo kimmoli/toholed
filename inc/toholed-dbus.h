@@ -3,6 +3,8 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QTimer>
+#include <QtDBus/QtDBus>
+
 #include <QTime>
 #include <QThread>
 #include "oled.h"
@@ -34,14 +36,18 @@ public:
 public slots:
     QString setVddState(const QString &arg);
     QString enableOled(const QString &arg);
+    QString disableOled(const QString &arg);
     QString setOledAutoUpdate(const QString &arg);
     QString frontLed(const QString &arg);
     QString kill(const QString &arg);
 
+    /* interrupts */
     QString setInterruptEnable(const QString &arg);
+    void handleGpioInterrupt();
+    void handleProxInterrupt();
 
-    void handleInterrupt();
-
+    /* Notification stuff */
+    void handleSMS(const QDBusMessage& msg);
 
 private slots:
     void timerTimeout();
@@ -54,10 +60,14 @@ private:
     static bool oledInitDone;
     static bool vddEnabled;
     static bool oledAutoUpdate;
+
     static int timerCount;
     QTime prevTime;
+    bool timeUpdateOverride;
     QTimer *timer;
+
     int gpio_fd;
+    int proximity_fd;
 };
 
 

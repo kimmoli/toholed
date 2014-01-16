@@ -15,6 +15,21 @@
 
 #define DBGPRINT
 
+void drawSMS(bool visible, int location, char *screenBuffer)
+{
+    /* Just draw a block */
+
+    char *sb = screenBuffer;
+    int h, n;
+
+    if (visible)
+        for (h=(location*16) ; h<((location+1)*16) ; h++)
+            for (n=49 ; n<64 ; n++)
+                (*(sb+(n/8)+((h)*8))) = (*(sb+(n/8)+((h)*8))) | ( 0x01 << ( n % 8 ) );
+}
+
+
+
 /* Draws clock to screen buffer */
 void drawTime(const char *tNow, char *screenBuffer)
 {
@@ -115,6 +130,7 @@ int updateOled(const char *screenBuffer)
     return 0;
 }
 
+
 /* Initializes OLED SSD1306 chip */
 int initOled()
 {
@@ -140,6 +156,8 @@ int initOled()
 								  
     int i, file;
     unsigned char buf[2] = {0};
+
+    usleep(150000); /* Wait for 150 ms */
 
     if ((file = open( "/dev/i2c-1", O_RDWR )) < 0)
     {
@@ -169,4 +187,44 @@ int initOled()
 	return 0;
 }
 
+/* Shutdown OLED - Must be done before disabling VDD */
+int deinitOled()
+{
+    unsigned char init_seq[3] = {0xae, /* display off */
+                                 0x8d,0x14}; /* disable charge pump. (0x14 enables) */
+
+
+    int i, file;
+    unsigned char buf[2] = {0};
+
+    if ((file = open( "/dev/i2c-1", O_RDWR )) < 0)
+    {
+        return -1;
+    }
+    if (ioctl( file, I2C_SLAVE, 0x3c) < 0)
+    {
+        close(file);
+        return -2;
+    }
+
+    buf[0] = 0x80; // control reg
+
+    // send init sequence
+    for (i=0; i<3; i++)
+    {
+        buf[1] = init_seq[i];
+        if (write(file, buf, 2) != 2)
+        {
+            close(file);
+            return -3;
+        }
+    }
+
+    close(file);
+
+    usleep(100000);
+
+    return 0;
+
+}
 

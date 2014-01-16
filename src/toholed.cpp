@@ -15,10 +15,9 @@
 #include "toh.h"
 #include "oled.h"
 #include "frontled.h"
-#include "handler.h"
 
 #include <QtCore/QCoreApplication>
-#include <QtCore/QDebug>
+//#include <QtCore/QDebug>
 #include <QtCore/QStringList>
 #include <QtDBus/QtDBus>
 #include <QDBusConnection>
@@ -61,17 +60,18 @@ int main(int argc, char **argv)
 
     QDBusConnection::systemBus().registerObject("/", &toholed, QDBusConnection::ExportAllSlots);
 
-    /* Notification listener, see handler.h */
-
-    static const QString service = "org.ofono.MessageManager"; //org.freedesktop.Notifications
+    static const QString service = "org.ofono"; //org.freedesktop.Notifications
     static const QString path = "/ril_0";
     static const QString interface = "org.ofono.MessageManager";
     static const QString name = "IncomingMessage";
 
-    Handler notifyHandler;
-
     static QDBusConnection conn = QDBusConnection::systemBus();
-    conn.connect(service, path, interface, name, &notifyHandler, SLOT(handleNotification(const QDBusMessage&)));
+    conn.connect(service, path, interface, name, &toholed, SLOT(handleSMS(const QDBusMessage&)));
+
+    if(conn.isConnected())
+        writeToLog("Ofono Connected");
+    else
+        writeToLog("Ofono Not connected");
 
     return app.exec();
 
@@ -138,6 +138,7 @@ void signalHandler(int sig) /* signal handler function */
 		case SIGTERM:
 			/* finalize the server */
 			writeToLog("Received signal SIGTERM");
+            deinitOled();
             controlVdd(0);
             controlFrontLed(0, 0, 0);
 			exit(0);

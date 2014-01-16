@@ -10,7 +10,7 @@
 
 int file = 0;
 
-int tca8424_reset()
+int tca8424_reset(int file)
 {
     char buf[4] = {0x00, 0x06, 0x00, 0x01};
 
@@ -22,7 +22,7 @@ int tca8424_reset()
     return 3;
 }
 
-int tca8424_leds(char leds)
+int tca8424_leds(int file, char leds)
 {
     char buf[9] = {0x00, 0x06, 0x20, 0x03, 0x00, 0x07, 0x01, 0x00, 0x00};
 
@@ -33,13 +33,13 @@ int tca8424_leds(char leds)
            close(file);
            return -4;
        }
-    return 4;
+    return file;
 }
 
 
-int tca8424_initComms()
+int tca8424_initComms(unsigned char addr)
 {
-    unsigned char addr = 0x3b;
+    int file;
 
     /* open file and start ioctl */
     if ((file = open( "/dev/i2c-1", O_RDWR )) < 0)
@@ -51,16 +51,16 @@ int tca8424_initComms()
         close(file);
         return -2;
     }
-    return 2;
+    return file;
 }
 
-int tca8424_closeComms()
+int tca8424_closeComms(int file)
 {
     close(file);
-    return 1;
+    return file;
 }
 
-int tca8424_readInputReport(char* report)
+int tca8424_readInputReport(int file, char* report)
 {
     char buf[13] = { 0x00, 0x06, 0x11, 0x02, 0x00, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
     int i;
@@ -80,11 +80,11 @@ int tca8424_readInputReport(char* report)
     for (i=0 ; i< 11 ; i++)
         report[i] = buf[i];
 
-    return 6;
+    return file;
 
 }
 
-int tca8424_readMemory(int start, int len, char* data)
+int tca8424_readMemory(int file, int start, int len, char* data)
 {
     char buf[300] = {0};
     int i;
@@ -107,7 +107,6 @@ int tca8424_readMemory(int start, int len, char* data)
     for (i=0 ; i< len ; i++)
         data[i] = buf[i];
 
-    return 12;
-
+    return file;
 }
 

@@ -78,7 +78,28 @@ int getTohInterrupt()
     fd = open("/sys/class/gpio/gpio" GPIO_INT "/value", O_RDONLY | O_NONBLOCK);
 
     return fd;
+}
 
+int getProximityInterrupt()
+{
+    return open("/dev/input/event10", O_RDONLY | O_NONBLOCK);  // /sys/devices/virtual/input/input10/prx_raw_polling
+}
 
+void releaseProximityInterrupt(int fdProx)
+{
+    close(fdProx);
+}
+
+bool getProximityStatus()
+{
+    int fd;
+    char buf[2] = {0};
+
+    fd = open("/sys/devices/virtual/input/input10/prx_detect", O_RDONLY);
+    if (!(fd < 0))
+        read(fd, buf, 1);
+    close(fd);
+
+    return (buf[0]=='1');
 
 }

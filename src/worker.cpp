@@ -5,7 +5,6 @@
 #include "toh.h"
 
 #include <QThread>
-#include <QDebug>
 
 Worker::Worker(QObject *parent) :
     QObject(parent)
@@ -14,13 +13,14 @@ Worker::Worker(QObject *parent) :
     _abort = false;
 }
 
-void Worker::requestWork(int gpio_fd)
+void Worker::requestWork(int gpio_fd, int proximity_fd)
 {
     mutex.lock();
     _working = true;
     _gpio_fd = gpio_fd;
+    _proximity_fd = proximity_fd;
     _abort = false;
-    qDebug()<<"Request worker start in Thread "<<thread()->currentThreadId();
+
     mutex.unlock();
 
     emit workRequested();
@@ -29,25 +29,22 @@ void Worker::requestWork(int gpio_fd)
 void Worker::abort()
 {
     mutex.lock();
-    if (_working) {
+    if (_working)
+    {
         _abort = true;
-        qDebug()<<"Request worker aborting in Thread "<<thread()->currentThreadId();
     }
     mutex.unlock();
 }
 
 void Worker::doWork()
 {
-    struct pollfd fdset[1];
-    int nfds = 1;
+    struct pollfd fdset[2];
+    int nfds = 2;
 
     int timeout;
-    int rc = -1;
     char *buf[20];
 
     timeout = POLL_TIMEOUT;
-
-    qDebug()<<"Starting worker process in Thread "<<thread()->currentThreadId();
 
     for (;;)
     {
@@ -57,8 +54,8 @@ void Worker::doWork()
         bool abort = _abort;
         mutex.unlock();
 
-        if (abort) {
-            qDebug()<<"Aborting worker process in Thread "<<thread()->currentThreadId();
+        if (abort)
+        {
             break;
         }
 
@@ -66,33 +63,28 @@ void Worker::doWork()
 
         fdset[0].fd = _gpio_fd;
         fdset[0].events = POLLPRI;
+        fdset[1].fd = _proximity_fd;
+        fdset[1].events = POLLIN;
 
-        rc = poll(fdset, nfds, timeout);
-
-        if (rc < 0)
-        {
-            qDebug()<<"poll failure in Thread "<<thread()->currentThreadId();
-        }
-
-//        if (rc == 0)
-//        {
-//            qDebug()<<"poll timeout";
-//        }
+        poll(fdset, nfds, timeout);
 
         if (fdset[0].revents & POLLPRI)
         {
-            qDebug()<<"toh gpio interrupt in Thread "<<thread()->currentThreadId();
             read(fdset[0].fd, buf, 20);
-            emit interruptCaptured();
+            emit gpioInterruptCaptured();
         }
+        if (fdset[1].revents != 0)
+        {
+            read(fdset[1].fd, buf, 200);
+            emit proxInterruptCaptured();
+        }
+
 
     }
 
     mutex.lock();
     _working = false;
     mutex.unlock();
-
-    qDebug()<<"Worker process finished in Thread "<<thread()->currentThreadId();
 
     emit finished();
 }

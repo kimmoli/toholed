@@ -26,6 +26,5 @@ HEADERS += \
     inc/charger.h \
     inc/toholed-dbus.h \
     inc/jollafontti.h \
-    inc/handler.h \
     inc/worker.h
 

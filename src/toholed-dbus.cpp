@@ -10,9 +10,9 @@
 
 
 #include <QtCore/QCoreApplication>
-#include <QtCore/QDebug>
 #include <QtCore/QString>
 #include <QtDBus/QtDBus>
+#include <QDBusArgument>
 #include <QtCore/QTimer>
 #include <QColor>
 #include <QTime>
@@ -28,6 +28,7 @@
 #include "toh.h"
 #include "oled.h"
 #include "frontled.h"
+#include "tca8424.h"
 
 static char screenBuffer[SCREENBUFFERSIZE] = { 0 };
 
@@ -46,12 +47,13 @@ Toholed::Toholed()
     worker = new Worker();
 
     worker->moveToThread(thread);
-    connect(worker, SIGNAL(interruptCaptured()), this, SLOT(handleInterrupt()));
+    connect(worker, SIGNAL(gpioInterruptCaptured()), this, SLOT(handleGpioInterrupt()));
+    connect(worker, SIGNAL(proxInterruptCaptured()), this, SLOT(handleProxInterrupt()));
     connect(worker, SIGNAL(workRequested()), thread, SLOT(start()));
     connect(thread, SIGNAL(started()), worker, SLOT(doWork()));
     connect(worker, SIGNAL(finished()), thread, SLOT(quit()), Qt::DirectConnection);
 
-
+    timeUpdateOverride = false;
 }
 
 /* Timer routine to update OLED clock */
@@ -61,8 +63,9 @@ void Toholed::timerTimeout()
 
     /* Update only if minute has changed and oled is powered and initialized */
 
-    if ((current.minute() != prevTime.minute()) && oledAutoUpdate && vddEnabled && oledInitDone)
+    if (((current.minute() != prevTime.minute()) || timeUpdateOverride) && oledAutoUpdate && vddEnabled && oledInitDone)
     {
+        timeUpdateOverride = false;
         prevTime = current;
 
         QString tNow = QString("%1:%2")
@@ -87,7 +90,6 @@ QString Toholed::setVddState(const QString &arg)
     QString turn = QString("%1").arg(arg);
     QByteArray ba = tmp.toLocal8Bit();
 
-    fprintf(stdout, "%s\n", ba.data());
     writeToLog(ba.data());
 
     if (controlVdd( ( QString::localeAwareCompare( turn, "on") ? 0 : 1) ) < 0)
@@ -123,12 +125,29 @@ QString Toholed::enableOled(const QString &arg)
     return QString("you have been served. %1").arg(arg);
 }
 
+QString Toholed::disableOled(const QString &arg)
+{
+    if (vddEnabled && oledInitDone)
+    {
+        deinitOled();
+
+        oledInitDone = false;
+
+        writeToLog("OLED Display cleared and shut down");
+    }
+
+    return QString("you have been served. %1").arg(arg);
+}
+
 /* user wants to show clock on screen */
 QString Toholed::setOledAutoUpdate(const QString &arg)
 {
     QString turn = QString("%1").arg(arg);
 
     oledAutoUpdate = QString::localeAwareCompare( turn, "on") ? false : true;
+
+    timeUpdateOverride = true;
+    timerTimeout(); /* draw clock immediately */
 
     writeToLog("OLED autoupdate set");
 
@@ -175,27 +194,45 @@ QString Toholed::frontLed(const QString &arg)
 QString Toholed::setInterruptEnable(const QString &arg)
 {
     QString turn = QString("%1").arg(arg);
+    int fd;
 
     if(QString::localeAwareCompare( turn, "on") == 0)
     {
 
+        //setVddState("on");
+
         writeToLog("enabling interrupt");
 
         gpio_fd = getTohInterrupt();
+        proximity_fd = getProximityInterrupt();
 
-        writeToLog("got file descriptor ok");
-
-        if (!(gpio_fd < 0 ))
+        if ((gpio_fd > -1) && (proximity_fd > -1))
         {
             worker->abort();
             thread->wait(); // If the thread is not running, this will immediately return.
 
-            worker->requestWork(gpio_fd);
+            worker->requestWork(gpio_fd, proximity_fd);
+
+            writeToLog("worker started");
+
+            fd = tca8424_initComms(TCA_ADDR);
+            if (fd<0)
+            {
+                writeToLog("failed to start communication with TCA8424");
+                return QString("failed");
+            }
+            tca8424_reset(fd);
+            tca8424_leds(fd, 5);
+            tca8424_closeComms(fd);
 
             return QString("success");
         }
         else
+        {
+            writeToLog("FAILURE");
+
             return QString("failed");
+        }
     }
     else
     {
@@ -204,20 +241,76 @@ QString Toholed::setInterruptEnable(const QString &arg)
 
         worker->abort();
         thread->wait();
-        qDebug()<<"Deleting thread and worker in Thread "<<this->QObject::thread()->currentThreadId();
         delete thread;
         delete worker;
 
         releaseTohInterrupt(gpio_fd);
+        releaseProximityInterrupt(proximity_fd);
+
+        //setVddState("off");
 
         return QString("disabled");
     }
 }
 
-
-/* interrupt handler */
-void Toholed::handleInterrupt()
+void Toholed:: handleSMS(const QDBusMessage& msg)
 {
-    writeToLog("TOH Interrupt reached interrupt handler routine.");
+    char buf[100];
+
+    QList<QVariant> args = msg.arguments();
+
+    sprintf(buf, "message ""%s""", qPrintable(args.at(0).toString()));
+    writeToLog(buf);
+
+    drawSMS(true, 0, screenBuffer);
+    updateOled(screenBuffer);
 }
 
+
+/* interrupt handler */
+void Toholed::handleGpioInterrupt()
+{
+    int fd;
+    char inRep[50] = { 0 };
+    char buf[100] = { 0 };
+
+    writeToLog("TOH Interrupt reached interrupt handler routine.");
+
+    fd = tca8424_initComms(TCA_ADDR);
+    if (fd<0)
+    {
+        writeToLog("failed to start communication with TCA8424");
+        return;
+    }
+    tca8424_readInputReport(fd, inRep);
+    tca8424_closeComms(fd);
+
+    sprintf(buf, "Input report: ");
+    for (int i=0 ; i< 11 ; i++)
+        sprintf(buf, "%s %02x", buf, inRep[i]);
+
+    writeToLog(buf);
+
+}
+
+void Toholed::handleProxInterrupt()
+{
+    bool prox = getProximityStatus();
+
+    if (prox)
+    {
+        writeToLog("Proximity interrupt - proximity");
+        /* Front covered, lets show clock on TOHOLED */
+        setVddState("on");
+        enableOled("");
+        setOledAutoUpdate("on");
+    }
+    else
+    {
+        setOledAutoUpdate("off");
+        disableOled("");
+        setVddState("off");
+
+        writeToLog("Proximity interrupt - away");
+    }
+}
