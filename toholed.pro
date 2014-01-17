@@ -15,7 +15,9 @@ SOURCES += \
     src/toh.cpp \
     src/toholed-dbus.cpp \
     src/jollafontti.cpp \
-    src/worker.cpp
+    src/worker.cpp \
+    src/pienifontti.cpp \
+    src/icons.cpp
 
 HEADERS += \
     inc/toholed.h \
@@ -26,5 +28,7 @@ HEADERS += \
     inc/charger.h \
     inc/toholed-dbus.h \
     inc/jollafontti.h \
-    inc/worker.h
+    inc/worker.h \
+    inc/pienifontti.h \
+    inc/icons.h
 

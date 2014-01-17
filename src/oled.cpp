@@ -12,22 +12,93 @@
 #include "oled.h"
 #include "charger.h"
 #include "jollafontti.h"
+#include "pienifontti.h"
+#include "icons.h"
 
 #define DBGPRINT
 
-void drawSMS(bool visible, int location, char *screenBuffer)
+void drawIcon(int location, int icon, char *screenBuffer)
 {
-    /* Just draw a block */
+    char* sb = screenBuffer;
 
-    char *sb = screenBuffer;
-    int h, n;
+    int i,d,off,s,n,o,x,h,t;
 
-    if (visible)
-        for (h=(location*16) ; h<((location+1)*16) ; h++)
-            for (n=49 ; n<64 ; n++)
-                (*(sb+(n/8)+((h)*8))) = (*(sb+(n/8)+((h)*8))) | ( 0x01 << ( n % 8 ) );
+    h=location;
+    o = 50; // rivi mistä tulostus alkaa
+
+    for (x=0; x < 3 ; x++)
+    {
+        if ( icon == iconsMap[x] )
+        {
+            d = iconsStart[x] / 8; // byte offset
+            s = iconsStart[x] - d*8; // bit offset
+
+            for (i=0 ; i<iconsWidth[x] ; i++) // merkin leveys
+            {
+                for (n=0; n<iconsHeightPixels ; n++) // merkin korkeus
+                {
+                    off = ( n * iconsWidthPages ) + d;
+                    t = iconsBitmaps[off] & ( 0x80 >> ( (s + i) % 8) );
+                    if (t)
+                        (*(sb+((o+n)/8)+((h+i)*8))) = (*(sb+((o+n)/8)+((h+i)*8))) | ( 0x01 << ( (o+n) % 8 ) );
+                }
+
+                if ( ((s+i) % 8) == 7 )
+                    d++;
+
+            }
+        }
+    }
 }
 
+
+
+/* Draw Battery percentage level */
+void drawBatteryLevel(const char *batLevel, char *screenBuffer)
+{
+    char* sb = screenBuffer;
+
+    int i,d,off,s,n,o,x,h,t;
+    unsigned m;
+
+    h=0;
+    o = 50; // rivi mistä tulostus alkaa
+
+    for (m = 0; m<strlen(batLevel) ; m++)
+    {
+        if ( batLevel[m] == ' ') // space. just proceed cursor
+        {
+            h = h + 4;
+        }
+        else
+        {
+            for (x=0; x < 11 ; x++)
+            {
+                if ( batLevel[m] == pieniFonttiMap[x] )
+                {
+                    d = pieniFonttiStart[x] / 8; // byte offset
+                    s = pieniFonttiStart[x] - d*8; // bit offset
+
+                    for (i=0 ; i<pieniFonttiWidth[x] ; i++) // merkin leveys
+                    {
+                        for (n=0; n<pieniFonttiHeightPixels ; n++) // merkin korkeus
+                        {
+                            off = ( n * pieniFonttiWidthPages ) + d;
+                            t = pieniFonttiBitmaps[off] & ( 0x80 >> ( (s + i) % 8) );
+                            if (t)
+                                (*(sb+((o+n)/8)+((h+i)*8))) = (*(sb+((o+n)/8)+((h+i)*8))) | ( 0x01 << ( (o+n) % 8 ) );
+                        }
+
+                        if ( ((s+i) % 8) == 7 )
+                            d++;
+
+                    }
+                    h = h + pieniFonttiWidth[x] +0; // vaakakoordinaatti johon seuraava merkkitulee
+                }
+            }
+        }
+    }
+}
 
 
 /* Draws clock to screen buffer */

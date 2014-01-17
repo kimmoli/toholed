@@ -29,6 +29,8 @@
 #include "oled.h"
 #include "frontled.h"
 #include "tca8424.h"
+#include "charger.h"
+#include "icons.h"
 
 static char screenBuffer[SCREENBUFFERSIZE] = { 0 };
 
@@ -73,8 +75,14 @@ void Toholed::timerTimeout()
                         .arg((int) current.minute(), 2, 10, QLatin1Char('0'));
         QByteArray baNow = tNow.toLocal8Bit();
 
+        QString batNow = QString("%1%")
+                          .arg((int) chargerGetCapacity(), 3, 10, QLatin1Char(' '));
+        QByteArray babatNow = batNow.toLocal8Bit();
+
+
         clearOled(screenBuffer);
         drawTime(baNow.data(), screenBuffer);
+        drawBatteryLevel(babatNow.data(), screenBuffer);
         updateOled(screenBuffer);
 
         writeToLog(baNow.data());
@@ -262,7 +270,7 @@ void Toholed:: handleSMS(const QDBusMessage& msg)
     sprintf(buf, "message ""%s""", qPrintable(args.at(0).toString()));
     writeToLog(buf);
 
-    drawSMS(true, 0, screenBuffer);
+    drawIcon(64, MESSAGE, screenBuffer);
     updateOled(screenBuffer);
 }
 

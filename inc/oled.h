@@ -11,7 +11,7 @@ int deinitOled();
 int clearOled(char *screenBuffer); /* Clears screen buffer */
 int updateOled(const char *screenBuffer); /* Draws screem buffer to OLED */
 void drawTime(const char *tNow, char *screenBuffer); /* Draws clock to screen buffer */
-void drawSMS(bool visible, int location, char *screenBuffer); /* Draws SMS symbol */
-
+void drawBatteryLevel(const char *batLevel, char *screenBuffer);
+void drawIcon(int location, int icon, char *screenBuffer);
 
 #endif
