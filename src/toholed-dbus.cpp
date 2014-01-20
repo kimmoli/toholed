@@ -85,7 +85,9 @@ void Toholed::timerTimeout()
         drawBatteryLevel(babatNow.data(), screenBuffer);
         updateOled(screenBuffer);
 
-        writeToLog(baNow.data());
+        char buf[50];
+        sprintf(buf, "Time now: %s Battery: %s", baNow.data(), babatNow.data() );
+        writeToLog(buf);
     }
 
     timerCount++;
