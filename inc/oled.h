@@ -13,5 +13,6 @@ int updateOled(const char *screenBuffer); /* Draws screem buffer to OLED */
 void drawTime(const char *tNow, char *screenBuffer); /* Draws clock to screen buffer */
 void drawBatteryLevel(const char *batLevel, char *screenBuffer);
 void drawIcon(int location, int icon, char *screenBuffer);
+void clearIcons(char *screenBuffer);
 
 #endif

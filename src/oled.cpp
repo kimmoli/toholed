@@ -51,6 +51,19 @@ void drawIcon(int location, int icon, char *screenBuffer)
     }
 }
 
+void clearIcons(char *screenBuffer)
+{
+    char *sb = screenBuffer;
+    int i;
+
+    for (i=518 ; i < 1024 ; i=i+8 )
+    {
+        *(sb+i) = 0x00;
+        *(sb+i+1) = 0x00;
+    }
+
+}
+
 
 
 /* Draw Battery percentage level */

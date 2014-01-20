@@ -48,6 +48,8 @@ public slots:
 
     /* Notification stuff */
     void handleSMS(const QDBusMessage& msg);
+    void handlehandleCoverStatus(const QDBusMessage& msg);
+    void handleEventsAdded(const QDBusMessage& msg);
 
 private slots:
     void timerTimeout();

@@ -26,7 +26,7 @@ const int iconsWidthPages = 7;
 const int iconsHeightPixels = 14;
 
 const char iconsMap[]  = { MAIL, CALL, MESSAGE };
-const int iconsStart[] = {  0,   22,  37 };
+const int iconsStart[] = {  0,   21,  36 };
 const int iconsWidth[] = {  17,  13,  13 };
 
 

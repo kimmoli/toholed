@@ -60,18 +60,56 @@ int main(int argc, char **argv)
 
     QDBusConnection::systemBus().registerObject("/", &toholed, QDBusConnection::ExportAllSlots);
 
-    static const QString service = "org.ofono"; //org.freedesktop.Notifications
-    static const QString path = "/ril_0";
-    static const QString interface = "org.ofono.MessageManager";
-    static const QString name = "IncomingMessage";
 
-    static QDBusConnection conn = QDBusConnection::systemBus();
-    conn.connect(service, path, interface, name, &toholed, SLOT(handleSMS(const QDBusMessage&)));
+    /* path=/CommHistoryModel; interface=com.nokia.commhistory; member=eventsAdded */
 
-    if(conn.isConnected())
+    static const QString commhistoryservice = "org.nemomobile.CommHistory";
+    static const QString commhistorypath = "/";
+    static const QString commhistoryinterface = "com.nokia.commhistory";
+    static const QString commhistoryname = "eventsAdded";
+
+    static QDBusConnection commhistoryconn = QDBusConnection::sessionBus();
+    commhistoryconn.connect(commhistoryservice, commhistorypath, commhistoryinterface, commhistoryname, &toholed, SLOT(handleEventsAdded(const QDBusMessage&)));
+
+    if(commhistoryconn.isConnected())
+        writeToLog("commhistory Connected");
+    else
+        writeToLog("commhistory Not connected");
+
+    /* ofono MessageManager */
+
+    static const QString ofonoservice = "org.ofono";
+    static const QString ofonopath = "/ril_0";
+    static const QString ofonointerface = "org.ofono.MessageManager";
+    static const QString ofononame = "IncomingMessage";
+
+    static QDBusConnection ofonoconn = QDBusConnection::systemBus();
+    ofonoconn.connect(ofonoservice, ofonopath, ofonointerface, ofononame, &toholed, SLOT(handleSMS(const QDBusMessage&)));
+
+    if(ofonoconn.isConnected())
         writeToLog("Ofono Connected");
     else
         writeToLog("Ofono Not connected");
+
+    /* Jolla Lipstick coverstatus */
+
+    static const QString lipstickservice = "com.jolla.lipstick";
+    static const QString lipstickpath = "/com/jolla/lipstick";
+    static const QString lipstickinterface = "com.jolla.lipstick";
+    static const QString lipstickname = "coverstatus";
+
+    static QDBusConnection lipstickconn = QDBusConnection::sessionBus();
+    lipstickconn.connect(lipstickservice, lipstickpath, lipstickinterface, lipstickname, &toholed, SLOT(handleCoverStatus(const QDBusMessage&)));
+
+    if(lipstickconn.isConnected())
+        writeToLog("Lipstick Connected");
+    else
+        writeToLog("Lipstick Not connected");
+
+    /* jotain */
+
+
+
 
     return app.exec();
 

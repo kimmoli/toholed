@@ -274,6 +274,19 @@ void Toholed:: handleSMS(const QDBusMessage& msg)
     updateOled(screenBuffer);
 }
 
+void Toholed::handlehandleCoverStatus(const QDBusMessage& msg)
+{
+    writeToLog("Cover status changed");
+
+    clearIcons(screenBuffer);
+    updateOled(screenBuffer);
+}
+
+void Toholed::handleEventsAdded(const QDBusMessage& msg)
+{
+    writeToLog("Events Added handler called !?!?!");
+}
+
 
 /* interrupt handler */
 void Toholed::handleGpioInterrupt()
