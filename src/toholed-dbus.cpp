@@ -31,6 +31,7 @@
 #include "tca8424.h"
 #include "charger.h"
 #include "icons.h"
+#include "tsl2772.h"
 
 static char screenBuffer[SCREENBUFFERSIZE] = { 0 };
 
@@ -213,8 +214,19 @@ QString Toholed::setInterruptEnable(const QString &arg)
 
         writeToLog("enabling interrupt");
 
+        fd = tsl2772_initComms(0x39);
+        if (fd <0)
+        {
+            writeToLog("failed to start communication with TSL2772");
+            return QString("failed");
+        }
+        tsl2772_initialize(fd);
+        tsl2772_clearInterrupt(fd);
+        tsl2772_closeComms(fd);
+
         gpio_fd = getTohInterrupt();
-        proximity_fd = getProximityInterrupt();
+        //proximity_fd = getProximityInterrupt();
+        proximity_fd = 0;
 
         if ((gpio_fd > -1) && (proximity_fd > -1))
         {
@@ -225,6 +237,7 @@ QString Toholed::setInterruptEnable(const QString &arg)
 
             writeToLog("worker started");
 
+/*
             fd = tca8424_initComms(TCA_ADDR);
             if (fd<0)
             {
@@ -234,6 +247,9 @@ QString Toholed::setInterruptEnable(const QString &arg)
             tca8424_reset(fd);
             tca8424_leds(fd, 5);
             tca8424_closeComms(fd);
+*/
+
+
 
             return QString("success");
         }
@@ -294,11 +310,12 @@ void Toholed::handleEventsAdded(const QDBusMessage& msg)
 void Toholed::handleGpioInterrupt()
 {
     int fd;
-    char inRep[50] = { 0 };
-    char buf[100] = { 0 };
+    unsigned long alsC0, alsC1, prox;
+    char buf[100];
 
     writeToLog("TOH Interrupt reached interrupt handler routine.");
 
+/*
     fd = tca8424_initComms(TCA_ADDR);
     if (fd<0)
     {
@@ -307,11 +324,22 @@ void Toholed::handleGpioInterrupt()
     }
     tca8424_readInputReport(fd, inRep);
     tca8424_closeComms(fd);
+*/
 
-    sprintf(buf, "Input report: ");
-    for (int i=0 ; i< 11 ; i++)
-        sprintf(buf, "%s %02x", buf, inRep[i]);
+    fd = tsl2772_initComms(0x39);
+    if (fd <0)
+    {
+        writeToLog("failed to start communication with TSL2772");
+        return;
+    }
+    alsC0 = tsl2772_getADC(fd, 0);
+    alsC1 = tsl2772_getADC(fd, 1);
+    prox = tsl2772_getADC(fd, 2);
 
+    tsl2772_clearInterrupt(fd);
+    tsl2772_closeComms(fd);
+
+    sprintf(buf, "ALS C0=%lu C1=%lu prox=%lu", alsC0, alsC1, prox);
     writeToLog(buf);
 
 }

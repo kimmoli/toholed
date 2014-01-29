@@ -17,7 +17,8 @@ SOURCES += \
     src/jollafontti.cpp \
     src/worker.cpp \
     src/pienifontti.cpp \
-    src/icons.cpp
+    src/icons.cpp \
+    src/tsl2772.cpp
 
 HEADERS += \
     inc/toholed.h \
@@ -30,5 +31,6 @@ HEADERS += \
     inc/jollafontti.h \
     inc/worker.h \
     inc/pienifontti.h \
-    inc/icons.h
+    inc/icons.h \
+    inc/tsl2772.h
 
