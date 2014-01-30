@@ -168,8 +168,13 @@ QString Toholed::setOledAutoUpdate(const QString &arg)
 /* adjust contrast */
 QString Toholed::setOledContrast(const QString &arg)
 {
+    char buf[100];
+
     /* Allowed high, med, low */
     QString brightness = QString("%1").arg(arg);
+
+    sprintf(buf, "Setting brightness to %s", qPrintable(brightness));
+    writeToLog(buf);
 
     if (!(QString::localeAwareCompare( brightness, "high")))
     {

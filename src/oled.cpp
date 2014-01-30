@@ -218,7 +218,7 @@ int updateOled(const char *screenBuffer)
 int setContrastOled(unsigned int level)
 {
 
-    unsigned char contrast_seq[8] = { 0x80, 0xd9, 0x80, 0x7f, 0x80, 0x81, 0x80, 0x7f };
+    unsigned char contrast_seq[4] = { 0xd9, 0x7f, 0x81, 0x7f };
     unsigned char buf[2] = {0};
     int i, file;
 
@@ -226,8 +226,8 @@ int setContrastOled(unsigned int level)
     if ( (level != BRIGHTNESS_HIGH) && (level != BRIGHTNESS_LOW) && (level != BRIGHTNESS_MED))
         return -9;
 
-    contrast_seq[3] = (level & 0xff00) >> 8;
-    contrast_seq[7] = (level & 0xff);
+    contrast_seq[1] = (level & 0xff00) >> 8;
+    contrast_seq[3] = (level & 0xff);
 
     if ((file = open( "/dev/i2c-1", O_RDWR )) < 0)
     {
@@ -239,8 +239,10 @@ int setContrastOled(unsigned int level)
         return -2;
     }
 
+    buf[0] = 0x80;
+
     // send init sequence
-    for (i=0; i<8; i++)
+    for (i=0; i<4; i++)
     {
         buf[1] = contrast_seq[i];
         if (write(file, buf, 2) != 2)
