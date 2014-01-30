@@ -8,10 +8,57 @@
 #include <errno.h>
 #include "tsl2772.h"
 
+/*
+ *  ALS Value relation to brightness
+ *
+ *  0 < ALS C0 < 500  = Brightness low
+ *  501 < ALS C0 < 10000 = Brightness Med
+ *  10001 < ALS C0 < MAX = Brightness high
+ *
+ *
+ */
+
+int tsl2772_setAlsThresholds(int file, unsigned int high, unsigned int low)
+{
+    char buf[5] = {
+        0xa4, /* Command Register, Auto increment protocol, address 4 */
+        (low & 0xff),         /* Reg04 AILTL  - ALS Interrupt threshold N/A */
+        ((low >> 8) & 0xff),  /* Reg05 AILTH  - */
+        (high & 0xff),        /* Reg06 AIHTL */
+        ((high >> 8) & 0xff) /* Reg07 AIHTH */
+    };
+
+    if (write(file, buf, 5) != 5)
+       {
+           close(file);
+           return -3;
+       }
+
+    return 7;
+
+}
+
 
 int tsl2772_initialize(int file)
 {
-    char buf[17] = {0xa0, 0x00, 0xdb, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x64, 0x00, 0x20, 0x03, 0x11, 0x00, 0x08, 0xa2};
+    char buf[17] = {
+        0xa0, /* Command Register, Auto increment protocol, address 0 */
+        0x00, /* Reg00 ENABLE - Disable all */
+        0xdb, /* Reg01 ATIME  - 100ms */
+        0xff, /* Reg02 PTIME  - 2.73ms */
+        0xff, /* Reg03 WTIME  - 2.73ms */
+        (ALSLIM_BRIGHTNESS_LOW & 0xff),         /* Reg04 AILTL  - ALS Interrupt threshold N/A */
+        ((ALSLIM_BRIGHTNESS_LOW >> 8) & 0xff),  /* Reg05 AILTH  - */
+        (ALSLIM_BRIGHTNESS_HIGH & 0xff),        /* Reg06 AIHTL */
+        ((ALSLIM_BRIGHTNESS_HIGH >> 8) & 0xff), /* Reg07 AIHTH */
+        0x64, /* Reg08 PILTL  - Proximity interrupt threshod*/
+        0x00, /* Reg09 PILTH  - Low  = 100 */
+        0x20, /* Reg0a PIHTL  - High = 800 */
+        0x03, /* Reg0b PIHTH */
+        0x11, /* Reg0c PERS   - APERS = 1, PPERS = 1 */
+        0x00, /* Reg0d CONFIG - AGL = 0, WLONG = 0, PLD = 0 */
+        0x08, /* Reg0e PPULSE - 8 pulses during prox accum */
+        0xa2};/* Reg0f CONTROL- PDRIVE = 30mA, PDIODE = CH1, PGAIN = 0, AGAIN = x16 */
 
     if (write(file, buf, 17) != 17)
        {
@@ -19,9 +66,25 @@ int tsl2772_initialize(int file)
            return -3;
        }
 
-    /* enable clocks, prox interrupt, power on*/
+    /* enable clocks, ALS Int, power on */
     buf[0] = 0xa0;
-    buf[1] = 0x2f;
+    buf[1] = 0x1f;
+/*
+ *  SAI  6  Sleep after interrupt.
+ *          When asserted, the device will power down at the end of a proximity or ALS cycle
+ *          if an interrupt has been generated.
+ *  PIEN 5  Proximity interrupt mask. When asserted, permits proximity interrupts to be generated.
+ *  AIEN 4  ALS interrupt mask. When asserted, permits ALS interrupts to be generated.
+ *  WEN  3  Wait Enable. This bit activates the wait feature.
+ *          Writing a 1 activates the wait timer. Writing a 0 disables the wait timer.
+ *  PEN  2  Proximity enable. This bit activates the proximity function. Writing a 1 enables proximity.
+ *          Writing a 0 disables proximity.
+ *  AEN  1  ALS Enable. This bit actives the two channel ADC. Writing a 1 activates the ALS.
+ *          Writing a 0 disables the ALS.
+ *  PON  0  Power ON. This bit activates the internal oscillator to permit the timers and
+ *          ADC channels to operate.
+ *          Writing a 1 activates the oscillator. Writing a 0 disables the oscillator.
+ */
 
     if (write(file, buf, 2) != 2)
        {

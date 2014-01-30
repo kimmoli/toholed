@@ -57,12 +57,17 @@ Toholed::Toholed()
     connect(worker, SIGNAL(finished()), thread, SLOT(quit()), Qt::DirectConnection);
 
     timeUpdateOverride = false;
+    interruptsEnabled = false;
 }
 
 /* Timer routine to update OLED clock */
 void Toholed::timerTimeout()
 {
     QTime current = QTime::currentTime();
+
+//    if (interruptsEnabled) /* For debug, print als and prox once in second */
+//        handleGpioInterrupt();
+
 
     /* Update only if minute has changed and oled is powered and initialized */
 
@@ -238,8 +243,7 @@ QString Toholed::setInterruptEnable(const QString &arg)
 
     if(QString::localeAwareCompare( turn, "on") == 0)
     {
-
-        //setVddState("on");
+        mutex.lock();
 
         writeToLog("enabling interrupt");
 
@@ -247,6 +251,7 @@ QString Toholed::setInterruptEnable(const QString &arg)
         if (fd <0)
         {
             writeToLog("failed to start communication with TSL2772");
+            mutex.unlock();
             return QString("failed");
         }
         tsl2772_initialize(fd);
@@ -278,14 +283,16 @@ QString Toholed::setInterruptEnable(const QString &arg)
             tca8424_closeComms(fd);
 */
 
-
+            interruptsEnabled = true;
+            mutex.unlock();
 
             return QString("success");
         }
         else
         {
             writeToLog("FAILURE");
-
+            interruptsEnabled = false;
+            mutex.unlock();
             return QString("failed");
         }
     }
@@ -293,6 +300,8 @@ QString Toholed::setInterruptEnable(const QString &arg)
     {
 
         writeToLog("disabling interrupt");
+
+        interruptsEnabled = false;
 
         worker->abort();
         thread->wait();
@@ -302,10 +311,10 @@ QString Toholed::setInterruptEnable(const QString &arg)
         releaseTohInterrupt(gpio_fd);
         releaseProximityInterrupt(proximity_fd);
 
-        //setVddState("off");
-
+        mutex.unlock();
         return QString("disabled");
     }
+
 }
 
 void Toholed:: handleSMS(const QDBusMessage& msg)
@@ -341,8 +350,9 @@ void Toholed::handleGpioInterrupt()
     int fd;
     unsigned long alsC0, alsC1, prox;
     char buf[100];
+    unsigned int newBrightness = BRIGHTNESS_MED;
 
-    writeToLog("TOH Interrupt reached interrupt handler routine.");
+    //writeToLog("TOH Interrupt reached interrupt handler routine.");
 
 /*
     fd = tca8424_initComms(TCA_ADDR);
@@ -355,10 +365,13 @@ void Toholed::handleGpioInterrupt()
     tca8424_closeComms(fd);
 */
 
+    mutex.lock();
+
     fd = tsl2772_initComms(0x39);
     if (fd <0)
     {
         writeToLog("failed to start communication with TSL2772");
+        mutex.unlock();
         return;
     }
     alsC0 = tsl2772_getADC(fd, 0);
@@ -368,8 +381,38 @@ void Toholed::handleGpioInterrupt()
     tsl2772_clearInterrupt(fd);
     tsl2772_closeComms(fd);
 
-    sprintf(buf, "ALS C0=%lu C1=%lu prox=%lu", alsC0, alsC1, prox);
+    sprintf(buf, "TOH Interrupt: ALS C0 %5lu C1 %5lu prox %5lu", alsC0, alsC1, prox);
     writeToLog(buf);
+
+    if (alsC0 < ALSLIM_BRIGHTNESS_LOW)
+        newBrightness = BRIGHTNESS_LOW;
+    else if (alsC0 > ALSLIM_BRIGHTNESS_HIGH)
+        newBrightness = BRIGHTNESS_HIGH;
+    else
+        newBrightness = BRIGHTNESS_MED;
+
+    if (newBrightness != prevBrightness)
+    {
+        writeToLog("Auto brightness adjust");
+
+        /* set new interrupt thresholds */
+        fd = tsl2772_initComms(0x39);
+
+        if (newBrightness == BRIGHTNESS_LOW)
+            tsl2772_setAlsThresholds(fd, ALSLIM_BRIGHTNESS_LOW, 0);
+        else if (newBrightness == BRIGHTNESS_HIGH)
+            tsl2772_setAlsThresholds(fd, 0xffff, ALSLIM_BRIGHTNESS_HIGH);
+        else
+            tsl2772_setAlsThresholds(fd, ALSLIM_BRIGHTNESS_HIGH, ALSLIM_BRIGHTNESS_LOW);
+
+        tsl2772_closeComms(fd);
+
+        setContrastOled(newBrightness);
+        prevBrightness = newBrightness;
+    }
+
+    prevProx = prox;
+    mutex.unlock();
 
 }
 

@@ -63,11 +63,17 @@ private:
     static bool oledInitDone;
     static bool vddEnabled;
     static bool oledAutoUpdate;
+    static bool interruptsEnabled;
+
+    static unsigned int prevBrightness;
+    static unsigned int prevProx;
 
     static int timerCount;
     QTime prevTime;
     bool timeUpdateOverride;
     QTimer *timer;
+
+    QMutex mutex;
 
     int gpio_fd;
     int proximity_fd;

@@ -29,7 +29,10 @@
 bool Toholed::oledInitDone = false;
 bool Toholed::oledAutoUpdate = false;
 bool Toholed::vddEnabled = false;
+bool Toholed::interruptsEnabled = false;
 int Toholed::timerCount = 0;
+unsigned int Toholed::prevBrightness = BRIGHTNESS_MED;
+unsigned int Toholed::prevProx = 0;
 
 int main(int argc, char **argv)
 {
