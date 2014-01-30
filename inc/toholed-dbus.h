@@ -38,6 +38,7 @@ public slots:
     QString enableOled(const QString &arg);
     QString disableOled(const QString &arg);
     QString setOledAutoUpdate(const QString &arg);
+    QString setOledContrast(const QString &arg);
     QString frontLed(const QString &arg);
     QString kill(const QString &arg);
 

@@ -165,6 +165,30 @@ QString Toholed::setOledAutoUpdate(const QString &arg)
     return QString("you have been served. %1").arg(arg);
 }
 
+/* adjust contrast */
+QString Toholed::setOledContrast(const QString &arg)
+{
+    /* Allowed high, med, low */
+    QString brightness = QString("%1").arg(arg);
+
+    if (!(QString::localeAwareCompare( brightness, "high")))
+    {
+        setContrastOled(BRIGHTNESS_HIGH);
+    }
+    else if (!(QString::localeAwareCompare( brightness, "med")))
+    {
+        setContrastOled(BRIGHTNESS_MED);
+    }
+    if (!(QString::localeAwareCompare( brightness, "low")))
+    {
+        setContrastOled(BRIGHTNESS_LOW);
+    }
+    else
+        return QString("FAILED %s").arg(arg);
+
+    return QString("you have been served. %1").arg(arg);
+}
+
 /* Kills toholed daemon */
 QString Toholed::kill(const QString &arg)
 {

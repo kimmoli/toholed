@@ -5,6 +5,10 @@
 #define OLEDHEIGHT 64
 #define SCREENBUFFERSIZE ((OLEDWIDTH/8)*OLEDHEIGHT)
 
+#define BRIGHTNESS_HIGH 0xcff1
+#define BRIGHTNESS_MED 0x4040
+#define BRIGHTNESS_LOW 0x1010
+
 
 int initOled(); /* Initializes OLED SSD1306 chip */
 int deinitOled();
@@ -14,5 +18,6 @@ void drawTime(const char *tNow, char *screenBuffer); /* Draws clock to screen bu
 void drawBatteryLevel(const char *batLevel, char *screenBuffer);
 void drawIcon(int location, int icon, char *screenBuffer);
 void clearIcons(char *screenBuffer);
+int setContrastOled(unsigned int level); /* set contrast to BRIGHTNESS_HIGH _MED or _LOW */
 
 #endif

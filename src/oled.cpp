@@ -214,6 +214,46 @@ int updateOled(const char *screenBuffer)
     return 0;
 }
 
+/* Contrast control */
+int setContrastOled(unsigned int level)
+{
+
+    unsigned char contrast_seq[8] = { 0x80, 0xd9, 0x80, 0x7f, 0x80, 0x81, 0x80, 0x7f };
+    unsigned char buf[2] = {0};
+    int i, file;
+
+    /* check that level is one of three valid ones */
+    if ( (level != BRIGHTNESS_HIGH) && (level != BRIGHTNESS_LOW) && (level != BRIGHTNESS_MED))
+        return -9;
+
+    contrast_seq[3] = (level & 0xff00) >> 8;
+    contrast_seq[7] = (level & 0xff);
+
+    if ((file = open( "/dev/i2c-1", O_RDWR )) < 0)
+    {
+        return -1;
+    }
+    if (ioctl( file, I2C_SLAVE, 0x3c) < 0)
+    {
+        close(file);
+        return -2;
+    }
+
+    // send init sequence
+    for (i=0; i<8; i++)
+    {
+        buf[1] = contrast_seq[i];
+        if (write(file, buf, 2) != 2)
+        {
+            close(file);
+            return -3;
+        }
+    }
+
+    close(file);
+
+}
+
 
 /* Initializes OLED SSD1306 chip */
 int initOled()
@@ -225,17 +265,17 @@ int initOled()
                                   0x00, /* lower column start address */
                                   0x10, /* higher column start address */
                                   0x40, /* display start line */
-                                  0x81,0xaf, /* contrast */
+                                  0x81,0xcf, /* contrast (was af)*/
                                   0xa0, /* segment remap */
                                   0xa6, /* normal display  (a7 = inverse) */
                                   0xa8,0x3f, /* mux ratio = 64 */
                                   0xa4, /* display follows gdram */
                                   0xd3,0x00, /* display offset = 0*/
                                   0xd5,0xf0, /* oscillator */
-                                  0xd9,0x22, /* precharge period */
+                                  0xd9,0xf1, /* precharge period (was 22)*/
                                   0xda,0x12, /* configure COM pins */
-                                  0xdb,0x20, /* set VCOM level */
-                                  0x8d,0x14, /* disable charge pump. (0x14 enables) */
+                                  0xdb,0x40, /* set VCOM level (was 20)*/
+                                  0x8d,0x14, /* enable charge pump. (0x10 disables) */
                                   0xaf}; /* display on*/
 								  
     int i, file;
