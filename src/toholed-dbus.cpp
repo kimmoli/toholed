@@ -20,6 +20,7 @@
 
 #include <sys/time.h>
 #include <time.h>
+#include <unistd.h>
 
 #include <poll.h>
 
@@ -89,6 +90,7 @@ void Toholed::timerTimeout()
         clearOled(screenBuffer);
         drawTime(baNow.data(), screenBuffer);
         drawBatteryLevel(babatNow.data(), screenBuffer);
+        if (iconSMS) drawIcon(64, MESSAGE, screenBuffer);
         updateOled(screenBuffer);
 
         char buf[50];
@@ -320,14 +322,26 @@ QString Toholed::setInterruptEnable(const QString &arg)
 void Toholed:: handleSMS(const QDBusMessage& msg)
 {
     char buf[100];
+    int i;
 
     QList<QVariant> args = msg.arguments();
 
     sprintf(buf, "message ""%s""", qPrintable(args.at(0).toString()));
     writeToLog(buf);
 
+
     drawIcon(64, MESSAGE, screenBuffer);
     updateOled(screenBuffer);
+
+    for (i=0; i<10; i++)
+    {
+        setContrastOled(BRIGHTNESS_HIGH);
+        usleep(150000);
+        setContrastOled(BRIGHTNESS_LOW);
+        usleep(150000);
+    }
+
+    iconSMS = true;
 }
 
 void Toholed::handlehandleCoverStatus(const QDBusMessage& msg)
@@ -341,6 +355,16 @@ void Toholed::handlehandleCoverStatus(const QDBusMessage& msg)
 void Toholed::handleEventsAdded(const QDBusMessage& msg)
 {
     writeToLog("Events Added handler called !?!?!");
+}
+
+void Toholed::handleNotificationClosed(const QDBusMessage& msg)
+{
+    writeToLog("handleNotificationClosed()");
+    clearIcons(screenBuffer);
+    updateOled(screenBuffer);
+    iconSMS = false;
+    iconEMAIL = false;
+    iconCALL = false;
 }
 
 

@@ -33,6 +33,9 @@ bool Toholed::interruptsEnabled = false;
 int Toholed::timerCount = 0;
 unsigned int Toholed::prevBrightness = BRIGHTNESS_MED;
 unsigned int Toholed::prevProx = 0;
+bool Toholed::iconCALL = false;
+bool Toholed::iconSMS = false;
+bool Toholed::iconEMAIL = false;
 
 int main(int argc, char **argv)
 {
@@ -48,6 +51,18 @@ int main(int argc, char **argv)
     {
         fprintf(stderr, "Cannot connect to the D-Bus systemBus\n");
         writeToLog("Cannot connect to the D-Bus systemBus");
+        writeToLog(qPrintable(QDBusConnection::systemBus().lastError().message()));
+        exit(EXIT_FAILURE);
+    }
+
+    QString a = getenv ("DBUS_SESSION_BUS_ADDRESS");
+
+    if (!QDBusConnection::sessionBus().isConnected())
+    {
+        fprintf(stderr, "Cannot connect to the D-Bus sessionBus\n");
+        writeToLog("Cannot connect to the D-Bus sessionBus");
+        writeToLog(qPrintable(a));
+        writeToLog(qPrintable(QDBusConnection::sessionBus().lastError().message()));
         exit(EXIT_FAILURE);
     }
 
@@ -77,7 +92,11 @@ int main(int argc, char **argv)
     if(commhistoryconn.isConnected())
         writeToLog("commhistory Connected");
     else
+    {
         writeToLog("commhistory Not connected");
+        writeToLog(qPrintable(QDBusConnection::systemBus().lastError().message()));
+    }
+
 
     /* ofono MessageManager */
 
@@ -92,7 +111,11 @@ int main(int argc, char **argv)
     if(ofonoconn.isConnected())
         writeToLog("Ofono Connected");
     else
+    {
         writeToLog("Ofono Not connected");
+        writeToLog(qPrintable(QDBusConnection::sessionBus().lastError().message()));
+    }
+
 
     /* Jolla Lipstick coverstatus */
 
@@ -107,10 +130,30 @@ int main(int argc, char **argv)
     if(lipstickconn.isConnected())
         writeToLog("Lipstick Connected");
     else
+    {
         writeToLog("Lipstick Not connected");
+        writeToLog(qPrintable(QDBusConnection::sessionBus().lastError().message()));
+    }
 
-    /* jotain */
 
+
+    /* Notification actioninvoke */
+
+    static const QString freeNotifservice = "org.freedesktop.Notifications";
+    static const QString freeNotifpath = "/org/freedesktop/Notifications";
+    static const QString freeNotifinterface = "org.freedesktop.Notifications";
+    static const QString freeNotifname = "NotificationClosed";
+
+    static QDBusConnection freeNotifconn = QDBusConnection::sessionBus();
+    freeNotifconn.connect(freeNotifservice, freeNotifpath, freeNotifinterface, freeNotifname, &toholed, SLOT(handleNotificationClosed(const QDBusMessage&)));
+
+    if(freeNotifconn.isConnected())
+        writeToLog("freedesktop.Notifications.NotificationClosed Connected");
+    else
+    {
+        writeToLog("freedesktop.Notifications.NotificationClosed Not connected");
+        writeToLog(qPrintable(QDBusConnection::sessionBus().lastError().message()));
+    }
 
 
 

@@ -51,6 +51,7 @@ public slots:
     void handleSMS(const QDBusMessage& msg);
     void handlehandleCoverStatus(const QDBusMessage& msg);
     void handleEventsAdded(const QDBusMessage& msg);
+    void handleNotificationClosed(const QDBusMessage& msg);
 
 private slots:
     void timerTimeout();
@@ -77,6 +78,10 @@ private:
 
     int gpio_fd;
     int proximity_fd;
+
+    static bool iconSMS;
+    static bool iconEMAIL;
+    static bool iconCALL;
 };
 
 
