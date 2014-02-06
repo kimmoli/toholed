@@ -47,11 +47,11 @@ public slots:
     void handleGpioInterrupt();
     void handleProxInterrupt();
 
-    /* Notification stuff */
+    /* dBus Signal handlers */
     void handleSMS(const QDBusMessage& msg);
-    void handlehandleCoverStatus(const QDBusMessage& msg);
-    void handleEventsAdded(const QDBusMessage& msg);
+    void handleDisplayStatus(const QDBusMessage& msg);
     void handleNotificationClosed(const QDBusMessage& msg);
+    void handleCall(const QDBusMessage& msg);
 
 private slots:
     void timerTimeout();

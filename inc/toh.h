@@ -8,4 +8,4 @@ bool getProximityStatus();
 
 #define GPIO_INT "67"
 #define GPIO_INT_EDGE "falling"
-#define POLL_TIMEOUT 2000
+#define POLL_TIMEOUT 600000

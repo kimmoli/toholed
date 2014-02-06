@@ -55,13 +55,12 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    QString a = getenv ("DBUS_SESSION_BUS_ADDRESS");
+    writeToLog(qPrintable(getenv ("DBUS_SESSION_BUS_ADDRESS")));
 
     if (!QDBusConnection::sessionBus().isConnected())
     {
         fprintf(stderr, "Cannot connect to the D-Bus sessionBus\n");
         writeToLog("Cannot connect to the D-Bus sessionBus");
-        writeToLog(qPrintable(a));
         writeToLog(qPrintable(QDBusConnection::sessionBus().lastError().message()));
         exit(EXIT_FAILURE);
     }
@@ -79,73 +78,62 @@ int main(int argc, char **argv)
     QDBusConnection::systemBus().registerObject("/", &toholed, QDBusConnection::ExportAllSlots);
 
 
-    /* path=/CommHistoryModel; interface=com.nokia.commhistory; member=eventsAdded */
 
-    static const QString commhistoryservice = "org.nemomobile.CommHistory";
-    static const QString commhistorypath = "/";
-    static const QString commhistoryinterface = "com.nokia.commhistory";
-    static const QString commhistoryname = "eventsAdded";
+    /* Ofono MessageManager IncomingMessage
+     * This signal is emitted when new SMS message arrives */
 
-    static QDBusConnection commhistoryconn = QDBusConnection::sessionBus();
-    commhistoryconn.connect(commhistoryservice, commhistorypath, commhistoryinterface, commhistoryname, &toholed, SLOT(handleEventsAdded(const QDBusMessage&)));
+    static QDBusConnection ofonoSMSconn = QDBusConnection::systemBus();
+    ofonoSMSconn.connect("org.ofono", "/ril_0", "org.ofono.MessageManager", "IncomingMessage",
+                      &toholed, SLOT(handleSMS(const QDBusMessage&)));
 
-    if(commhistoryconn.isConnected())
-        writeToLog("commhistory Connected");
+    if(ofonoSMSconn.isConnected())
+        writeToLog("Ofono.MessageManager.IncomingMessage Connected");
     else
     {
-        writeToLog("commhistory Not connected");
+        writeToLog("Ofono.MessageManager.IncomingMessage Not connected");
+        writeToLog(qPrintable(QDBusConnection::systemBus().lastError().message()));
+    }
+
+    /* Ofono VoiceCallManager CallAdded
+     *
+     */
+    static QDBusConnection ofonoCallconn = QDBusConnection::systemBus();
+    ofonoCallconn.connect("org.ofono", "/ril_0", "org.ofono.VoiceCallManager", "CallAdded",
+                      &toholed, SLOT(handleCall(const QDBusMessage&)));
+
+    if(ofonoCallconn.isConnected())
+        writeToLog("Ofono.VoiceCallManager.CallAdded Connected");
+    else
+    {
+        writeToLog("Ofono.VoiceCallManager.CallAdded Not connected");
         writeToLog(qPrintable(QDBusConnection::systemBus().lastError().message()));
     }
 
 
-    /* ofono MessageManager */
 
-    static const QString ofonoservice = "org.ofono";
-    static const QString ofonopath = "/ril_0";
-    static const QString ofonointerface = "org.ofono.MessageManager";
-    static const QString ofononame = "IncomingMessage";
+    /* Nokia MCE display_status_ind
+     * No actual use with this, just make log entry. Display status returns string: "on", "dimmed" or "off"  */
 
-    static QDBusConnection ofonoconn = QDBusConnection::systemBus();
-    ofonoconn.connect(ofonoservice, ofonopath, ofonointerface, ofononame, &toholed, SLOT(handleSMS(const QDBusMessage&)));
+    static QDBusConnection mceSignalconn = QDBusConnection::systemBus();
+    mceSignalconn.connect("com.nokia.mce", "/com/nokia/mce/signal", "com.nokia.mce.signal", "display_status_ind",
+                          &toholed, SLOT(handleDisplayStatus(const QDBusMessage&)));
 
-    if(ofonoconn.isConnected())
-        writeToLog("Ofono Connected");
+    if(mceSignalconn.isConnected())
+        writeToLog("com.nokia.mce.signal.display_status_ind Connected");
     else
     {
-        writeToLog("Ofono Not connected");
-        writeToLog(qPrintable(QDBusConnection::sessionBus().lastError().message()));
-    }
-
-
-    /* Jolla Lipstick coverstatus */
-
-    static const QString lipstickservice = "com.jolla.lipstick";
-    static const QString lipstickpath = "/com/jolla/lipstick";
-    static const QString lipstickinterface = "com.jolla.lipstick";
-    static const QString lipstickname = "coverstatus";
-
-    static QDBusConnection lipstickconn = QDBusConnection::sessionBus();
-    lipstickconn.connect(lipstickservice, lipstickpath, lipstickinterface, lipstickname, &toholed, SLOT(handleCoverStatus(const QDBusMessage&)));
-
-    if(lipstickconn.isConnected())
-        writeToLog("Lipstick Connected");
-    else
-    {
-        writeToLog("Lipstick Not connected");
-        writeToLog(qPrintable(QDBusConnection::sessionBus().lastError().message()));
+        writeToLog("com.nokia.mce.signal.display_status_ind Not connected");
+        writeToLog(qPrintable(QDBusConnection::systemBus().lastError().message()));
     }
 
 
 
-    /* Notification actioninvoke */
-
-    static const QString freeNotifservice = "org.freedesktop.Notifications";
-    static const QString freeNotifpath = "/org/freedesktop/Notifications";
-    static const QString freeNotifinterface = "org.freedesktop.Notifications";
-    static const QString freeNotifname = "NotificationClosed";
+    /* Freedesktop Notifications NotificationClosed
+     * This signal is emitted when notification is closed. We can then remove icons from screen */
 
     static QDBusConnection freeNotifconn = QDBusConnection::sessionBus();
-    freeNotifconn.connect(freeNotifservice, freeNotifpath, freeNotifinterface, freeNotifname, &toholed, SLOT(handleNotificationClosed(const QDBusMessage&)));
+    freeNotifconn.connect("org.freedesktop.Notifications", "/org/freedesktop/Notifications", "org.freedesktop.Notifications", "NotificationClosed",
+                          &toholed, SLOT(handleNotificationClosed(const QDBusMessage&)));
 
     if(freeNotifconn.isConnected())
         writeToLog("freedesktop.Notifications.NotificationClosed Connected");
@@ -154,6 +142,14 @@ int main(int argc, char **argv)
         writeToLog("freedesktop.Notifications.NotificationClosed Not connected");
         writeToLog(qPrintable(QDBusConnection::sessionBus().lastError().message()));
     }
+
+
+    /* TODO
+     *
+     * Connect to something that indicates new email
+     * Connect to something that indicates missed/or incoming call ? show phone number?
+     * Connect to somethinf that indicates new IM message
+     */
 
 
 

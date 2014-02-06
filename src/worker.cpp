@@ -5,6 +5,10 @@
 #include "toh.h"
 
 #include <QThread>
+#include <QtDBus/QtDBus>
+#include <QDBusConnection>
+#include <QDBusMessage>
+
 
 Worker::Worker(QObject *parent) :
     QObject(parent)
@@ -70,6 +74,10 @@ void Worker::doWork()
 
         if (fdset[0].revents & POLLPRI)
         {
+            /* request to stay alive */
+            QDBusMessage m = QDBusMessage::createMethodCall("com.nokia.mce", "/com/nokia/mce/signal", "com.nokia.mce.signal", "req_cpu_keepalive_start");
+            QDBusConnection::systemBus().send(m);
+
             read(fdset[0].fd, buf, 20);
             emit gpioInterruptCaptured();
         }

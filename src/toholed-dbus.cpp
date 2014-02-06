@@ -59,6 +59,13 @@ Toholed::Toholed()
 
     timeUpdateOverride = false;
     interruptsEnabled = false;
+
+
+    /* do this automatically at startup */
+    setVddState("on");
+    enableOled("");
+    setOledAutoUpdate("on");
+    setInterruptEnable("on");
 }
 
 /* Timer routine to update OLED clock */
@@ -90,7 +97,9 @@ void Toholed::timerTimeout()
         clearOled(screenBuffer);
         drawTime(baNow.data(), screenBuffer);
         drawBatteryLevel(babatNow.data(), screenBuffer);
-        if (iconSMS) drawIcon(64, MESSAGE, screenBuffer);
+        if (iconSMS)   drawIcon(64, MESSAGE, screenBuffer);
+        if (iconCALL)  drawIcon(84, CALL, screenBuffer);
+        if (iconEMAIL) drawIcon(104, MAIL, screenBuffer);
         updateOled(screenBuffer);
 
         char buf[50];
@@ -344,22 +353,43 @@ void Toholed:: handleSMS(const QDBusMessage& msg)
     iconSMS = true;
 }
 
-void Toholed::handlehandleCoverStatus(const QDBusMessage& msg)
+void Toholed:: handleCall(const QDBusMessage& msg)
 {
-    writeToLog("Cover status changed");
+    int i;
 
-    clearIcons(screenBuffer);
+    writeToLog("Incoming call");
+
+    drawIcon(84, CALL, screenBuffer);
     updateOled(screenBuffer);
+
+    for (i=0; i<10; i++)
+    {
+        setContrastOled(BRIGHTNESS_HIGH);
+        usleep(150000);
+        setContrastOled(BRIGHTNESS_LOW);
+        usleep(150000);
+    }
+
+    iconCALL = true;
+
 }
 
-void Toholed::handleEventsAdded(const QDBusMessage& msg)
+void Toholed::handleDisplayStatus(const QDBusMessage& msg)
 {
-    writeToLog("Events Added handler called !?!?!");
+    char buf[100];
+
+    QList<QVariant> args = msg.arguments();
+
+    sprintf(buf, "Display status changed to ""%s""", qPrintable(args.at(0).toString()));
+    writeToLog(buf);
 }
+
 
 void Toholed::handleNotificationClosed(const QDBusMessage& msg)
 {
     writeToLog("handleNotificationClosed()");
+
+    /* Clear all icons and their status flags */
     clearIcons(screenBuffer);
     updateOled(screenBuffer);
     iconSMS = false;
@@ -437,6 +467,11 @@ void Toholed::handleGpioInterrupt()
 
     prevProx = prox;
     mutex.unlock();
+
+    /* permit to go back to sleep */
+    QDBusMessage m = QDBusMessage::createMethodCall("com.nokia.mce", "/com/nokia/mce/signal", "com.nokia.mce.signal", "req_cpu_keepalive_stop");
+    QDBusConnection::systemBus().send(m);
+
 
 }
 
