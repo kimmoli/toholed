@@ -17,6 +17,7 @@
 #include <QColor>
 #include <QTime>
 #include <QThread>
+#include <QtDebug>
 
 #include <sys/time.h>
 #include <time.h>
@@ -33,6 +34,8 @@
 #include "charger.h"
 #include "icons.h"
 #include "tsl2772.h"
+
+
 
 static char screenBuffer[SCREENBUFFERSIZE] = { 0 };
 
@@ -73,6 +76,11 @@ void Toholed::timerTimeout()
 {
     QTime current = QTime::currentTime();
 
+    /* Request to stay alive */
+    QDBusMessage m = QDBusMessage::createMethodCall("com.nokia.mce", "/com/nokia/mce/signal", "com.nokia.mce.signal", "req_cpu_keepalive_start");
+    QDBusConnection::systemBus().send(m);
+
+
 //    if (interruptsEnabled) /* For debug, print als and prox once in second */
 //        handleGpioInterrupt();
 
@@ -97,10 +105,18 @@ void Toholed::timerTimeout()
         clearOled(screenBuffer);
         drawTime(baNow.data(), screenBuffer);
         drawBatteryLevel(babatNow.data(), screenBuffer);
-        if (iconSMS)   drawIcon(64, MESSAGE, screenBuffer);
-        if (iconCALL)  drawIcon(84, CALL, screenBuffer);
-        if (iconEMAIL) drawIcon(104, MAIL, screenBuffer);
+
+        if (iconSMS)
+            drawIcon(64, MESSAGE, screenBuffer);
+        if (iconCALL)
+            drawIcon(84, CALL, screenBuffer);
+        if (iconEMAIL)
+            drawIcon(104, MAIL, screenBuffer);
+
         updateOled(screenBuffer);
+
+        if (iconSMS || iconCALL || iconEMAIL)
+            blinkOled(2);
 
         char buf[50];
         sprintf(buf, "Time now: %s Battery: %s", baNow.data(), babatNow.data() );
@@ -108,6 +124,10 @@ void Toholed::timerTimeout()
     }
 
     timerCount++;
+
+    m = QDBusMessage::createMethodCall("com.nokia.mce", "/com/nokia/mce/signal", "com.nokia.mce.signal", "req_cpu_keepalive_stop");
+    QDBusConnection::systemBus().send(m);
+
 }
 
 /* Function to set VDD (3.3V for OH) */
@@ -331,7 +351,6 @@ QString Toholed::setInterruptEnable(const QString &arg)
 void Toholed:: handleSMS(const QDBusMessage& msg)
 {
     char buf[100];
-    int i;
 
     QList<QVariant> args = msg.arguments();
 
@@ -342,36 +361,27 @@ void Toholed:: handleSMS(const QDBusMessage& msg)
     drawIcon(64, MESSAGE, screenBuffer);
     updateOled(screenBuffer);
 
-    for (i=0; i<10; i++)
-    {
-        setContrastOled(BRIGHTNESS_HIGH);
-        usleep(150000);
-        setContrastOled(BRIGHTNESS_LOW);
-        usleep(150000);
-    }
+    blinkOled(10);
 
     iconSMS = true;
 }
 
-void Toholed:: handleCall(const QDBusMessage& msg)
+void Toholed::handleCall(const QDBusMessage& msg)
 {
     int i;
+    QList<QVariant> args = msg.arguments();
+
+    for (i=0 ; i < args.count(); i++ )
+        qDebug() << args.at(i).toString();
 
     writeToLog("Incoming call");
 
     drawIcon(84, CALL, screenBuffer);
     updateOled(screenBuffer);
 
-    for (i=0; i<10; i++)
-    {
-        setContrastOled(BRIGHTNESS_HIGH);
-        usleep(150000);
-        setContrastOled(BRIGHTNESS_LOW);
-        usleep(150000);
-    }
+    blinkOled(10);
 
     iconCALL = true;
-
 }
 
 void Toholed::handleDisplayStatus(const QDBusMessage& msg)
@@ -388,6 +398,11 @@ void Toholed::handleDisplayStatus(const QDBusMessage& msg)
 void Toholed::handleNotificationClosed(const QDBusMessage& msg)
 {
     writeToLog("handleNotificationClosed()");
+    int i;
+    QList<QVariant> args = msg.arguments();
+
+    for (i=0 ; i < args.count(); i++ )
+        qDebug() << args.at(i).toString();
 
     /* Clear all icons and their status flags */
     clearIcons(screenBuffer);
@@ -496,3 +511,4 @@ void Toholed::handleProxInterrupt()
         writeToLog("Proximity interrupt - away");
     }
 }
+

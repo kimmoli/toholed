@@ -226,7 +226,7 @@ int setContrastOled(unsigned int level)
     if ( (level != BRIGHTNESS_HIGH) && (level != BRIGHTNESS_LOW) && (level != BRIGHTNESS_MED))
         return -9;
 
-    contrast_seq[1] = (level & 0xff00) >> 8;
+    contrast_seq[1] = ((level >> 8 ) & 0xff);
     contrast_seq[3] = (level & 0xff);
 
     if ((file = open( "/dev/i2c-1", O_RDWR )) < 0)
@@ -250,6 +250,51 @@ int setContrastOled(unsigned int level)
             close(file);
             return -3;
         }
+    }
+
+    close(file);
+
+}
+
+void blinkOled(int count)
+{
+    int i;
+
+    for (i=0; i<count; i++)
+    {
+        invertOled(true);
+        setContrastOled(BRIGHTNESS_HIGH);
+        usleep(150000);
+        invertOled(false);
+        setContrastOled(BRIGHTNESS_LOW);
+        usleep(150000);
+    }
+}
+
+void invertOled(bool invert)
+{
+    unsigned char buf[2] = {0};
+    int file;
+
+
+    if ((file = open( "/dev/i2c-1", O_RDWR )) < 0)
+    {
+        return;
+    }
+    if (ioctl( file, I2C_SLAVE, 0x3c) < 0)
+    {
+        close(file);
+        return;
+    }
+
+    buf[0] = 0x80;
+    buf[1] = (invert ? 0xa7 : 0xa6);
+
+    // send invert change sequence
+    if (write(file, buf, 2) != 2)
+    {
+        close(file);
+        return;
     }
 
     close(file);
