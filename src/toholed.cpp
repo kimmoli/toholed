@@ -39,13 +39,16 @@ bool Toholed::iconEMAIL = false;
 
 int main(int argc, char **argv)
 {
+    char buf[100];
+
     QCoreApplication app(argc, argv);
 
-    fprintf(stdout, "Starting toholed daemon.\n");
     daemonize();
 
-    writeToLog("toholed daemon started.");
+    sprintf(buf, "Starting toholed daemon. build %s %s\n", __DATE__, __TIME__);
 
+    fprintf(stderr, buf);
+    writeToLog(buf);
 
     if (!QDBusConnection::systemBus().isConnected())
     {

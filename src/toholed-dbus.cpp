@@ -17,7 +17,7 @@
 #include <QColor>
 #include <QTime>
 #include <QThread>
-#include <QtDebug>
+//#include <QtDebug>
 
 #include <sys/time.h>
 #include <time.h>
@@ -74,16 +74,11 @@ Toholed::Toholed()
 /* Timer routine to update OLED clock */
 void Toholed::timerTimeout()
 {
-    QTime current = QTime::currentTime();
-
     /* Request to stay alive */
     QDBusMessage m = QDBusMessage::createMethodCall("com.nokia.mce", "/com/nokia/mce/signal", "com.nokia.mce.signal", "req_cpu_keepalive_start");
     QDBusConnection::systemBus().send(m);
 
-
-//    if (interruptsEnabled) /* For debug, print als and prox once in second */
-//        handleGpioInterrupt();
-
+    QTime current = QTime::currentTime();
 
     /* Update only if minute has changed and oled is powered and initialized */
 
@@ -368,11 +363,11 @@ void Toholed:: handleSMS(const QDBusMessage& msg)
 
 void Toholed::handleCall(const QDBusMessage& msg)
 {
-    int i;
-    QList<QVariant> args = msg.arguments();
+//    int i;
+//    QList<QVariant> args = msg.arguments();
 
-    for (i=0 ; i < args.count(); i++ )
-        qDebug() << args.at(i).toString();
+//    for (i=0 ; i < args.count(); i++ )
+//        qDebug() << args.at(i).toString();
 
     writeToLog("Incoming call");
 
@@ -398,11 +393,11 @@ void Toholed::handleDisplayStatus(const QDBusMessage& msg)
 void Toholed::handleNotificationClosed(const QDBusMessage& msg)
 {
     writeToLog("handleNotificationClosed()");
-    int i;
-    QList<QVariant> args = msg.arguments();
+//    int i;
+//    QList<QVariant> args = msg.arguments();
 
-    for (i=0 ; i < args.count(); i++ )
-        qDebug() << args.at(i).toString();
+//    for (i=0 ; i < args.count(); i++ )
+//        qDebug() << args.at(i).toString();
 
     /* Clear all icons and their status flags */
     clearIcons(screenBuffer);
