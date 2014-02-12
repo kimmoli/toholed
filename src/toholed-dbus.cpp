@@ -154,8 +154,10 @@ QString Toholed::enableOled(const QString &arg)
     if (vddEnabled)
     {
         initOled();
-        clearOled(screenBuffer);
+        //clearOled(screenBuffer);
+        drawDerp(screenBuffer);
         updateOled(screenBuffer);
+        sleep(2);
 
         oledInitDone = true;
 
@@ -420,7 +422,11 @@ void Toholed::handleNotificationClosed(const QDBusMessage& msg)
 }
 
 
-/* interrupt handler */
+/* GPIO interrupt handler */
+/*
+ * TODO : add proximity handling
+ */
+
 void Toholed::handleGpioInterrupt()
 {
     int fd;

@@ -18,7 +18,8 @@ SOURCES += \
     src/worker.cpp \
     src/pienifontti.cpp \
     src/icons.cpp \
-    src/tsl2772.cpp
+    src/tsl2772.cpp \
+    src/derp.c
 
 HEADERS += \
     inc/toholed.h \
@@ -32,5 +33,6 @@ HEADERS += \
     inc/worker.h \
     inc/pienifontti.h \
     inc/icons.h \
-    inc/tsl2772.h
+    inc/tsl2772.h \
+    inc/derp.h
 

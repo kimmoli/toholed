@@ -45,9 +45,7 @@ int main(int argc, char **argv)
 
     daemonize();
 
-    sprintf(buf, "Starting toholed daemon. build %s %s\n", __DATE__, __TIME__);
-
-    fprintf(stderr, buf);
+    sprintf(buf, "Starting toholed daemon. build %s %s", __DATE__, __TIME__);
     writeToLog(buf);
 
     if (!QDBusConnection::systemBus().isConnected())
@@ -55,8 +53,10 @@ int main(int argc, char **argv)
         fprintf(stderr, "Cannot connect to the D-Bus systemBus\n");
         writeToLog("Cannot connect to the D-Bus systemBus");
         writeToLog(qPrintable(QDBusConnection::systemBus().lastError().message()));
+        sleep(3);
         exit(EXIT_FAILURE);
     }
+    writeToLog("Connected to D-Bus systembus");
 
     writeToLog(qPrintable(getenv ("DBUS_SESSION_BUS_ADDRESS")));
 
@@ -65,16 +65,20 @@ int main(int argc, char **argv)
         fprintf(stderr, "Cannot connect to the D-Bus sessionBus\n");
         writeToLog("Cannot connect to the D-Bus sessionBus");
         writeToLog(qPrintable(QDBusConnection::sessionBus().lastError().message()));
+        sleep(3);
         exit(EXIT_FAILURE);
     }
+    writeToLog("Connected to D-Bus sessionbus");
 
     if (!QDBusConnection::systemBus().registerService(SERVICE_NAME))
     {
         fprintf(stderr, "%s\n", qPrintable(QDBusConnection::systemBus().lastError().message()));
         writeToLog("Cannot register service to systemBus");
         writeToLog(qPrintable(QDBusConnection::systemBus().lastError().message()));
+        sleep(3);
         exit(EXIT_FAILURE);
     }
+    writeToLog("Registered " SERVICE_NAME " to D-Bus systembus");
 
     Toholed toholed;
 
@@ -166,7 +170,7 @@ int main(int argc, char **argv)
     /* TODO
      *
      * Connect to something that indicates new email
-     * Connect to something that indicates missed/or incoming call ? show phone number?
+     * Connect to something that clears answered call
      * Connect to somethinf that indicates new IM message
      */
 
