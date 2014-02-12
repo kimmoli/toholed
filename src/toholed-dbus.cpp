@@ -110,8 +110,8 @@ void Toholed::timerTimeout()
 
         updateOled(screenBuffer);
 
-        if (iconSMS || iconCALL || iconEMAIL)
-            blinkOled(2);
+//        if (iconSMS || iconCALL || iconEMAIL)
+//            blinkOled(2);
 
         char buf[50];
         sprintf(buf, "Time now: %s Battery: %s", baNow.data(), babatNow.data() );
@@ -343,38 +343,52 @@ QString Toholed::setInterruptEnable(const QString &arg)
 
 }
 
+/* New SMS */
 void Toholed:: handleSMS(const QDBusMessage& msg)
 {
     char buf[100];
 
     QList<QVariant> args = msg.arguments();
 
-    sprintf(buf, "message ""%s""", qPrintable(args.at(0).toString()));
+    sprintf(buf, "New SMS: ""%s""", qPrintable(args.at(0).toString()));
     writeToLog(buf);
 
-
+    mutex.lock();
     drawIcon(64, MESSAGE, screenBuffer);
     updateOled(screenBuffer);
 
     blinkOled(10);
+    mutex.unlock();
+
+    iconSMS = true;
+}
+
+/* Something triggered commhistory.eventsAdded signal */
+void Toholed::handleCommHistory(const QDBusMessage& msg)
+{
+    writeToLog("commhistory.eventsAdded");
+
+    mutex.lock();
+    drawIcon(64, MESSAGE, screenBuffer);
+    updateOled(screenBuffer);
+
+    blinkOled(10);
+    mutex.unlock();
 
     iconSMS = true;
 }
 
 void Toholed::handleCall(const QDBusMessage& msg)
 {
-//    int i;
-//    QList<QVariant> args = msg.arguments();
-
-//    for (i=0 ; i < args.count(); i++ )
-//        qDebug() << args.at(i).toString();
 
     writeToLog("Incoming call");
 
+    mutex.lock();
     drawIcon(84, CALL, screenBuffer);
     updateOled(screenBuffer);
 
     blinkOled(10);
+    mutex.unlock();
 
     iconCALL = true;
 }
@@ -393,18 +407,16 @@ void Toholed::handleDisplayStatus(const QDBusMessage& msg)
 void Toholed::handleNotificationClosed(const QDBusMessage& msg)
 {
     writeToLog("handleNotificationClosed()");
-//    int i;
-//    QList<QVariant> args = msg.arguments();
 
-//    for (i=0 ; i < args.count(); i++ )
-//        qDebug() << args.at(i).toString();
-
+    mutex.lock();
     /* Clear all icons and their status flags */
     clearIcons(screenBuffer);
     updateOled(screenBuffer);
+
     iconSMS = false;
     iconEMAIL = false;
     iconCALL = false;
+    mutex.unlock();
 }
 
 

@@ -147,6 +147,22 @@ int main(int argc, char **argv)
     }
 
 
+    /* path=/CommHistoryModel; interface=com.nokia.commhistory; member=eventsAdded
+     */
+
+    static QDBusConnection commHistoryConn = QDBusConnection::sessionBus();
+    commHistoryConn.connect("com.nokia.commhistory", "/CommHistoryModel", "com.nokia.commhistory", "eventsAdded",
+                          &toholed, SLOT(handleCommHistory(const QDBusMessage&)));
+
+    if(commHistoryConn.isConnected())
+        writeToLog("com.nokia.commhistory.eventsAdded Connected");
+    else
+    {
+        writeToLog("com.nokia.commhistory.eventsAdded Not connected");
+        writeToLog(qPrintable(QDBusConnection::sessionBus().lastError().message()));
+    }
+
+
     /* TODO
      *
      * Connect to something that indicates new email

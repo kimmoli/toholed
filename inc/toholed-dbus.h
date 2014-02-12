@@ -52,6 +52,7 @@ public slots:
     void handleDisplayStatus(const QDBusMessage& msg);
     void handleNotificationClosed(const QDBusMessage& msg);
     void handleCall(const QDBusMessage& msg);
+    void handleCommHistory(const QDBusMessage& msg);
 
 private slots:
     void timerTimeout();
