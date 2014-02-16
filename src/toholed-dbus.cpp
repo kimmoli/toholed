@@ -107,6 +107,8 @@ void Toholed::timerTimeout()
             drawIcon(84, CALL, screenBuffer);
         if (iconEMAIL)
             drawIcon(104, MAIL, screenBuffer);
+        if (iconTWEET)
+            drawIcon(44, TWEET, screenBuffer);
 
         updateOled(screenBuffer);
 
@@ -365,6 +367,20 @@ void Toholed:: handleSMS(const QDBusMessage& msg)
     iconSMS = true;
 }
 
+void Toholed::handleTweetian(const QDBusMessage& msg)
+{
+    writeToLog("Tweet tweet");
+
+    mutex.lock();
+    drawIcon(44, TWEET, screenBuffer);
+    updateOled(screenBuffer);
+
+    blinkOled(5);
+    mutex.unlock();
+
+    iconTWEET = true;
+}
+
 /* Something triggered commhistory.eventsAdded signal */
 void Toholed::handleCommHistory(const QDBusMessage& msg)
 {
@@ -418,6 +434,8 @@ void Toholed::handleNotificationClosed(const QDBusMessage& msg)
     iconSMS = false;
     iconEMAIL = false;
     iconCALL = false;
+    iconTWEET = false;
+
     mutex.unlock();
 }
 

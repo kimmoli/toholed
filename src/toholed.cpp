@@ -36,6 +36,7 @@ unsigned int Toholed::prevProx = 0;
 bool Toholed::iconCALL = false;
 bool Toholed::iconSMS = false;
 bool Toholed::iconEMAIL = false;
+bool Toholed::iconTWEET = false;
 
 int main(int argc, char **argv)
 {
@@ -163,6 +164,22 @@ int main(int argc, char **argv)
     else
     {
         writeToLog("com.nokia.commhistory.eventsAdded Not connected");
+        writeToLog(qPrintable(QDBusConnection::sessionBus().lastError().message()));
+    }
+
+
+    /* path=/com/tweetian; com.tweetian member=newNotification
+     */
+
+    static QDBusConnection tweetianConn = QDBusConnection::sessionBus();
+    tweetianConn.connect("com.tweetian", "/com/tweetian", "com.tweetian", "newNotification",
+                          &toholed, SLOT(handleTweetian(const QDBusMessage&)));
+
+    if(commHistoryConn.isConnected())
+        writeToLog("com.tweetian.newNotification Connected");
+    else
+    {
+        writeToLog("com.tweetian.newNotification Not connected");
         writeToLog(qPrintable(QDBusConnection::sessionBus().lastError().message()));
     }
 

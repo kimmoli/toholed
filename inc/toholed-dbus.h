@@ -53,6 +53,7 @@ public slots:
     void handleNotificationClosed(const QDBusMessage& msg);
     void handleCall(const QDBusMessage& msg);
     void handleCommHistory(const QDBusMessage& msg);
+    void handleTweetian(const QDBusMessage& msg);
 
 private slots:
     void timerTimeout();
@@ -83,6 +84,7 @@ private:
     static bool iconSMS;
     static bool iconEMAIL;
     static bool iconCALL;
+    static bool iconTWEET;
 };
 
 

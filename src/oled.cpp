@@ -56,7 +56,7 @@ void drawIcon(int location, int icon, char *screenBuffer)
     h=location;
     o = 50; // rivi mistä tulostus alkaa
 
-    for (x=0; x < 3 ; x++)
+    for (x=0; x < 4 ; x++)
     {
         if ( icon == iconsMap[x] )
         {
@@ -86,7 +86,7 @@ void clearIcons(char *screenBuffer)
     char *sb = screenBuffer;
     int i;
 
-    for (i=518 ; i < 1024 ; i=i+8 )
+    for (i=358 ; i < 1024 ; i=i+8 )
     {
         *(sb+i) = 0x00;
         *(sb+i+1) = 0x00;
