@@ -109,11 +109,10 @@ void Toholed::timerTimeout()
             drawIcon(104, MAIL, screenBuffer);
         if (iconTWEET)
             drawIcon(44, TWEET, screenBuffer);
+        if (iconIRC)
+            drawIcon(102, IRC, screenBuffer);
 
         updateOled(screenBuffer);
-
-//        if (iconSMS || iconCALL || iconEMAIL)
-//            blinkOled(2);
 
         char buf[50];
         sprintf(buf, "Time now: %s Battery: %s", baNow.data(), babatNow.data() );
@@ -371,7 +370,7 @@ void Toholed:: handleSMS(const QDBusMessage& msg)
 
 void Toholed::handleTweetian(const QDBusMessage& msg)
 {
-    writeToLog("Tweet tweet");
+    writeToLog("You have been mentioned in a Tweet");
 
     mutex.lock();
     drawIcon(44, TWEET, screenBuffer);
@@ -396,7 +395,14 @@ void Toholed::handleCommuni(const QDBusMessage& msg)
     sprintf(buf, "IRC: %s <%s> %s", qPrintable(args.at(0).toString()), qPrintable(args.at(1).toString()), qPrintable(args.at(2).toString()));
     writeToLog(buf);
 
-    /* TODO: Add IRC icon */
+    mutex.lock();
+    drawIcon(102, IRC, screenBuffer);
+    updateOled(screenBuffer);
+
+    blinkOled(5);
+    mutex.unlock();
+
+    iconIRC = true;
 
 }
 
@@ -454,6 +460,7 @@ void Toholed::handleNotificationClosed(const QDBusMessage& msg)
     iconEMAIL = false;
     iconCALL = false;
     iconTWEET = false;
+    iconIRC = false;
 
     mutex.unlock();
 }

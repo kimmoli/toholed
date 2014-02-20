@@ -86,6 +86,7 @@ private:
     static bool iconEMAIL;
     static bool iconCALL;
     static bool iconTWEET;
+    static bool iconIRC;
 };
 
 

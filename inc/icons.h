@@ -5,6 +5,9 @@
 #define CALL 2
 #define MESSAGE 3
 #define TWEET 4
+#define IRC 5
+
+#define LASTICON IRC
 
 extern const char iconsBitmaps[];
 extern const int iconsWidthPages;

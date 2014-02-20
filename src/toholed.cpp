@@ -37,6 +37,7 @@ bool Toholed::iconCALL = false;
 bool Toholed::iconSMS = false;
 bool Toholed::iconEMAIL = false;
 bool Toholed::iconTWEET = false;
+bool Toholed::iconIRC = false;
 
 int main(int argc, char **argv)
 {

@@ -56,7 +56,7 @@ void drawIcon(int location, int icon, char *screenBuffer)
     h=location;
     o = 50; // rivi mistä tulostus alkaa
 
-    for (x=0; x < 4 ; x++)
+    for (x=0; x < LASTICON ; x++)
     {
         if ( icon == iconsMap[x] )
         {
