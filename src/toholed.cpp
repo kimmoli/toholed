@@ -175,11 +175,26 @@ int main(int argc, char **argv)
     tweetianConn.connect("com.tweetian", "/com/tweetian", "com.tweetian", "newNotification",
                           &toholed, SLOT(handleTweetian(const QDBusMessage&)));
 
-    if(commHistoryConn.isConnected())
+    if(tweetianConn.isConnected())
         writeToLog("com.tweetian.newNotification Connected");
     else
     {
         writeToLog("com.tweetian.newNotification Not connected");
+        writeToLog(qPrintable(QDBusConnection::sessionBus().lastError().message()));
+    }
+
+
+    /* Communi IRC connection */
+
+    static QDBusConnection communiConn = QDBusConnection::sessionBus();
+    communiConn.connect("com.communi.irc", "/", "com.communi.irc", "highlightedSimple",
+                          &toholed, SLOT(handleCommuni(const QDBusMessage&)));
+
+    if(communiConn.isConnected())
+        writeToLog("com.communi.irc.highlightedSimple Connected");
+    else
+    {
+        writeToLog("com.communi.irc.highlightedSimple Connected");
         writeToLog(qPrintable(QDBusConnection::sessionBus().lastError().message()));
     }
 

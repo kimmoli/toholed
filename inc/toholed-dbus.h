@@ -54,6 +54,7 @@ public slots:
     void handleCall(const QDBusMessage& msg);
     void handleCommHistory(const QDBusMessage& msg);
     void handleTweetian(const QDBusMessage& msg);
+    void handleCommuni(const QDBusMessage& msg);
 
 private slots:
     void timerTimeout();

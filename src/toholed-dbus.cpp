@@ -367,6 +367,8 @@ void Toholed:: handleSMS(const QDBusMessage& msg)
     iconSMS = true;
 }
 
+/* Tweetian handler */
+
 void Toholed::handleTweetian(const QDBusMessage& msg)
 {
     writeToLog("Tweet tweet");
@@ -379,6 +381,23 @@ void Toholed::handleTweetian(const QDBusMessage& msg)
     mutex.unlock();
 
     iconTWEET = true;
+}
+
+/* Communi IRC handler */
+
+void Toholed::handleCommuni(const QDBusMessage& msg)
+{
+    char buf[100];
+
+    QList<QVariant> args = msg.arguments();
+
+    /* emit highlightedSimple(buffer->title(), message->nick(), message->property("content").toString()); */
+
+    sprintf(buf, "IRC: %s <%s> %s", qPrintable(args.at(0).toString()), qPrintable(args.at(1).toString()), qPrintable(args.at(2).toString()));
+    writeToLog(buf);
+
+    /* TODO: Add IRC icon */
+
 }
 
 /* Something triggered commhistory.eventsAdded signal */
