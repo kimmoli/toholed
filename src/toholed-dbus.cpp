@@ -75,8 +75,8 @@ Toholed::Toholed()
 void Toholed::timerTimeout()
 {
     /* Request to stay alive */
-    QDBusMessage m = QDBusMessage::createMethodCall("com.nokia.mce", "/com/nokia/mce/signal", "com.nokia.mce.signal", "req_cpu_keepalive_start");
-    QDBusConnection::systemBus().send(m);
+//    QDBusMessage m = QDBusMessage::createMethodCall("com.nokia.mce", "/com/nokia/mce/signal", "com.nokia.mce.signal", "req_cpu_keepalive_start");
+//    QDBusConnection::systemBus().send(m);
 
     QTime current = QTime::currentTime();
 
@@ -121,8 +121,8 @@ void Toholed::timerTimeout()
 
     timerCount++;
 
-    m = QDBusMessage::createMethodCall("com.nokia.mce", "/com/nokia/mce/signal", "com.nokia.mce.signal", "req_cpu_keepalive_stop");
-    QDBusConnection::systemBus().send(m);
+//    m = QDBusMessage::createMethodCall("com.nokia.mce", "/com/nokia/mce/signal", "com.nokia.mce.signal", "req_cpu_keepalive_stop");
+//    QDBusConnection::systemBus().send(m);
 
 }
 
@@ -541,8 +541,8 @@ void Toholed::handleGpioInterrupt()
     mutex.unlock();
 
     /* permit to go back to sleep */
-    QDBusMessage m = QDBusMessage::createMethodCall("com.nokia.mce", "/com/nokia/mce/signal", "com.nokia.mce.signal", "req_cpu_keepalive_stop");
-    QDBusConnection::systemBus().send(m);
+//    QDBusMessage m = QDBusMessage::createMethodCall("com.nokia.mce", "/com/nokia/mce/signal", "com.nokia.mce.signal", "req_cpu_keepalive_stop");
+//    QDBusConnection::systemBus().send(m);
 
 
 }
