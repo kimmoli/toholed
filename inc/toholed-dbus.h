@@ -41,6 +41,7 @@ public slots:
     QString setOledContrast(const QString &arg);
     QString frontLed(const QString &arg);
     QString kill(const QString &arg);
+    QString setScreenCaptureOnProximity(const QString &arg);
 
     /* interrupts */
     QString setInterruptEnable(const QString &arg);
@@ -63,6 +64,8 @@ private slots:
 private:
     QThread *thread;
     Worker *worker;
+
+    static bool ScreenCaptureOnProximity;
 
     static bool oledInitDone;
     static bool vddEnabled;

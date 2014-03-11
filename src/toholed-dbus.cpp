@@ -149,6 +149,20 @@ QString Toholed::setVddState(const QString &arg)
     return QString("you have been served. %1").arg(arg);
 }
 
+QString Toholed::setScreenCaptureOnProximity(const QString &arg)
+{
+    QString turn = QString("%1").arg(arg);
+
+    ScreenCaptureOnProximity =  QString::localeAwareCompare( turn, "on") ? false : true;
+
+    if (ScreenCaptureOnProximity)
+        writeToLog("Screen capture on proximity interrupt enabled");
+    else
+        writeToLog("Screen capture on proximity interrupt disabled");
+
+    return QString("you have been served. Screencapture on proximity = %1").arg(arg);
+}
+
 /* Initialze and clear oled */
 QString Toholed::enableOled(const QString &arg)
 {
@@ -288,8 +302,17 @@ QString Toholed::setInterruptEnable(const QString &arg)
         tsl2772_closeComms(fd);
 
         gpio_fd = getTohInterrupt();
-        //proximity_fd = getProximityInterrupt();
-        proximity_fd = 0;
+
+        if (gpio_fd > -1)
+            writeToLog("TOH Interrupt registered");
+
+        proximity_fd = getProximityInterrupt();
+
+        if (proximity_fd > -1)
+            writeToLog("Proximity Interrupt registered");
+
+
+        //proximity_fd = 0;
 
         if ((gpio_fd > -1) && (proximity_fd > -1))
         {
@@ -551,21 +574,37 @@ void Toholed::handleProxInterrupt()
 {
     bool prox = getProximityStatus();
 
-    if (prox)
+    if (prox && ScreenCaptureOnProximity) /* If enabled, we save screen-capture on front proximity interrupt */
     {
-        writeToLog("Proximity interrupt - proximity");
-        /* Front covered, lets show clock on TOHOLED */
-        setVddState("on");
-        enableOled("");
-        setOledAutoUpdate("on");
-    }
-    else
-    {
-        setOledAutoUpdate("off");
-        disableOled("");
-        setVddState("off");
+        writeToLog("Proximity interrupt - proximity, taking screenshot");
 
-        writeToLog("Proximity interrupt - away");
+
+        QTime nytten = QTime::currentTime();
+
+
+        QString tFilename = QString("/home/nemo/Pictures/ss%1%2%3%4.png")
+                        .arg((int) nytten.hour(), 2, 10, QLatin1Char(' '))
+                        .arg((int) nytten.minute(), 2, 10, QLatin1Char('0'))
+                        .arg((int) nytten.second(), 2, 10, QLatin1Char('0'))
+                        .arg((int) nytten.msec(), 2, 10, QLatin1Char('0'));
+
+
+        QDBusMessage m = QDBusMessage::createMethodCall("org.nemomobile.lipstick",
+                                                        "/org/nemomobile/lipstick/screenshot",
+                                                        "",
+                                                        "saveScreenshot" );
+
+        QList<QVariant> args;
+        args.append(tFilename);
+        m.setArguments(args);
+
+        if (QDBusConnection::sessionBus().send(m))
+            writeToLog("success");
+        else
+            writeToLog("failed");
+
+
+
     }
 }
 

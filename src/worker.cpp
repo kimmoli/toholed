@@ -42,8 +42,8 @@ void Worker::abort()
 
 void Worker::doWork()
 {
-    struct pollfd fdset[1]; // 2
-    int nfds = 1; // 2
+    struct pollfd fdset[2]; // 2
+    int nfds = 2; // 2
 
     int timeout;
     char *buf[20];
@@ -67,8 +67,8 @@ void Worker::doWork()
 
         fdset[0].fd = _gpio_fd;
         fdset[0].events = POLLPRI;
-//        fdset[1].fd = _proximity_fd;
-//        fdset[1].events = POLLIN;
+        fdset[1].fd = _proximity_fd;
+        fdset[1].events = POLLIN;
 
         poll(fdset, nfds, timeout);
 
@@ -81,11 +81,11 @@ void Worker::doWork()
             read(fdset[0].fd, buf, 20);
             emit gpioInterruptCaptured();
         }
-//        if (fdset[1].revents != 0)
-//        {
-//            read(fdset[1].fd, buf, 200);
-//            emit proxInterruptCaptured();
-//        }
+        if (fdset[1].revents != 0)
+        {
+            read(fdset[1].fd, buf, 200);
+            emit proxInterruptCaptured();
+        }
 
 
     }

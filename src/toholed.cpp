@@ -15,6 +15,7 @@
 #include "toh.h"
 #include "oled.h"
 #include "frontled.h"
+//#include "libiphb.h"
 
 #include <QtCore/QCoreApplication>
 //#include <QtCore/QDebug>
@@ -38,6 +39,7 @@ bool Toholed::iconSMS = false;
 bool Toholed::iconEMAIL = false;
 bool Toholed::iconTWEET = false;
 bool Toholed::iconIRC = false;
+bool Toholed::ScreenCaptureOnProximity = false;
 
 int main(int argc, char **argv)
 {
