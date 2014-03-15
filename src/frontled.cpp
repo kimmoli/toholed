@@ -9,9 +9,9 @@ int controlFrontLed(int r, int g, int b)
 {
 	
 	int fd;
-	char vstr[4];
+    char vstr[10];
 	
-	sprintf(vstr, "%d", r);
+    snprintf(vstr, 10, "%d", r);
 
 	fd = open("/sys/devices/platform/msm_ssbi.0/pm8038-core/pm8xxx-led/leds/led:rgb_red/brightness", O_WRONLY);
 	
@@ -21,7 +21,7 @@ int controlFrontLed(int r, int g, int b)
 		close(fd);
 	}
 
-	sprintf(vstr, "%d", g);
+    snprintf(vstr, 10, "%d", g);
 
 	fd = open("/sys/devices/platform/msm_ssbi.0/pm8038-core/pm8xxx-led/leds/led:rgb_green/brightness", O_WRONLY);
 	
@@ -31,7 +31,7 @@ int controlFrontLed(int r, int g, int b)
 		close(fd);
 	}
 
-	sprintf(vstr, "%d", b);
+    snprintf(vstr, 10, "%d", b);
 
 	fd = open("/sys/devices/platform/msm_ssbi.0/pm8038-core/pm8xxx-led/leds/led:rgb_blue/brightness", O_WRONLY);
 	

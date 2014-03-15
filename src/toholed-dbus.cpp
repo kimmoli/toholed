@@ -115,7 +115,7 @@ void Toholed::timerTimeout()
         updateOled(screenBuffer);
 
         char buf[50];
-        sprintf(buf, "Time now: %s Battery: %s", baNow.data(), babatNow.data() );
+        snprintf(buf, 50, "Time now: %s Battery: %s", baNow.data(), babatNow.data() );
         writeToLog(buf);
     }
 
@@ -221,7 +221,7 @@ QString Toholed::setOledContrast(const QString &arg)
     /* Allowed high, med, low */
     QString brightness = QString("%1").arg(arg);
 
-    sprintf(buf, "Setting brightness to %s", qPrintable(brightness));
+    snprintf(buf, 100, "Setting brightness to %s", qPrintable(brightness));
     writeToLog(buf);
 
     if (!(QString::localeAwareCompare( brightness, "high")))
@@ -257,7 +257,7 @@ QString Toholed::frontLed(const QString &arg)
     QString tmp = QString("%1").arg(arg);
     char buf[30];
 
-    sprintf(buf, "Front led color %s", qPrintable(tmp));
+    snprintf(buf, 30, "Front led color %s", qPrintable(tmp));
     writeToLog(buf);
 
     if (QColor::isValidColor(tmp))
@@ -376,7 +376,7 @@ void Toholed:: handleSMS(const QDBusMessage& msg)
 
     QList<QVariant> args = msg.arguments();
 
-    sprintf(buf, "New SMS: ""%s""", qPrintable(args.at(0).toString()));
+    snprintf(buf, 100, "New SMS: ""%s""", qPrintable(args.at(0).toString()));
     writeToLog(buf);
 
     mutex.lock();
@@ -415,7 +415,7 @@ void Toholed::handleCommuni(const QDBusMessage& msg)
 
     /* emit highlightedSimple(buffer->title(), message->nick(), message->property("content").toString()); */
 
-    sprintf(buf, "IRC: %s <%s> %s", qPrintable(args.at(0).toString()), qPrintable(args.at(1).toString()), qPrintable(args.at(2).toString()));
+    snprintf(buf, 100, "IRC: %s <%s> %s", qPrintable(args.at(0).toString()), qPrintable(args.at(1).toString()), qPrintable(args.at(2).toString()));
     writeToLog(buf);
 
     mutex.lock();
@@ -465,7 +465,7 @@ void Toholed::handleDisplayStatus(const QDBusMessage& msg)
 
     QList<QVariant> args = msg.arguments();
 
-    sprintf(buf, "Display status changed to ""%s""", qPrintable(args.at(0).toString()));
+    snprintf(buf, 100, "Display status changed to ""%s""", qPrintable(args.at(0).toString()));
     writeToLog(buf);
 }
 
@@ -530,7 +530,7 @@ void Toholed::handleGpioInterrupt()
     tsl2772_clearInterrupt(fd);
     tsl2772_closeComms(fd);
 
-    sprintf(buf, "TOH Interrupt: ALS C0 %5lu C1 %5lu prox %5lu", alsC0, alsC1, prox);
+    snprintf(buf, 100, "TOH Interrupt: ALS C0 %5lu C1 %5lu prox %5lu", alsC0, alsC1, prox);
     writeToLog(buf);
 
     if (alsC0 < ALSLIM_BRIGHTNESS_LOW)

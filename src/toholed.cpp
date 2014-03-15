@@ -49,7 +49,7 @@ int main(int argc, char **argv)
 
     daemonize();
 
-    sprintf(buf, "Starting toholed daemon. build %s %s", __DATE__, __TIME__);
+    snprintf(buf, 100, "Starting toholed daemon. build %s %s", __DATE__, __TIME__);
     writeToLog(buf);
 
     if (!QDBusConnection::systemBus().isConnected())
