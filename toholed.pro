@@ -3,6 +3,7 @@ CONFIG += console
 CONFIG -= app_bundle
 #CONFIG -= qt
 QT += dbus
+QT -= gui
 
 INCLUDEPATH += ./inc
 

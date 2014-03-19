@@ -14,7 +14,7 @@
 #include <QtDBus/QtDBus>
 #include <QDBusArgument>
 #include <QtCore/QTimer>
-#include <QColor>
+//#include <QColor>
 #include <QTime>
 #include <QThread>
 //#include <QtDebug>
@@ -254,6 +254,7 @@ QString Toholed::kill(const QString &arg)
 /* Controls RGB led on front of phone, html color format #RRGGBB */
 QString Toholed::frontLed(const QString &arg)
 {
+/*    
     QString tmp = QString("%1").arg(arg);
     char buf[30];
 
@@ -272,6 +273,8 @@ QString Toholed::frontLed(const QString &arg)
         writeToLog("Invalid color provided");
 
     return QString("You have been served. %1").arg(arg);
+*/
+    return QString("This feature is disabled. %1").arg(arg);
 }
 
 /*
