@@ -74,9 +74,6 @@ Toholed::Toholed()
 /* Timer routine to update OLED clock */
 void Toholed::timerTimeout()
 {
-    /* Request to stay alive */
-//    QDBusMessage m = QDBusMessage::createMethodCall("com.nokia.mce", "/com/nokia/mce/signal", "com.nokia.mce.signal", "req_cpu_keepalive_start");
-//    QDBusConnection::systemBus().send(m);
 
     QTime current = QTime::currentTime();
 
@@ -114,15 +111,10 @@ void Toholed::timerTimeout()
 
         updateOled(screenBuffer);
 
-        char buf[50];
-        snprintf(buf, 50, "Time now: %s Battery: %s", baNow.data(), babatNow.data() );
-        writeToLog(buf);
+        printf("Time now: %s Battery: %s\n", baNow.data(), babatNow.data() );
     }
 
     timerCount++;
-
-//    m = QDBusMessage::createMethodCall("com.nokia.mce", "/com/nokia/mce/signal", "com.nokia.mce.signal", "req_cpu_keepalive_stop");
-//    QDBusConnection::systemBus().send(m);
 
 }
 
@@ -133,17 +125,17 @@ QString Toholed::setVddState(const QString &arg)
     QString turn = QString("%1").arg(arg);
     QByteArray ba = tmp.toLocal8Bit();
 
-    writeToLog(ba.data());
+    printf("%s\n", ba.data());
 
     if (controlVdd( ( QString::localeAwareCompare( turn, "on") ? 0 : 1) ) < 0)
     {
         vddEnabled = false;
-        writeToLog("VDD control FAILED");
+        printf("VDD control FAILED\n");
     }
     else
     {
         vddEnabled = QString::localeAwareCompare( turn, "on") ? false : true;
-        writeToLog("VDD control OK");
+        printf("VDD control OK\n");
     }
 
     return QString("you have been served. %1").arg(arg);
@@ -156,9 +148,9 @@ QString Toholed::setScreenCaptureOnProximity(const QString &arg)
     ScreenCaptureOnProximity =  QString::localeAwareCompare( turn, "on") ? false : true;
 
     if (ScreenCaptureOnProximity)
-        writeToLog("Screen capture on proximity interrupt enabled");
+        printf("Screen capture on proximity interrupt enabled\n");
     else
-        writeToLog("Screen capture on proximity interrupt disabled");
+        printf("Screen capture on proximity interrupt disabled\n");
 
     return QString("you have been served. Screencapture on proximity = %1").arg(arg);
 }
@@ -176,7 +168,7 @@ QString Toholed::enableOled(const QString &arg)
 
         oledInitDone = true;
 
-        writeToLog("OLED Display initialized and cleared");
+        printf("OLED Display initialized and cleared\n");
     }
     else
         oledInitDone = false;
@@ -192,7 +184,7 @@ QString Toholed::disableOled(const QString &arg)
 
         oledInitDone = false;
 
-        writeToLog("OLED Display cleared and shut down");
+        printf("OLED Display cleared and shut down\n");
     }
 
     return QString("you have been served. %1").arg(arg);
@@ -208,7 +200,7 @@ QString Toholed::setOledAutoUpdate(const QString &arg)
     timeUpdateOverride = true;
     timerTimeout(); /* draw clock immediately */
 
-    writeToLog("OLED autoupdate set");
+    printf("OLED autoupdate set\n");
 
     return QString("you have been served. %1").arg(arg);
 }
@@ -216,13 +208,10 @@ QString Toholed::setOledAutoUpdate(const QString &arg)
 /* adjust contrast */
 QString Toholed::setOledContrast(const QString &arg)
 {
-    char buf[100];
-
     /* Allowed high, med, low */
     QString brightness = QString("%1").arg(arg);
 
-    snprintf(buf, 100, "Setting brightness to %s", qPrintable(brightness));
-    writeToLog(buf);
+    printf("Setting brightness to %s\n", qPrintable(brightness));
 
     if (!(QString::localeAwareCompare( brightness, "high")))
     {
@@ -245,37 +234,12 @@ QString Toholed::setOledContrast(const QString &arg)
 /* Kills toholed daemon */
 QString Toholed::kill(const QString &arg)
 {
-    writeToLog("Someone wants to kill me");
+    printf("Someone wants to kill me\n");
     QMetaObject::invokeMethod(QCoreApplication::instance(), "quit");
 
     return QString("AAARGH. %1").arg(arg);
 }
 
-/* Controls RGB led on front of phone, html color format #RRGGBB */
-QString Toholed::frontLed(const QString &arg)
-{
-/*    
-    QString tmp = QString("%1").arg(arg);
-    char buf[30];
-
-    snprintf(buf, 30, "Front led color %s", qPrintable(tmp));
-    writeToLog(buf);
-
-    if (QColor::isValidColor(tmp))
-    {
-        QColor col = QColor(tmp);
-        if (controlFrontLed(col.red(), col.green(), col.blue()) < 0)
-            writeToLog("front led control FAILED");
-        else
-            writeToLog("front led control OK");
-    }
-    else
-        writeToLog("Invalid color provided");
-
-    return QString("You have been served. %1").arg(arg);
-*/
-    return QString("This feature is disabled. %1").arg(arg);
-}
 
 /*
  *    Interrupt stuff
@@ -291,12 +255,12 @@ QString Toholed::setInterruptEnable(const QString &arg)
     {
         mutex.lock();
 
-        writeToLog("enabling interrupt");
+        printf("enabling interrupt\n");
 
         fd = tsl2772_initComms(0x39);
         if (fd <0)
         {
-            writeToLog("failed to start communication with TSL2772");
+            printf("failed to start communication with TSL2772\n");
             mutex.unlock();
             return QString("failed");
         }
@@ -307,12 +271,12 @@ QString Toholed::setInterruptEnable(const QString &arg)
         gpio_fd = getTohInterrupt();
 
         if (gpio_fd > -1)
-            writeToLog("TOH Interrupt registered");
+            printf("TOH Interrupt registered\n");
 
         proximity_fd = getProximityInterrupt();
 
         if (proximity_fd > -1)
-            writeToLog("Proximity Interrupt registered");
+            printf("Proximity Interrupt registered\n");
 
 
         //proximity_fd = 0;
@@ -324,19 +288,7 @@ QString Toholed::setInterruptEnable(const QString &arg)
 
             worker->requestWork(gpio_fd, proximity_fd);
 
-            writeToLog("worker started");
-
-/*
-            fd = tca8424_initComms(TCA_ADDR);
-            if (fd<0)
-            {
-                writeToLog("failed to start communication with TCA8424");
-                return QString("failed");
-            }
-            tca8424_reset(fd);
-            tca8424_leds(fd, 5);
-            tca8424_closeComms(fd);
-*/
+            printf("worker started\n");
 
             interruptsEnabled = true;
             mutex.unlock();
@@ -345,7 +297,7 @@ QString Toholed::setInterruptEnable(const QString &arg)
         }
         else
         {
-            writeToLog("FAILURE");
+            printf("Failed to get gpio or proximity file descriptor\n");
             interruptsEnabled = false;
             mutex.unlock();
             return QString("failed");
@@ -354,7 +306,7 @@ QString Toholed::setInterruptEnable(const QString &arg)
     else
     {
 
-        writeToLog("disabling interrupt");
+        printf("disabling interrupt\n");
 
         interruptsEnabled = false;
 
@@ -375,12 +327,9 @@ QString Toholed::setInterruptEnable(const QString &arg)
 /* New SMS */
 void Toholed:: handleSMS(const QDBusMessage& msg)
 {
-    char buf[200];
-
     QList<QVariant> args = msg.arguments();
 
-    snprintf(buf, 200, "New SMS: ""%s""", qPrintable(args.at(0).toString()));
-    writeToLog(buf);
+    printf("New SMS: %s\n", qPrintable(args.at(0).toString()));
 
     mutex.lock();
     drawIcon(64, MESSAGE, screenBuffer);
@@ -396,7 +345,7 @@ void Toholed:: handleSMS(const QDBusMessage& msg)
 
 void Toholed::handleTweetian(const QDBusMessage& msg)
 {
-    writeToLog("You have been mentioned in a Tweet");
+    printf("You have been mentioned in a Tweet\n");
 
     mutex.lock();
     drawIcon(44, TWEET, screenBuffer);
@@ -412,14 +361,11 @@ void Toholed::handleTweetian(const QDBusMessage& msg)
 
 void Toholed::handleCommuni(const QDBusMessage& msg)
 {
-    char buf[100];
-
     QList<QVariant> args = msg.arguments();
 
     /* emit highlightedSimple(buffer->title(), message->nick(), message->property("content").toString()); */
 
-    snprintf(buf, 100, "IRC: %s <%s> %s", qPrintable(args.at(0).toString()), qPrintable(args.at(1).toString()), qPrintable(args.at(2).toString()));
-    writeToLog(buf);
+    printf("IRC: %s <%s> %s", qPrintable(args.at(0).toString()), qPrintable(args.at(1).toString()), qPrintable(args.at(2).toString()));
 
     mutex.lock();
     drawIcon(102, IRC, screenBuffer);
@@ -435,7 +381,7 @@ void Toholed::handleCommuni(const QDBusMessage& msg)
 /* Something triggered commhistory.eventsAdded signal */
 void Toholed::handleCommHistory(const QDBusMessage& msg)
 {
-    writeToLog("commhistory.eventsAdded");
+    printf("commhistory.eventsAdded\n");
 
     mutex.lock();
     drawIcon(64, MESSAGE, screenBuffer);
@@ -450,7 +396,7 @@ void Toholed::handleCommHistory(const QDBusMessage& msg)
 void Toholed::handleCall(const QDBusMessage& msg)
 {
 
-    writeToLog("Incoming call");
+    printf("Incoming call\n");
 
     mutex.lock();
     drawIcon(84, CALL, screenBuffer);
@@ -464,18 +410,15 @@ void Toholed::handleCall(const QDBusMessage& msg)
 
 void Toholed::handleDisplayStatus(const QDBusMessage& msg)
 {
-    char buf[100];
-
     QList<QVariant> args = msg.arguments();
 
-    snprintf(buf, 100, "Display status changed to ""%s""", qPrintable(args.at(0).toString()));
-    writeToLog(buf);
+    printf("Display status changed to %s\n", qPrintable(args.at(0).toString()));
 }
 
 
 void Toholed::handleNotificationClosed(const QDBusMessage& msg)
 {
-    writeToLog("handleNotificationClosed()");
+    printf("handleNotificationClosed()\n");
 
     mutex.lock();
     /* Clear all icons and their status flags */
@@ -501,28 +444,14 @@ void Toholed::handleGpioInterrupt()
 {
     int fd;
     unsigned long alsC0, alsC1, prox;
-    char buf[100];
     unsigned int newBrightness = BRIGHTNESS_MED;
-
-    //writeToLog("TOH Interrupt reached interrupt handler routine.");
-
-/*
-    fd = tca8424_initComms(TCA_ADDR);
-    if (fd<0)
-    {
-        writeToLog("failed to start communication with TCA8424");
-        return;
-    }
-    tca8424_readInputReport(fd, inRep);
-    tca8424_closeComms(fd);
-*/
 
     mutex.lock();
 
     fd = tsl2772_initComms(0x39);
     if (fd <0)
     {
-        writeToLog("failed to start communication with TSL2772");
+        printf("failed to start communication with TSL2772\n");
         mutex.unlock();
         return;
     }
@@ -533,8 +462,7 @@ void Toholed::handleGpioInterrupt()
     tsl2772_clearInterrupt(fd);
     tsl2772_closeComms(fd);
 
-    snprintf(buf, 100, "TOH Interrupt: ALS C0 %5lu C1 %5lu prox %5lu", alsC0, alsC1, prox);
-    writeToLog(buf);
+    printf("TOH Interrupt: ALS C0 %5lu C1 %5lu prox %5lu\n", alsC0, alsC1, prox);
 
     if (alsC0 < ALSLIM_BRIGHTNESS_LOW)
         newBrightness = BRIGHTNESS_LOW;
@@ -545,7 +473,7 @@ void Toholed::handleGpioInterrupt()
 
     if (newBrightness != prevBrightness)
     {
-        writeToLog("Auto brightness adjust");
+        printf("Auto brightness adjust\n");
 
         /* set new interrupt thresholds */
         fd = tsl2772_initComms(0x39);
@@ -566,11 +494,6 @@ void Toholed::handleGpioInterrupt()
     prevProx = prox;
     mutex.unlock();
 
-    /* permit to go back to sleep */
-//    QDBusMessage m = QDBusMessage::createMethodCall("com.nokia.mce", "/com/nokia/mce/signal", "com.nokia.mce.signal", "req_cpu_keepalive_stop");
-//    QDBusConnection::systemBus().send(m);
-
-
 }
 
 void Toholed::handleProxInterrupt()
@@ -579,7 +502,7 @@ void Toholed::handleProxInterrupt()
 
     if (prox && ScreenCaptureOnProximity) /* If enabled, we save screen-capture on front proximity interrupt */
     {
-        writeToLog("Proximity interrupt - proximity, taking screenshot");
+        printf("Proximity interrupt - proximity, taking screenshot\n");
 
 
         QTime nytten = QTime::currentTime();
@@ -602,11 +525,9 @@ void Toholed::handleProxInterrupt()
         m.setArguments(args);
 
         if (QDBusConnection::sessionBus().send(m))
-            writeToLog("success");
+            printf("Screenshot success to %s\n", qPrintable(tFilename));
         else
-            writeToLog("failed");
-
-
+            printf("Screenshot failed\n");
 
     }
 }

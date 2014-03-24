@@ -43,46 +43,40 @@ bool Toholed::ScreenCaptureOnProximity = false;
 
 int main(int argc, char **argv)
 {
-    char buf[100];
-
     QCoreApplication app(argc, argv);
 
     daemonize();
 
-    snprintf(buf, 100, "Starting toholed daemon. build %s %s", __DATE__, __TIME__);
-    writeToLog(buf);
+    setlinebuf(stdout);
+    setlinebuf(stderr);
+
+    printf("Starting toholed daemon. build %s %s\n", __DATE__, __TIME__);
 
     if (!QDBusConnection::systemBus().isConnected())
     {
-        fprintf(stderr, "Cannot connect to the D-Bus systemBus\n");
-        writeToLog("Cannot connect to the D-Bus systemBus");
-        writeToLog(qPrintable(QDBusConnection::systemBus().lastError().message()));
+        printf("Cannot connect to the D-Bus systemBus\n%s\n", qPrintable(QDBusConnection::systemBus().lastError().message()));
         sleep(3);
         exit(EXIT_FAILURE);
     }
-    writeToLog("Connected to D-Bus systembus");
+    printf("Connected to D-Bus systembus\n");
 
-    writeToLog(qPrintable(getenv ("DBUS_SESSION_BUS_ADDRESS")));
+    printf("Environment %s\n", qPrintable(getenv ("DBUS_SESSION_BUS_ADDRESS")));
 
     if (!QDBusConnection::sessionBus().isConnected())
     {
-        fprintf(stderr, "Cannot connect to the D-Bus sessionBus\n");
-        writeToLog("Cannot connect to the D-Bus sessionBus");
-        writeToLog(qPrintable(QDBusConnection::sessionBus().lastError().message()));
+        printf("Cannot connect to the D-Bus sessionBus\n%s\n", qPrintable(QDBusConnection::sessionBus().lastError().message()));
         sleep(3);
         exit(EXIT_FAILURE);
     }
-    writeToLog("Connected to D-Bus sessionbus");
+    printf("Connected to D-Bus sessionbus\n");
 
     if (!QDBusConnection::systemBus().registerService(SERVICE_NAME))
     {
-        fprintf(stderr, "%s\n", qPrintable(QDBusConnection::systemBus().lastError().message()));
-        writeToLog("Cannot register service to systemBus");
-        writeToLog(qPrintable(QDBusConnection::systemBus().lastError().message()));
+        printf("Cannot register service to systemBus\n%s\n", qPrintable(QDBusConnection::systemBus().lastError().message()));
         sleep(3);
         exit(EXIT_FAILURE);
     }
-    writeToLog("Registered " SERVICE_NAME " to D-Bus systembus");
+    printf("Registered %s to D-Bus systembus\n", SERVICE_NAME);
 
     Toholed toholed;
 
@@ -98,12 +92,9 @@ int main(int argc, char **argv)
                       &toholed, SLOT(handleSMS(const QDBusMessage&)));
 
     if(ofonoSMSconn.isConnected())
-        writeToLog("Ofono.MessageManager.IncomingMessage Connected");
+        printf("Ofono.MessageManager.IncomingMessage Connected\n");
     else
-    {
-        writeToLog("Ofono.MessageManager.IncomingMessage Not connected");
-        writeToLog(qPrintable(QDBusConnection::systemBus().lastError().message()));
-    }
+        printf("Ofono.MessageManager.IncomingMessage Not connected\n%s\n", qPrintable(QDBusConnection::systemBus().lastError().message()));
 
     /* Ofono VoiceCallManager CallAdded
      *
@@ -113,13 +104,9 @@ int main(int argc, char **argv)
                       &toholed, SLOT(handleCall(const QDBusMessage&)));
 
     if(ofonoCallconn.isConnected())
-        writeToLog("Ofono.VoiceCallManager.CallAdded Connected");
+        printf("Ofono.VoiceCallManager.CallAdded Connected\n");
     else
-    {
-        writeToLog("Ofono.VoiceCallManager.CallAdded Not connected");
-        writeToLog(qPrintable(QDBusConnection::systemBus().lastError().message()));
-    }
-
+        printf("Ofono.VoiceCallManager.CallAdded Not connected\n%s\n", qPrintable(QDBusConnection::systemBus().lastError().message()));
 
 
     /* Nokia MCE display_status_ind
@@ -130,14 +117,9 @@ int main(int argc, char **argv)
                           &toholed, SLOT(handleDisplayStatus(const QDBusMessage&)));
 
     if(mceSignalconn.isConnected())
-        writeToLog("com.nokia.mce.signal.display_status_ind Connected");
+        printf("com.nokia.mce.signal.display_status_ind Connected\n");
     else
-    {
-        writeToLog("com.nokia.mce.signal.display_status_ind Not connected");
-        writeToLog(qPrintable(QDBusConnection::systemBus().lastError().message()));
-    }
-
-
+        printf("com.nokia.mce.signal.display_status_ind Not connected\n%s\n", qPrintable(QDBusConnection::systemBus().lastError().message()));
 
     /* Freedesktop Notifications NotificationClosed
      * This signal is emitted when notification is closed. We can then remove icons from screen */
@@ -147,44 +129,31 @@ int main(int argc, char **argv)
                           &toholed, SLOT(handleNotificationClosed(const QDBusMessage&)));
 
     if(freeNotifconn.isConnected())
-        writeToLog("freedesktop.Notifications.NotificationClosed Connected");
+        printf("freedesktop.Notifications.NotificationClosed Connected\n");
     else
-    {
-        writeToLog("freedesktop.Notifications.NotificationClosed Not connected");
-        writeToLog(qPrintable(QDBusConnection::sessionBus().lastError().message()));
-    }
+        printf("freedesktop.Notifications.NotificationClosed Not connected\n%s\n", qPrintable(QDBusConnection::sessionBus().lastError().message()));
 
-
-    /* path=/CommHistoryModel; interface=com.nokia.commhistory; member=eventsAdded
-     */
+    /* path=/CommHistoryModel; interface=com.nokia.commhistory; member=eventsAdded */
 
     static QDBusConnection commHistoryConn = QDBusConnection::sessionBus();
     commHistoryConn.connect("com.nokia.commhistory", "/CommHistoryModel", "com.nokia.commhistory", "eventsAdded",
                           &toholed, SLOT(handleCommHistory(const QDBusMessage&)));
 
     if(commHistoryConn.isConnected())
-        writeToLog("com.nokia.commhistory.eventsAdded Connected");
+        printf("com.nokia.commhistory.eventsAdded Connected\n");
     else
-    {
-        writeToLog("com.nokia.commhistory.eventsAdded Not connected");
-        writeToLog(qPrintable(QDBusConnection::sessionBus().lastError().message()));
-    }
+        printf("com.nokia.commhistory.eventsAdded Not connected\n%s\n", qPrintable(QDBusConnection::sessionBus().lastError().message()));
 
-
-    /* path=/com/tweetian; com.tweetian member=newNotification
-     */
+    /* path=/com/tweetian; com.tweetian member=newNotification  */
 
     static QDBusConnection tweetianConn = QDBusConnection::sessionBus();
     tweetianConn.connect("com.tweetian", "/com/tweetian", "com.tweetian", "newNotification",
                           &toholed, SLOT(handleTweetian(const QDBusMessage&)));
 
     if(tweetianConn.isConnected())
-        writeToLog("com.tweetian.newNotification Connected");
+        printf("com.tweetian.newNotification Connected\n");
     else
-    {
-        writeToLog("com.tweetian.newNotification Not connected");
-        writeToLog(qPrintable(QDBusConnection::sessionBus().lastError().message()));
-    }
+        printf("com.tweetian.newNotification Not connected\n%s\n", qPrintable(QDBusConnection::sessionBus().lastError().message()));
 
 
     /* Communi IRC connection */
@@ -194,12 +163,9 @@ int main(int argc, char **argv)
                           &toholed, SLOT(handleCommuni(const QDBusMessage&)));
 
     if(communiConn.isConnected())
-        writeToLog("com.communi.irc.highlightedSimple Connected");
+        printf("com.communi.irc.highlightedSimple Connected\n");
     else
-    {
-        writeToLog("com.communi.irc.highlightedSimple Connected");
-        writeToLog(qPrintable(QDBusConnection::sessionBus().lastError().message()));
-    }
+        printf("com.communi.irc.highlightedSimple Connected\n%s\n", qPrintable(QDBusConnection::sessionBus().lastError().message()));
 
 
     /* TODO
@@ -213,31 +179,6 @@ int main(int argc, char **argv)
 
     return app.exec();
 
-}
-
-
-void writeToLog(const char *buf)
-{
-	int logFile;
-	char ts[20];
-    char tmp[1024];
-	
-	time_t t;
-	struct tm *tnow;
-
-	t = time(NULL);
-	tnow = localtime(&t);	
-	
-	strftime(ts, sizeof(ts), "%Y-%m-%d %H:%M:%S", tnow);
-	
-	snprintf(tmp, sizeof(tmp), "%s :: %s\r\n", ts, buf);
-	
-	logFile = open("toholog", O_WRONLY | O_CREAT | O_APPEND, 0666);
-
-	if (logFile != -1)
-		write(logFile, tmp, strlen(tmp));
-
-	close(logFile);
 }
 
 
@@ -271,11 +212,11 @@ void signalHandler(int sig) /* signal handler function */
 	{
 		case SIGHUP:
 			/* rehash the server */
-			writeToLog("Received signal SIGHUP");
+            printf("Received signal SIGHUP\n");
 			break;		
 		case SIGTERM:
 			/* finalize the server */
-			writeToLog("Received signal SIGTERM");
+            printf("Received signal SIGTERM\n");
             deinitOled();
             controlVdd(0);
             controlFrontLed(0, 0, 0);
