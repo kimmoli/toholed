@@ -93,27 +93,27 @@ int main(int argc, char **argv)
     else
         printf("Ofono.MessageManager.IncomingMessage Not connected\n%s\n", qPrintable(QDBusConnection::systemBus().lastError().message()));
 
-    /* Ofono VoiceCallManager CallAdded
-     *
-     */
-    static QDBusConnection ofonoCallconn = QDBusConnection::systemBus();
-    ofonoCallconn.connect("org.ofono", "/ril_0", "org.ofono.VoiceCallManager", "CallAdded",
-                      &toholed, SLOT(handleCall(const QDBusMessage&)));
 
-    if(ofonoCallconn.isConnected())
-        printf("Ofono.VoiceCallManager.CallAdded Connected\n");
+    /* path=/com/nokia/mce/signal; interface=com.nokia.mce.signal; member=sig_call_state_ind */
+
+    static QDBusConnection mceCallStateconn = QDBusConnection::systemBus();
+    mceCallStateconn.connect("com.nokia.mce", "/com/nokia/mce/signal", "com.nokia.mce.signal", "sig_call_state_ind",
+                          &toholed, SLOT(handleCall(const QDBusMessage&)));
+
+    if(mceCallStateconn.isConnected())
+        printf("com.nokia.mce.signal.sig_call_state_ind Connected\n");
     else
-        printf("Ofono.VoiceCallManager.CallAdded Not connected\n%s\n", qPrintable(QDBusConnection::systemBus().lastError().message()));
+        printf("com.nokia.mce.signal.sig_call_state_ind Not connected\n%s\n", qPrintable(QDBusConnection::systemBus().lastError().message()));
 
 
     /* Nokia MCE display_status_ind
      * No actual use with this, just make log entry. Display status returns string: "on", "dimmed" or "off"  */
 
-    static QDBusConnection mceSignalconn = QDBusConnection::systemBus();
-    mceSignalconn.connect("com.nokia.mce", "/com/nokia/mce/signal", "com.nokia.mce.signal", "display_status_ind",
+    static QDBusConnection mceDisplayStatusconn = QDBusConnection::systemBus();
+    mceDisplayStatusconn.connect("com.nokia.mce", "/com/nokia/mce/signal", "com.nokia.mce.signal", "display_status_ind",
                           &toholed, SLOT(handleDisplayStatus(const QDBusMessage&)));
 
-    if(mceSignalconn.isConnected())
+    if(mceDisplayStatusconn.isConnected())
         printf("com.nokia.mce.signal.display_status_ind Connected\n");
     else
         printf("com.nokia.mce.signal.display_status_ind Not connected\n%s\n", qPrintable(QDBusConnection::systemBus().lastError().message()));
