@@ -375,11 +375,11 @@ QString Toholed::setInterruptEnable(const QString &arg)
 /* New SMS */
 void Toholed:: handleSMS(const QDBusMessage& msg)
 {
-    char buf[100];
+    char buf[200];
 
     QList<QVariant> args = msg.arguments();
 
-    snprintf(buf, 100, "New SMS: ""%s""", qPrintable(args.at(0).toString()));
+    snprintf(buf, 200, "New SMS: ""%s""", qPrintable(args.at(0).toString()));
     writeToLog(buf);
 
     mutex.lock();
