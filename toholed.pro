@@ -10,7 +10,6 @@ INCLUDEPATH += ./inc
 SOURCES += \
     src/toholed.cpp \
     src/charger.cpp \
-    src/frontled.cpp \
     src/oled.cpp \
     src/tca8424.cpp \
     src/toh.cpp \
@@ -27,7 +26,6 @@ HEADERS += \
     inc/toh.h \
     inc/tca8424.h \
     inc/oled.h \
-    inc/frontled.h \
     inc/charger.h \
     inc/toholed-dbus.h \
     inc/jollafontti.h \

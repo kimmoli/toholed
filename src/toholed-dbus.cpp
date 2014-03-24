@@ -14,10 +14,8 @@
 #include <QtDBus/QtDBus>
 #include <QDBusArgument>
 #include <QtCore/QTimer>
-//#include <QColor>
 #include <QTime>
 #include <QThread>
-//#include <QtDebug>
 
 #include <sys/time.h>
 #include <time.h>
@@ -29,7 +27,6 @@
 #include "toholed.h"
 #include "toh.h"
 #include "oled.h"
-#include "frontled.h"
 #include "tca8424.h"
 #include "charger.h"
 #include "icons.h"
@@ -365,7 +362,7 @@ void Toholed::handleCommuni(const QDBusMessage& msg)
 
     /* emit highlightedSimple(buffer->title(), message->nick(), message->property("content").toString()); */
 
-    printf("IRC: %s <%s> %s", qPrintable(args.at(0).toString()), qPrintable(args.at(1).toString()), qPrintable(args.at(2).toString()));
+    printf("IRC: %s <%s> %s\n", qPrintable(args.at(0).toString()), qPrintable(args.at(1).toString()), qPrintable(args.at(2).toString()));
 
     mutex.lock();
     drawIcon(102, IRC, screenBuffer);

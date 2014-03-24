@@ -14,11 +14,8 @@
 #include "tca8424.h"
 #include "toh.h"
 #include "oled.h"
-#include "frontled.h"
-//#include "libiphb.h"
 
 #include <QtCore/QCoreApplication>
-//#include <QtCore/QDebug>
 #include <QtCore/QStringList>
 #include <QtDBus/QtDBus>
 #include <QDBusConnection>
@@ -191,11 +188,6 @@ void daemonize()
 	if ((chdir("/tmp")) < 0) 
 		exit(EXIT_FAILURE);
 
-	/* Close out the standard file descriptors */
-//	close(STDIN_FILENO);
-//	close(STDOUT_FILENO);
-//	close(STDERR_FILENO);
-
 	/* register signals to monitor / ignore */
 	signal(SIGCHLD,SIG_IGN); /* ignore child */
 	signal(SIGTSTP,SIG_IGN); /* ignore tty signals */
@@ -219,7 +211,6 @@ void signalHandler(int sig) /* signal handler function */
             printf("Received signal SIGTERM\n");
             deinitOled();
             controlVdd(0);
-            controlFrontLed(0, 0, 0);
 			exit(0);
 			break;		
 	}	
