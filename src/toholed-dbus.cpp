@@ -393,16 +393,34 @@ void Toholed::handleCommHistory(const QDBusMessage& msg)
 void Toholed::handleCall(const QDBusMessage& msg)
 {
 
-    printf("Incoming call\n");
+    QList<QVariant> args = msg.arguments();
 
-    mutex.lock();
-    drawIcon(84, CALL, screenBuffer);
-    updateOled(screenBuffer);
+    printf("sig_call_state_ind says: %s\n", qPrintable(args.at(0).toString()));
 
-    blinkOled(10);
-    mutex.unlock();
+    if ( !(QString::localeAwareCompare( args.at(0).toString(), "ringing")) )
+    {
+        printf("Incoming call\n");
+        mutex.lock();
+        drawIcon(84, CALL, screenBuffer);
+        updateOled(screenBuffer);
 
-    iconCALL = true;
+        blinkOled(10);
+        iconCALL = true;
+
+        mutex.unlock();
+    }
+    else if ( iconCALL && !(QString::localeAwareCompare( args.at(0).toString(), "active")) )
+    {
+        printf("Call answered or placing new call when missed call indicated\n");
+        mutex.lock();
+        clearIcon(84, CALL, screenBuffer);
+        updateOled(screenBuffer);
+
+        iconCALL = false;
+
+        mutex.unlock();
+    }
+
 }
 
 void Toholed::handleDisplayStatus(const QDBusMessage& msg)

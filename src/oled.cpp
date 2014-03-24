@@ -22,7 +22,7 @@ void drawDerp(char *screenBuffer)
 {
     char* sb = screenBuffer;
 
-    int i,d,off,s,n,o,x,h,t;
+    int i,d,off,s,n,o,h,t;
 
     h = 0;
     o = 0; // rivi mistä tulostus alkaa
@@ -80,6 +80,38 @@ void drawIcon(int location, int icon, char *screenBuffer)
         }
     }
 }
+
+void clearIcon(int location, int icon, char *screenBuffer)
+{
+    char* sb = screenBuffer;
+
+    int i,d,s,n,o,x,h;
+
+    h=location;
+    o = 50; // rivi mistä tulostus alkaa
+
+    for (x=0; x < LASTICON ; x++)
+    {
+        if ( icon == iconsMap[x] )
+        {
+            d = iconsStart[x] / 8; // byte offset
+            s = iconsStart[x] - d*8; // bit offset
+
+            for (i=0 ; i<iconsWidth[x] ; i++) // merkin leveys
+            {
+                for (n=0; n<iconsHeightPixels ; n++) // merkin korkeus
+                {
+                    (*(sb+((o+n)/8)+((h+i)*8))) = (*(sb+((o+n)/8)+((h+i)*8))) & ( 0xff ^ ( 0x01 << ( (o+n) % 8 ) ) );
+                }
+
+                if ( ((s+i) % 8) == 7 )
+                    d++;
+
+            }
+        }
+    }
+}
+
 
 void clearIcons(char *screenBuffer)
 {
@@ -284,6 +316,7 @@ int setContrastOled(unsigned int level)
 
     close(file);
 
+    return 1;
 }
 
 void blinkOled(int count)
