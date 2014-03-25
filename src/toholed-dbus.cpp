@@ -43,6 +43,11 @@ Toholed::Toholed()
     timer->setInterval(1000);
     connect(timer, SIGNAL(timeout()), this, SLOT(timerTimeout()));
     timer->start();
+
+    mailCheckTimer = new QTimer(this);
+    mailCheckTimer->setSingleShot(true);
+    connect(mailCheckTimer, SIGNAL(timeout()), this, SLOT(checkNewMailNotifications()));
+
     prevTime = QTime::currentTime();
 
     memset(screenBuffer, 0x00, SCREENBUFFERSIZE);
@@ -393,6 +398,7 @@ void Toholed::handleCommHistory(const QDBusMessage& msg)
     iconSMS = true;
 }
 
+/* Incoming phonecall */
 void Toholed::handleCall(const QDBusMessage& msg)
 {
 
@@ -457,13 +463,24 @@ void Toholed::handleNotificationClosed(const QDBusMessage& msg)
  */
 void Toholed::handleActiveSync(const QDBusMessage& msg)
 {
-    printf("ActiveSync syncCompleted - Checking for active notifications\n");
+    /* Just return if icon is already active */
+    if (iconEMAIL)
+        return;
 
-    checkNewMailNotifications();
+    if (!mailCheckTimer->isActive())
+    {
+        printf("ActiveSync syncCompleted - Checking for active notifications in 5 secs\n");
+        mailCheckTimer->start(5000);
+    }
 }
+
 
 void Toholed::checkNewMailNotifications()
 {
+    /* Just return if icon is already active */
+    if (iconEMAIL)
+        return;
+
     QList<QVariant> args;
     args.append(QString("messageserver5"));
 
@@ -480,11 +497,7 @@ void Toholed::checkNewMailNotifications()
     dbusArgs.beginArray();
 
     /* Just check is there something in the array... */
-    if (dbusArgs.atEnd())
-    {
-        printf("Sorry, no new mail\n");
-    }
-    else if (!iconEMAIL)
+    if (!dbusArgs.atEnd())
     {
         printf("You have new mail\n");
 

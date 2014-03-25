@@ -79,6 +79,7 @@ private:
     QTime prevTime;
     bool timeUpdateOverride;
     QTimer *timer;
+    QTimer *mailCheckTimer;
 
     QMutex mutex;
 
