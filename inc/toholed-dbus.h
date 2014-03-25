@@ -55,10 +55,11 @@ public slots:
     void handleCommHistory(const QDBusMessage& msg);
     void handleTweetian(const QDBusMessage& msg);
     void handleCommuni(const QDBusMessage& msg);
+    void handleActiveSync(const QDBusMessage& msg);
 
 private slots:
     void timerTimeout();
-
+    void checkNewMailNotifications();
 
 private:
     QThread *thread;
@@ -89,6 +90,7 @@ private:
     static bool iconCALL;
     static bool iconTWEET;
     static bool iconIRC;
+
 };
 
 

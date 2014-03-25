@@ -95,6 +95,9 @@ void Toholed::timerTimeout()
         drawTime(baNow.data(), screenBuffer);
         drawBatteryLevel(babatNow.data(), screenBuffer);
 
+        if (!iconEMAIL)
+            checkNewMailNotifications();
+
         if (iconSMS)
             drawIcon(64, MESSAGE, screenBuffer);
         if (iconCALL)
@@ -447,6 +450,55 @@ void Toholed::handleNotificationClosed(const QDBusMessage& msg)
     iconIRC = false;
 
     mutex.unlock();
+}
+
+/*
+ * Handle Activesync sync completed
+ */
+void Toholed::handleActiveSync(const QDBusMessage& msg)
+{
+    printf("ActiveSync syncCompleted - Checking for active notifications\n");
+
+    checkNewMailNotifications();
+}
+
+void Toholed::checkNewMailNotifications()
+{
+    QList<QVariant> args;
+    args.append(QString("messageserver5"));
+
+    QDBusInterface ms5Call("org.freedesktop.Notifications", "/org/freedesktop/Notifications", "");
+
+    QDBusMessage ms5Reply = ms5Call.callWithArgumentList(QDBus::AutoDetect, "GetNotifications", args);
+
+    QList<QVariant> outArgs = ms5Reply.arguments();
+
+    QVariant first = outArgs.at(0);
+
+    const QDBusArgument &dbusArgs = first.value<QDBusArgument>();
+
+    dbusArgs.beginArray();
+
+    /* Just check is there something in the array... */
+    if (dbusArgs.atEnd())
+    {
+        printf("Sorry, no new mail\n");
+    }
+    else if (!iconEMAIL)
+    {
+        printf("You have new mail\n");
+
+        mutex.lock();
+        drawIcon(104, MAIL, screenBuffer);
+        updateOled(screenBuffer);
+
+        blinkOled(5);
+        iconEMAIL = true;
+
+        mutex.unlock();
+    }
+
+    dbusArgs.endArray();
 }
 
 

@@ -73,6 +73,8 @@ int main(int argc, char **argv)
         sleep(3);
         exit(EXIT_FAILURE);
     }
+
+
     printf("Registered %s to D-Bus systembus\n", SERVICE_NAME);
 
     Toholed toholed;
@@ -91,7 +93,7 @@ int main(int argc, char **argv)
     if(ofonoSMSconn.isConnected())
         printf("Ofono.MessageManager.IncomingMessage Connected\n");
     else
-        printf("Ofono.MessageManager.IncomingMessage Not connected\n%s\n", qPrintable(QDBusConnection::systemBus().lastError().message()));
+        printf("Ofono.MessageManager.IncomingMessage Not connected\n%s\n", qPrintable(ofonoSMSconn.lastError().message()));
 
 
     /* path=/com/nokia/mce/signal; interface=com.nokia.mce.signal; member=sig_call_state_ind */
@@ -103,7 +105,7 @@ int main(int argc, char **argv)
     if(mceCallStateconn.isConnected())
         printf("com.nokia.mce.signal.sig_call_state_ind Connected\n");
     else
-        printf("com.nokia.mce.signal.sig_call_state_ind Not connected\n%s\n", qPrintable(QDBusConnection::systemBus().lastError().message()));
+        printf("com.nokia.mce.signal.sig_call_state_ind Not connected\n%s\n", qPrintable(mceCallStateconn.lastError().message()));
 
 
     /* Nokia MCE display_status_ind
@@ -116,7 +118,7 @@ int main(int argc, char **argv)
     if(mceDisplayStatusconn.isConnected())
         printf("com.nokia.mce.signal.display_status_ind Connected\n");
     else
-        printf("com.nokia.mce.signal.display_status_ind Not connected\n%s\n", qPrintable(QDBusConnection::systemBus().lastError().message()));
+        printf("com.nokia.mce.signal.display_status_ind Not connected\n%s\n", qPrintable(mceDisplayStatusconn.lastError().message()));
 
     /* Freedesktop Notifications NotificationClosed
      * This signal is emitted when notification is closed. We can then remove icons from screen */
@@ -128,7 +130,7 @@ int main(int argc, char **argv)
     if(freeNotifconn.isConnected())
         printf("freedesktop.Notifications.NotificationClosed Connected\n");
     else
-        printf("freedesktop.Notifications.NotificationClosed Not connected\n%s\n", qPrintable(QDBusConnection::sessionBus().lastError().message()));
+        printf("freedesktop.Notifications.NotificationClosed Not connected\n%s\n", qPrintable(freeNotifconn.lastError().message()));
 
     /* path=/CommHistoryModel; interface=com.nokia.commhistory; member=eventsAdded */
 
@@ -139,7 +141,7 @@ int main(int argc, char **argv)
     if(commHistoryConn.isConnected())
         printf("com.nokia.commhistory.eventsAdded Connected\n");
     else
-        printf("com.nokia.commhistory.eventsAdded Not connected\n%s\n", qPrintable(QDBusConnection::sessionBus().lastError().message()));
+        printf("com.nokia.commhistory.eventsAdded Not connected\n%s\n", qPrintable(commHistoryConn.lastError().message()));
 
     /* path=/com/tweetian; com.tweetian member=newNotification  */
 
@@ -150,7 +152,7 @@ int main(int argc, char **argv)
     if(tweetianConn.isConnected())
         printf("com.tweetian.newNotification Connected\n");
     else
-        printf("com.tweetian.newNotification Not connected\n%s\n", qPrintable(QDBusConnection::sessionBus().lastError().message()));
+        printf("com.tweetian.newNotification Not connected\n%s\n", qPrintable(tweetianConn.lastError().message()));
 
 
     /* Communi IRC connection */
@@ -162,7 +164,19 @@ int main(int argc, char **argv)
     if(communiConn.isConnected())
         printf("com.communi.irc.highlightedSimple Connected\n");
     else
-        printf("com.communi.irc.highlightedSimple Connected\n%s\n", qPrintable(QDBusConnection::sessionBus().lastError().message()));
+        printf("com.communi.irc.highlightedSimple Connected\n%s\n", qPrintable(communiConn.lastError().message()));
+
+
+    /* asdbus synCompleted */
+
+    static QDBusConnection asdbusConn = QDBusConnection::sessionBus();
+    asdbusConn.connect("com.nokia.asdbus", "/com/nokia/asdbus", "com.nokia.asdbus", "syncCompleted",
+                          &toholed, SLOT(handleActiveSync(const QDBusMessage&)));
+
+    if(asdbusConn.isConnected())
+        printf("com.nokia.asdbus.syncCompleted Connected\n");
+    else
+        printf("com.nokia.asdbus.syncCompleted Connected\n%s\n", qPrintable(asdbusConn.lastError().message()));
 
 
     /* TODO
