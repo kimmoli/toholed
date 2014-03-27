@@ -391,7 +391,7 @@ int initOled()
     int i, file;
     unsigned char buf[2] = {0};
 
-    usleep(150000); /* Wait for 150 ms */
+    usleep(200000); /* Wait for 200 ms */
 
     if ((file = open( "/dev/i2c-1", O_RDWR )) < 0)
     {
@@ -417,6 +417,8 @@ int initOled()
     }
 
 	close(file);
+
+    usleep(100000); /* wait 100 ms */
 	
 	return 0;
 }
@@ -456,7 +458,7 @@ int deinitOled()
 
     close(file);
 
-    usleep(100000);
+    usleep(100000); /* wait 100 ms */
 
     return 0;
 
