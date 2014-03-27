@@ -69,8 +69,9 @@ Toholed::Toholed()
     /* do this automatically at startup */
     setVddState("on");
     enableOled("");
-    setOledAutoUpdate("on");
     setInterruptEnable("on");
+
+    timeUpdateOverride = true; /* Update clock at first run */
 }
 
 /* Timer routine to update OLED clock */
@@ -81,7 +82,7 @@ void Toholed::timerTimeout()
 
     /* Update only if minute has changed and oled is powered and initialized */
 
-    if (((current.minute() != prevTime.minute()) || timeUpdateOverride) && oledAutoUpdate && vddEnabled && oledInitDone)
+    if (((current.minute() != prevTime.minute()) || timeUpdateOverride) && vddEnabled && oledInitDone)
     {
         timeUpdateOverride = false;
         prevTime = current;
@@ -132,6 +133,8 @@ QString Toholed::setVddState(const QString &arg)
 
     printf("%s\n", ba.data());
 
+    usleep(100000);
+
     if (controlVdd( ( QString::localeAwareCompare( turn, "on") ? 0 : 1) ) < 0)
     {
         vddEnabled = false;
@@ -165,8 +168,9 @@ QString Toholed::enableOled(const QString &arg)
 {
     if (vddEnabled)
     {
+        clearOled(screenBuffer);
+        updateOled(screenBuffer);
         initOled();
-        //clearOled(screenBuffer);
         drawDerp(screenBuffer);
         updateOled(screenBuffer);
         sleep(2);
@@ -191,21 +195,6 @@ QString Toholed::disableOled(const QString &arg)
 
         printf("OLED Display cleared and shut down\n");
     }
-
-    return QString("you have been served. %1").arg(arg);
-}
-
-/* user wants to show clock on screen */
-QString Toholed::setOledAutoUpdate(const QString &arg)
-{
-    QString turn = QString("%1").arg(arg);
-
-    oledAutoUpdate = QString::localeAwareCompare( turn, "on") ? false : true;
-
-    timeUpdateOverride = true;
-    timerTimeout(); /* draw clock immediately */
-
-    printf("OLED autoupdate set\n");
 
     return QString("you have been served. %1").arg(arg);
 }

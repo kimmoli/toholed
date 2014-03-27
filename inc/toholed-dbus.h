@@ -37,7 +37,6 @@ public slots:
     QString setVddState(const QString &arg);
     QString enableOled(const QString &arg);
     QString disableOled(const QString &arg);
-    QString setOledAutoUpdate(const QString &arg);
     QString setOledContrast(const QString &arg);
     QString kill(const QString &arg);
     QString setScreenCaptureOnProximity(const QString &arg);
@@ -69,7 +68,6 @@ private:
 
     static bool oledInitDone;
     static bool vddEnabled;
-    static bool oledAutoUpdate;
     static bool interruptsEnabled;
 
     static unsigned int prevBrightness;

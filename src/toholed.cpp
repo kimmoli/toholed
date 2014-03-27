@@ -25,7 +25,6 @@
 
 
 bool Toholed::oledInitDone = false;
-bool Toholed::oledAutoUpdate = false;
 bool Toholed::vddEnabled = false;
 bool Toholed::interruptsEnabled = false;
 int Toholed::timerCount = 0;
@@ -53,7 +52,6 @@ int main(int argc, char **argv)
     if (!QDBusConnection::systemBus().isConnected())
     {
         printf("Cannot connect to the D-Bus systemBus\n%s\n", qPrintable(QDBusConnection::systemBus().lastError().message()));
-        sleep(3);
         exit(EXIT_FAILURE);
     }
     printf("Connected to D-Bus systembus\n");
@@ -63,7 +61,6 @@ int main(int argc, char **argv)
     if (!QDBusConnection::sessionBus().isConnected())
     {
         printf("Cannot connect to the D-Bus sessionBus\n%s\n", qPrintable(QDBusConnection::sessionBus().lastError().message()));
-        sleep(3);
         exit(EXIT_FAILURE);
     }
     printf("Connected to D-Bus sessionbus\n");
@@ -71,7 +68,6 @@ int main(int argc, char **argv)
     if (!QDBusConnection::systemBus().registerService(SERVICE_NAME))
     {
         printf("Cannot register service to systemBus\n%s\n", qPrintable(QDBusConnection::systemBus().lastError().message()));
-        sleep(3);
         exit(EXIT_FAILURE);
     }
 
