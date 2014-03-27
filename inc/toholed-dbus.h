@@ -75,6 +75,8 @@ private:
     static unsigned int prevBrightness;
     static unsigned int prevProx;
 
+    static int activeHighlights;
+
     static int timerCount;
     QTime prevTime;
     bool timeUpdateOverride;

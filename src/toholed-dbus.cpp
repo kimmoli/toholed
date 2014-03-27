@@ -368,18 +368,29 @@ void Toholed::handleCommuni(const QDBusMessage& msg)
 {
     QList<QVariant> args = msg.arguments();
 
-    /* emit highlightedSimple(buffer->title(), message->nick(), message->property("content").toString()); */
+    int ah = args.at(0).toInt();
+    printf("IRC: Active highlights %d\n", ah);
 
-    printf("IRC: %s <%s> %s\n", qPrintable(args.at(0).toString()), qPrintable(args.at(1).toString()), qPrintable(args.at(2).toString()));
+    if (ah > activeHighlights) /* Number of active highlights increased */
+    {
+        mutex.lock();
+        drawIcon(102, IRC, screenBuffer);
+        updateOled(screenBuffer);
+        blinkOled(5);
+        iconIRC = true;
+        mutex.unlock();
 
-    mutex.lock();
-    drawIcon(102, IRC, screenBuffer);
-    updateOled(screenBuffer);
+    }
+    else if ((ah == 0) && iconIRC) /* Active highlights all read */
+    {
+        mutex.lock();
+        clearIcon(102, IRC, screenBuffer);
+        updateOled(screenBuffer);
+        iconIRC = false;
+        mutex.unlock();
+    }
 
-    blinkOled(5);
-    mutex.unlock();
-
-    iconIRC = true;
+    activeHighlights = ah;
 
 }
 

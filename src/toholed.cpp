@@ -37,6 +37,7 @@ bool Toholed::iconEMAIL = false;
 bool Toholed::iconTWEET = false;
 bool Toholed::iconIRC = false;
 bool Toholed::ScreenCaptureOnProximity = false;
+int Toholed::activeHighlights = 0;
 
 int main(int argc, char **argv)
 {
@@ -158,7 +159,7 @@ int main(int argc, char **argv)
     /* Communi IRC connection */
 
     static QDBusConnection communiConn = QDBusConnection::sessionBus();
-    communiConn.connect("com.communi.irc", "/", "com.communi.irc", "highlightedSimple",
+    communiConn.connect("com.communi.irc", "/", "com.communi.irc", "activeHighlightsChanged",
                           &toholed, SLOT(handleCommuni(const QDBusMessage&)));
 
     if(communiConn.isConnected())
