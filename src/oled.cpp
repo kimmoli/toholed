@@ -47,19 +47,19 @@ void drawDerp(char *screenBuffer)
 
 }
 
-void drawIcon(int location, int icon, char *screenBuffer)
+void drawIcon(int icon, char *screenBuffer)
 {
     char* sb = screenBuffer;
 
     int i,d,off,s,n,o,x,h,t;
 
-    h=location;
     o = 50; // rivi mistä tulostus alkaa
 
     for (x=0; x < LASTICON ; x++)
     {
         if ( icon == iconsMap[x] )
         {
+            h = iconPos[x];
             d = iconsStart[x] / 8; // byte offset
             s = iconsStart[x] - d*8; // bit offset
 
@@ -81,19 +81,19 @@ void drawIcon(int location, int icon, char *screenBuffer)
     }
 }
 
-void clearIcon(int location, int icon, char *screenBuffer)
+void clearIcon(int icon, char *screenBuffer)
 {
     char* sb = screenBuffer;
 
     int i,d,s,n,o,x,h;
 
-    h=location;
     o = 50; // rivi mistä tulostus alkaa
 
     for (x=0; x < LASTICON ; x++)
     {
         if ( icon == iconsMap[x] )
         {
+            h = iconPos[x];
             d = iconsStart[x] / 8; // byte offset
             s = iconsStart[x] - d*8; // bit offset
 
@@ -118,7 +118,7 @@ void clearIcons(char *screenBuffer)
     char *sb = screenBuffer;
     int i;
 
-    for (i=358 ; i < 1024 ; i=i+8 )
+    for (i=326 ; i < 1024 ; i=i+8 )
     {
         *(sb+i) = 0x00;
         *(sb+i+1) = 0x00;

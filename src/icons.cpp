@@ -29,5 +29,6 @@ const int iconsHeightPixels = 14;
 const char iconsMap[]  = { MAIL, CALL, MESSAGE, TWEET, IRC };
 const int iconsStart[] = {  0,   21,   36,      52,    69  };
 const int iconsWidth[] = {  17,  13,   13,      16,    16  };
+const int iconPos[]    = {  40,  59,   74,      89,    107 };
 
 

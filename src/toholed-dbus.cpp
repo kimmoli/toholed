@@ -105,15 +105,15 @@ void Toholed::timerTimeout()
             checkNewMailNotifications();
 
         if (iconSMS)
-            drawIcon(64, MESSAGE, screenBuffer);
+            drawIcon(MESSAGE, screenBuffer);
         if (iconCALL)
-            drawIcon(84, CALL, screenBuffer);
+            drawIcon(CALL, screenBuffer);
         if (iconEMAIL)
-            drawIcon(104, MAIL, screenBuffer);
+            drawIcon(MAIL, screenBuffer);
         if (iconTWEET)
-            drawIcon(44, TWEET, screenBuffer);
+            drawIcon(TWEET, screenBuffer);
         if (iconIRC)
-            drawIcon(102, IRC, screenBuffer);
+            drawIcon(IRC, screenBuffer);
 
         updateOled(screenBuffer);
 
@@ -122,6 +122,18 @@ void Toholed::timerTimeout()
 
     timerCount++;
 
+}
+
+QString Toholed::testIcons(const QString &arg)
+{
+    drawIcon(MESSAGE, screenBuffer);
+    drawIcon(CALL, screenBuffer);
+    drawIcon(MAIL, screenBuffer);
+    drawIcon(TWEET, screenBuffer);
+    drawIcon(IRC, screenBuffer);
+    updateOled(screenBuffer);
+
+    return QString("you have been served. %1").arg(arg);
 }
 
 /* Function to set VDD (3.3V for OH) */
@@ -326,7 +338,7 @@ void Toholed:: handleSMS(const QDBusMessage& msg)
     printf("New SMS: %s\n", qPrintable(args.at(0).toString()));
 
     mutex.lock();
-    drawIcon(64, MESSAGE, screenBuffer);
+    drawIcon(MESSAGE, screenBuffer);
     updateOled(screenBuffer);
 
     blinkOled(10);
@@ -342,7 +354,7 @@ void Toholed::handleTweetian(const QDBusMessage& msg)
     printf("You have been mentioned in a Tweet\n");
 
     mutex.lock();
-    drawIcon(44, TWEET, screenBuffer);
+    drawIcon(TWEET, screenBuffer);
     updateOled(screenBuffer);
 
     blinkOled(5);
@@ -363,7 +375,7 @@ void Toholed::handleCommuni(const QDBusMessage& msg)
     if (ah > activeHighlights) /* Number of active highlights increased */
     {
         mutex.lock();
-        drawIcon(102, IRC, screenBuffer);
+        drawIcon(IRC, screenBuffer);
         updateOled(screenBuffer);
         blinkOled(5);
         iconIRC = true;
@@ -373,7 +385,7 @@ void Toholed::handleCommuni(const QDBusMessage& msg)
     else if ((ah == 0) && iconIRC) /* Active highlights all read */
     {
         mutex.lock();
-        clearIcon(102, IRC, screenBuffer);
+        clearIcon(IRC, screenBuffer);
         updateOled(screenBuffer);
         iconIRC = false;
         mutex.unlock();
@@ -396,7 +408,7 @@ void Toholed::handleCall(const QDBusMessage& msg)
     {
         printf("Incoming call\n");
         mutex.lock();
-        drawIcon(84, CALL, screenBuffer);
+        drawIcon(CALL, screenBuffer);
         updateOled(screenBuffer);
 
         blinkOled(10);
@@ -408,7 +420,7 @@ void Toholed::handleCall(const QDBusMessage& msg)
     {
         printf("Call answered or placing new call when missed call indicated\n");
         mutex.lock();
-        clearIcon(84, CALL, screenBuffer);
+        clearIcon(CALL, screenBuffer);
         updateOled(screenBuffer);
 
         iconCALL = false;
@@ -488,7 +500,7 @@ void Toholed::checkNewMailNotifications()
         printf("You have new mail\n");
 
         mutex.lock();
-        drawIcon(104, MAIL, screenBuffer);
+        drawIcon(MAIL, screenBuffer);
         updateOled(screenBuffer);
 
         blinkOled(5);

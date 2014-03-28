@@ -34,6 +34,7 @@ public:
     }
 
 public slots:
+    QString testIcons(const QString &arg);
     QString setVddState(const QString &arg);
     QString enableOled(const QString &arg);
     QString disableOled(const QString &arg);

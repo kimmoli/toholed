@@ -16,5 +16,6 @@ extern const int iconsHeightPixels;
 extern const char iconsMap[];
 extern const int iconsStart[];
 extern const int iconsWidth[];
+extern const int iconPos[];
 
 #endif // ICONS_H
