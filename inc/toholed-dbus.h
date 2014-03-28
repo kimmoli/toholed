@@ -51,7 +51,6 @@ public slots:
     void handleDisplayStatus(const QDBusMessage& msg);
     void handleNotificationClosed(const QDBusMessage& msg);
     void handleCall(const QDBusMessage& msg);
-    void handleCommHistory(const QDBusMessage& msg);
     void handleTweetian(const QDBusMessage& msg);
     void handleCommuni(const QDBusMessage& msg);
     void handleActiveSync(const QDBusMessage& msg);

@@ -383,20 +383,6 @@ void Toholed::handleCommuni(const QDBusMessage& msg)
 
 }
 
-/* Something triggered commhistory.eventsAdded signal */
-void Toholed::handleCommHistory(const QDBusMessage& msg)
-{
-    printf("commhistory.eventsAdded\n");
-
-    mutex.lock();
-    drawIcon(64, MESSAGE, screenBuffer);
-    updateOled(screenBuffer);
-
-    blinkOled(10);
-    mutex.unlock();
-
-    iconSMS = true;
-}
 
 /* Incoming phonecall */
 void Toholed::handleCall(const QDBusMessage& msg)

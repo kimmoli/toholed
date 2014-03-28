@@ -129,16 +129,6 @@ int main(int argc, char **argv)
     else
         printf("freedesktop.Notifications.NotificationClosed Not connected\n%s\n", qPrintable(freeNotifconn.lastError().message()));
 
-    /* path=/CommHistoryModel; interface=com.nokia.commhistory; member=eventsAdded */
-
-    static QDBusConnection commHistoryConn = QDBusConnection::sessionBus();
-    commHistoryConn.connect("com.nokia.commhistory", "/CommHistoryModel", "com.nokia.commhistory", "eventsAdded",
-                          &toholed, SLOT(handleCommHistory(const QDBusMessage&)));
-
-    if(commHistoryConn.isConnected())
-        printf("com.nokia.commhistory.eventsAdded Connected\n");
-    else
-        printf("com.nokia.commhistory.eventsAdded Not connected\n%s\n", qPrintable(commHistoryConn.lastError().message()));
 
     /* path=/com/tweetian; com.tweetian member=newNotification  */
 
