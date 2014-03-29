@@ -72,10 +72,10 @@ int tsl2772_initialize(int file)
         ((ALSLIM_BRIGHTNESS_LOW >> 8) & 0xff),  /* Reg05 AILTH  - */
         (ALSLIM_BRIGHTNESS_HIGH & 0xff),        /* Reg06 AIHTL */
         ((ALSLIM_BRIGHTNESS_HIGH >> 8) & 0xff), /* Reg07 AIHTH */
-        0x64, /* Reg08 PILTL  - Proximity interrupt threshod*/
-        0x00, /* Reg09 PILTH  - Low  = 100 */
-        0x20, /* Reg0a PIHTL  - High = 800 */
-        0x03, /* Reg0b PIHTH */
+        0x00,                                   /* Reg08 PILTL  - Proximity interrupt threshod*/
+        0x00,                                   /* Reg09 PILTH  - Low */
+        (PROX_LIMIT & 0xff),                    /* Reg0a PIHTL */
+        ((PROX_LIMIT >> 8) & 0xff),             /* Reg0b PIHTH */
         0x11, /* Reg0c PERS   - APERS = 1, PPERS = 1 */
         0x00, /* Reg0d CONFIG - AGL = 0, WLONG = 0, PLD = 0 */
         0x08, /* Reg0e PPULSE - 8 pulses during prox accum */

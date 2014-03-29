@@ -9,10 +9,9 @@
 #define BRIGHTNESS_MED 0x4040
 #define BRIGHTNESS_LOW 0x1010
 
-#define PROX_LIMIT 0x028a
 
 
-int initOled(); /* Initializes OLED SSD1306 chip */
+int initOled(unsigned int level); /* Initializes OLED SSD1306 chip, brightness level arg */
 int deinitOled();
 int clearOled(char *screenBuffer); /* Clears screen buffer */
 int updateOled(const char *screenBuffer); /* Draws screem buffer to OLED */

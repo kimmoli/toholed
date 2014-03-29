@@ -366,7 +366,7 @@ void invertOled(bool invert)
 
 
 /* Initializes OLED SSD1306 chip */
-int initOled()
+int initOled(unsigned int level)
 {
     unsigned char init_seq[28] = {0xae, /* display off */
                                   0x20,0x01, /* memory addressing mode = Vertical 01 Horizontal 00 */
@@ -390,6 +390,13 @@ int initOled()
 								  
     int i, file;
     unsigned char buf[2] = {0};
+
+    /* Override contrast level if valid one given */
+    if ( (level == BRIGHTNESS_HIGH) || (level == BRIGHTNESS_LOW) || (level == BRIGHTNESS_MED))
+    {
+        init_seq[20] = ((level >> 8 ) & 0xff);
+        init_seq[9] = (level & 0xff);
+    }
 
     usleep(200000); /* Wait for 200 ms */
 

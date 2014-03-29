@@ -99,7 +99,7 @@ void Toholed::timerTimeout()
         drawTime(baNow.data(), screenBuffer);
         drawBatteryLevel(babatNow.data(), screenBuffer);
 
-        if (!iconEMAIL)
+        if (!iconEMAIL && !timeUpdateOverride && !mailCheckTimer->isActive())
             checkNewMailNotifications();
 
         if (iconSMS)
@@ -115,7 +115,8 @@ void Toholed::timerTimeout()
 
         updateOled(screenBuffer);
 
-        printf("Time now: %s Battery: %s\n", baNow.data(), babatNow.data() );
+        if (!timeUpdateOverride)
+            printf("Time now: %s Battery: %s\n", baNow.data(), babatNow.data() );
 
         timeUpdateOverride = false;
     }
@@ -131,7 +132,8 @@ QString Toholed::testIcons(const QString &arg)
     drawIcon(MAIL, screenBuffer);
     drawIcon(TWEET, screenBuffer);
     drawIcon(IRC, screenBuffer);
-    updateOled(screenBuffer);
+    if (oledInitDone)
+        updateOled(screenBuffer);
 
     return QString("you have been served. %1").arg(arg);
 }
@@ -182,7 +184,7 @@ QString Toholed::enableOled(const QString &arg)
     {
         clearOled(screenBuffer);
         updateOled(screenBuffer);
-        initOled();
+        initOled(0);
         drawDerp(screenBuffer);
         updateOled(screenBuffer);
         sleep(2);
@@ -284,9 +286,6 @@ QString Toholed::setInterruptEnable(const QString &arg)
         if (proximity_fd > -1)
             printf("Proximity Interrupt registered\n");
 
-
-        //proximity_fd = 0;
-
         if ((gpio_fd > -1) && (proximity_fd > -1))
         {
             worker->abort();
@@ -339,9 +338,11 @@ void Toholed:: handleSMS(const QDBusMessage& msg)
 
     mutex.lock();
     drawIcon(MESSAGE, screenBuffer);
-    updateOled(screenBuffer);
-
-    blinkOled(10);
+    if (oledInitDone)
+    {
+        updateOled(screenBuffer);
+        blinkOled(10);
+    }
     mutex.unlock();
 
     iconSMS = true;
@@ -355,9 +356,11 @@ void Toholed::handleTweetian(const QDBusMessage& msg)
 
     mutex.lock();
     drawIcon(TWEET, screenBuffer);
-    updateOled(screenBuffer);
-
-    blinkOled(5);
+    if (oledInitDone)
+    {
+        updateOled(screenBuffer);
+        blinkOled(5);
+    }
     mutex.unlock();
 
     iconTWEET = true;
@@ -376,8 +379,11 @@ void Toholed::handleCommuni(const QDBusMessage& msg)
     {
         mutex.lock();
         drawIcon(IRC, screenBuffer);
-        updateOled(screenBuffer);
-        blinkOled(5);
+        if (oledInitDone)
+        {
+            updateOled(screenBuffer);
+            blinkOled(5);
+        }
         iconIRC = true;
         mutex.unlock();
 
@@ -386,7 +392,8 @@ void Toholed::handleCommuni(const QDBusMessage& msg)
     {
         mutex.lock();
         clearIcon(IRC, screenBuffer);
-        updateOled(screenBuffer);
+        if (oledInitDone)
+            updateOled(screenBuffer);
         iconIRC = false;
         mutex.unlock();
     }
@@ -409,9 +416,11 @@ void Toholed::handleCall(const QDBusMessage& msg)
         printf("Incoming call\n");
         mutex.lock();
         drawIcon(CALL, screenBuffer);
-        updateOled(screenBuffer);
-
-        blinkOled(10);
+        if (oledInitDone)
+        {
+            updateOled(screenBuffer);
+            blinkOled(10);
+        }
         iconCALL = true;
 
         mutex.unlock();
@@ -421,7 +430,8 @@ void Toholed::handleCall(const QDBusMessage& msg)
         printf("Call answered or placing new call when missed call indicated\n");
         mutex.lock();
         clearIcon(CALL, screenBuffer);
-        updateOled(screenBuffer);
+        if (oledInitDone)
+            updateOled(screenBuffer);
 
         iconCALL = false;
 
@@ -457,7 +467,8 @@ void Toholed::handleNotificationClosed(const QDBusMessage& msg)
     mutex.lock();
     /* Clear all icons and their status flags */
     clearIcons(screenBuffer);
-    updateOled(screenBuffer);
+    if (oledInitDone)
+        updateOled(screenBuffer);
 
     iconSMS = false;
     iconEMAIL = false;
@@ -495,6 +506,7 @@ void Toholed::checkNewMailNotifications()
     args.append(QString("messageserver5"));
 
     QDBusInterface ms5Call("org.freedesktop.Notifications", "/org/freedesktop/Notifications", "");
+    ms5Call.setTimeout(2);
 
     QDBusMessage ms5Reply = ms5Call.callWithArgumentList(QDBus::AutoDetect, "GetNotifications", args);
 
@@ -513,10 +525,12 @@ void Toholed::checkNewMailNotifications()
 
         mutex.lock();
         drawIcon(MAIL, screenBuffer);
-        updateOled(screenBuffer);
-
-        if (!timeUpdateOverride)
-            blinkOled(5);
+        if (oledInitDone)
+        {
+            updateOled(screenBuffer);
+            if (!timeUpdateOverride)
+                blinkOled(5);
+        }
 
         iconEMAIL = true;
 
@@ -537,7 +551,6 @@ void Toholed::handleGpioInterrupt()
     int fd;
     unsigned long alsC0, alsC1, prox;
     unsigned int newBrightness = BRIGHTNESS_MED;
-    int shutdownDisplay;
 
     mutex.lock();
 
@@ -556,8 +569,6 @@ void Toholed::handleGpioInterrupt()
     tsl2772_clearInterrupt(fd);
     tsl2772_closeComms(fd);
 
-    printf("TOH Interrupt: ALS C0 %5lu C1 %5lu prox %5lu\n", alsC0, alsC1, prox);
-
     if (alsC0 < ALSLIM_BRIGHTNESS_LOW)
         newBrightness = BRIGHTNESS_LOW;
     else if (alsC0 > ALSLIM_BRIGHTNESS_HIGH)
@@ -567,7 +578,7 @@ void Toholed::handleGpioInterrupt()
 
     if (newBrightness != prevBrightness)
     {
-        printf("Auto brightness adjust\n");
+        printf("Interrupt: Auto brightness adjust: ALS C0 %5lu C1 %5lu prox %5lu\n", alsC0, alsC1, prox);
 
         /* set new interrupt thresholds */
         fd = tsl2772_initComms(0x39);
@@ -588,7 +599,7 @@ void Toholed::handleGpioInterrupt()
 
     if ((prox > PROX_LIMIT) && (prevProx < PROX_LIMIT))
     {
-        printf("Proximity detected, shutting oled chargepumps\n");
+        printf("Interrupt: Proximity detect: ALS C0 %5lu C1 %5lu prox %5lu\n", alsC0, alsC1, prox);
         fd = tsl2772_initComms(0x39);
         tsl2772_setProxThresholds(fd, 0xFFFF, PROX_LIMIT);
         tsl2772_closeComms(fd);
@@ -597,12 +608,11 @@ void Toholed::handleGpioInterrupt()
     }
     else if ((prox < PROX_LIMIT) && (prevProx > PROX_LIMIT))
     {
-        printf("Proximity removed, starting oled chargepumps\n");
+        printf("Interrupt: Proximity cleared: ALS C0 %5lu C1 %5lu prox %5lu\n", alsC0, alsC1, prox);
         fd = tsl2772_initComms(0x39);
         tsl2772_setProxThresholds(fd, PROX_LIMIT, 0);
         tsl2772_closeComms(fd);
-        initOled();
-        setContrastOled(prevBrightness);
+        initOled(prevBrightness);
         oledInitDone = true;
         timeUpdateOverride = true;
         timerTimeout();
