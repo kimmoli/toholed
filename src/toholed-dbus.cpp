@@ -610,6 +610,35 @@ void Toholed::handleProxInterrupt()
         else
             printf("Screenshot failed\n");
 
+        notificationSend("Screenshot saved", tFilename);
+
     }
+}
+
+void Toholed::notificationSend(QString summary, QString body)
+{
+
+    QDBusMessage m = QDBusMessage::createMethodCall("org.freedesktop.Notifications",
+                                                    "/org/freedesktop/Notifications",
+                                                    "",
+                                                    "Notify" );
+
+    QVariantHash hints;
+    hints.insert("x-nemo-preview-summary", summary);
+
+    QList<QVariant> args;
+    args.append("toholed");
+    args.append((uint) 0);
+    args.append("icon-m-notifications");
+    args.append(summary);
+    args.append(body);
+    args.append((QStringList() << "default" << ""));
+    args.append(hints);
+    args.append(-1);
+    m.setArguments(args);
+
+    if (!QDBusConnection::sessionBus().send(m))
+        printf("Notification failed: %s\n", qPrintable(QDBusConnection::sessionBus().lastError().message()));
+
 }
 

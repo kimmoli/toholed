@@ -59,6 +59,7 @@ public slots:
 private slots:
     void timerTimeout();
     void checkNewMailNotifications();
+    void notificationSend(QString summary, QString body);
 
 private:
     QThread *thread;
