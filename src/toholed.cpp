@@ -37,6 +37,7 @@ bool Toholed::iconTWEET = false;
 bool Toholed::iconIRC = false;
 bool Toholed::ScreenCaptureOnProximity = false;
 int Toholed::activeHighlights = 0;
+unsigned int Toholed::ssNotifyReplacesId = 0;
 
 int main(int argc, char **argv)
 {
@@ -124,10 +125,14 @@ int main(int argc, char **argv)
     freeNotifconn.connect("org.freedesktop.Notifications", "/org/freedesktop/Notifications", "org.freedesktop.Notifications", "NotificationClosed",
                           &toholed, SLOT(handleNotificationClosed(const QDBusMessage&)));
 
+    freeNotifconn.connect("org.freedesktop.Notifications", "/org/freedesktop/Notifications", "org.freedesktop.Notifications", "ActionInvoked",
+                          &toholed, SLOT(handleNotificationActionInvoked(const QDBusMessage&)));
+
     if(freeNotifconn.isConnected())
         printf("freedesktop.Notifications.NotificationClosed Connected\n");
     else
         printf("freedesktop.Notifications.NotificationClosed Not connected\n%s\n", qPrintable(freeNotifconn.lastError().message()));
+
 
 
     /* path=/com/tweetian; com.tweetian member=newNotification  */

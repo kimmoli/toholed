@@ -55,11 +55,13 @@ public slots:
     void handleTweetian(const QDBusMessage& msg);
     void handleCommuni(const QDBusMessage& msg);
     void handleActiveSync(const QDBusMessage& msg);
+    void handleNotificationActionInvoked(const QDBusMessage& msg);
 
 private slots:
     void timerTimeout();
     void checkNewMailNotifications();
     void notificationSend(QString summary, QString body);
+
 
 private:
     QThread *thread;
@@ -73,6 +75,9 @@ private:
 
     static unsigned int prevBrightness;
     static unsigned int prevProx;
+
+    static unsigned int ssNotifyReplacesId;
+    QString ssFilename;
 
     static int activeHighlights;
 
