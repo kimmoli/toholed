@@ -11,7 +11,6 @@
 #include <time.h>
 #include <signal.h>
 #include "toholed.h"
-#include "tca8424.h"
 #include "toh.h"
 #include "oled.h"
 

@@ -27,7 +27,6 @@
 #include "toholed.h"
 #include "toh.h"
 #include "oled.h"
-#include "tca8424.h"
 #include "charger.h"
 #include "icons.h"
 #include "tsl2772.h"
