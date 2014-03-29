@@ -9,6 +9,8 @@
 #define BRIGHTNESS_MED 0x4040
 #define BRIGHTNESS_LOW 0x1010
 
+#define PROX_LIMIT 0x028a
+
 
 int initOled(); /* Initializes OLED SSD1306 chip */
 int deinitOled();
@@ -23,5 +25,6 @@ int setContrastOled(unsigned int level); /* set contrast to BRIGHTNESS_HIGH _MED
 void blinkOled(int count); /* Blinks screen for 'count' times */
 void invertOled(bool invert); /* Select between invert and normal image */
 void drawDerp(char *screenBuffer); /* Draw derp image to screen */
+
 
 #endif

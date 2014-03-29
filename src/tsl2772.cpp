@@ -22,10 +22,10 @@ int tsl2772_setAlsThresholds(int file, unsigned int high, unsigned int low)
 {
     char buf[5] = {
         0xa4, /* Command Register, Auto increment protocol, address 4 */
-        (low & 0xff),         /* Reg04 AILTL  - ALS Interrupt threshold N/A */
+        (low & 0xff),         /* Reg04 AILTL  - ALS Interrupt threshold */
         ((low >> 8) & 0xff),  /* Reg05 AILTH  - */
         (high & 0xff),        /* Reg06 AIHTL */
-        ((high >> 8) & 0xff) /* Reg07 AIHTH */
+        ((high >> 8) & 0xff)  /* Reg07 AIHTH */
     };
 
     if (write(file, buf, 5) != 5)
@@ -37,6 +37,27 @@ int tsl2772_setAlsThresholds(int file, unsigned int high, unsigned int low)
     return 7;
 
 }
+
+int tsl2772_setProxThresholds(int file, unsigned int high, unsigned int low)
+{
+    char buf[5] = {
+        0xa8, /* Command Register, Auto increment protocol, address 8 */
+        (low & 0xff),         /* Reg08 PILTL  - Proximity Interrupt threshold */
+        ((low >> 8) & 0xff),  /* Reg09 PILTH  - */
+        (high & 0xff),        /* Reg0A PIHTL */
+        ((high >> 8) & 0xff)  /* Reg0B PIHTH */
+    };
+
+    if (write(file, buf, 5) != 5)
+       {
+           close(file);
+           return -3;
+       }
+
+    return 7;
+
+}
+
 
 
 int tsl2772_initialize(int file)
@@ -66,10 +87,11 @@ int tsl2772_initialize(int file)
            return -3;
        }
 
-    /* enable clocks, ALS Int, power on */
+    /* enable clocks, Prox Int, ALS Int, power on */
     buf[0] = 0xa0;
-    buf[1] = 0x1f;
+    buf[1] = 0x3f;
 /*
+ *       7  Reserved
  *  SAI  6  Sleep after interrupt.
  *          When asserted, the device will power down at the end of a proximity or ALS cycle
  *          if an interrupt has been generated.

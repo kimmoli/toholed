@@ -361,8 +361,8 @@ void invertOled(bool invert)
     }
 
     close(file);
-
 }
+
 
 
 /* Initializes OLED SSD1306 chip */

@@ -84,7 +84,6 @@ void Toholed::timerTimeout()
 
     if (((current.minute() != prevTime.minute()) || timeUpdateOverride) && vddEnabled && oledInitDone)
     {
-        timeUpdateOverride = false;
         prevTime = current;
 
         QString tNow = QString("%1:%2")
@@ -118,6 +117,8 @@ void Toholed::timerTimeout()
         updateOled(screenBuffer);
 
         printf("Time now: %s Battery: %s\n", baNow.data(), babatNow.data() );
+
+        timeUpdateOverride = false;
     }
 
     timerCount++;
@@ -515,7 +516,9 @@ void Toholed::checkNewMailNotifications()
         drawIcon(MAIL, screenBuffer);
         updateOled(screenBuffer);
 
-        blinkOled(5);
+        if (!timeUpdateOverride)
+            blinkOled(5);
+
         iconEMAIL = true;
 
         mutex.unlock();
@@ -527,7 +530,7 @@ void Toholed::checkNewMailNotifications()
 
 /* GPIO interrupt handler */
 /*
- * TODO : add proximity handling
+ * TODO : add hysteresis
  */
 
 void Toholed::handleGpioInterrupt()
@@ -535,6 +538,7 @@ void Toholed::handleGpioInterrupt()
     int fd;
     unsigned long alsC0, alsC1, prox;
     unsigned int newBrightness = BRIGHTNESS_MED;
+    int shutdownDisplay;
 
     mutex.lock();
 
@@ -580,6 +584,30 @@ void Toholed::handleGpioInterrupt()
         setContrastOled(newBrightness);
         prevBrightness = newBrightness;
     }
+
+
+    if ((prox > PROX_LIMIT) && (prevProx < PROX_LIMIT))
+    {
+        printf("Proximity detected, shutting oled chargepumps\n");
+        fd = tsl2772_initComms(0x39);
+        tsl2772_setProxThresholds(fd, 0xFFFF, PROX_LIMIT);
+        tsl2772_closeComms(fd);
+        deinitOled();
+        oledInitDone = false;
+    }
+    else if ((prox < PROX_LIMIT) && (prevProx > PROX_LIMIT))
+    {
+        printf("Proximity removed, starting oled chargepumps\n");
+        fd = tsl2772_initComms(0x39);
+        tsl2772_setProxThresholds(fd, PROX_LIMIT, 0);
+        tsl2772_closeComms(fd);
+        initOled();
+        setContrastOled(prevBrightness);
+        oledInitDone = true;
+        timeUpdateOverride = true;
+        timerTimeout();
+    }
+
 
     prevProx = prox;
     mutex.unlock();
