@@ -548,6 +548,7 @@ void Toholed::handleGpioInterrupt()
         mutex.unlock();
         return;
     }
+    tsl2772_disableInterrupts(fd);
     alsC0 = tsl2772_getADC(fd, 0);
     alsC1 = tsl2772_getADC(fd, 1);
     prox = tsl2772_getADC(fd, 2);
@@ -607,8 +608,12 @@ void Toholed::handleGpioInterrupt()
         timerTimeout();
     }
 
-
     prevProx = prox;
+
+    fd = tsl2772_initComms(0x39);
+    tsl2772_enableInterrupts(fd);
+    tsl2772_closeComms(fd);
+
     mutex.unlock();
 
 }

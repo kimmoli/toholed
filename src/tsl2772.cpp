@@ -79,7 +79,7 @@ int tsl2772_initialize(int file)
         0x11, /* Reg0c PERS   - APERS = 1, PPERS = 1 */
         0x00, /* Reg0d CONFIG - AGL = 0, WLONG = 0, PLD = 0 */
         0x08, /* Reg0e PPULSE - 8 pulses during prox accum */
-        0xa2};/* Reg0f CONTROL- PDRIVE = 30mA, PDIODE = CH1, PGAIN = 0, AGAIN = x16 */
+        0x92};/* Reg0f CONTROL- PDRIVE = 30mA, PDIODE = CH0, PGAIN = 0, AGAIN = x16 */
 
     if (write(file, buf, 17) != 17)
        {
@@ -151,6 +151,20 @@ int tsl2772_clearInterrupt(int file)
            return -4;
        }
     return 4;
+}
+
+void tsl2772_disableInterrupts(int file)
+{
+    char buf[2] = {0xa0, 0x0f};
+
+    write(file, buf, 2);
+}
+
+void tsl2772_enableInterrupts(int file)
+{
+    char buf[2] = {0xa0, 0x3f};
+
+    write(file, buf, 2);
 }
 
 
