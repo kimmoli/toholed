@@ -27,26 +27,22 @@ public:
 
     ~Toholed()
     {
-        worker->abort();
-        thread->wait();
-        delete thread;
-        delete worker;
+        /* Disable everything */
+        setInterruptEnable(false);
+        deinitOled();
+        setVddState(false);
     }
 
 public slots:
-    QString testIcons(const QString &arg);
+    QString testIcons();
     QString setScreenCaptureOnProximity(const QString &arg);
 
 private slots:
-    QString setVddState(const QString &arg);
-    QString enableOled(const QString &arg);
-    QString disableOled(const QString &arg);
-    QString setOledContrast(const QString &arg);
-    QString kill(const QString &arg);
-
+    void setVddState(bool turn);
+    void enableOled();
 
     /* interrupts */
-    QString setInterruptEnable(const QString &arg);
+    int setInterruptEnable(bool turn);
     void handleGpioInterrupt();
     void handleProxInterrupt();
 

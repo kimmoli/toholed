@@ -1,9 +1,11 @@
 TEMPLATE = app
 CONFIG += console
 CONFIG -= app_bundle
-#CONFIG -= qt
 QT += dbus
 QT -= gui
+
+REVISION = $$system(git --git-dir $$PWD/.git --work-tree $$PWD describe)
+DEFINES += "GITHASH=\\\"$${REVISION}\\\""
 
 INCLUDEPATH += ./inc
 

@@ -47,7 +47,7 @@ int main(int argc, char **argv)
     setlinebuf(stdout);
     setlinebuf(stderr);
 
-    printf("Starting toholed daemon. build %s %s\n", __DATE__, __TIME__);
+    printf("Starting toholed daemon. Version %s build %s %s\n", GITHASH, __DATE__, __TIME__);
 
     if (!QDBusConnection::systemBus().isConnected())
     {
@@ -172,7 +172,6 @@ int main(int argc, char **argv)
 
     /* TODO
      *
-     * Connect to something that indicates new email
      * Connect to somethinf that indicates new IM message
      */
 

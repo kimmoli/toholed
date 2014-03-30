@@ -66,9 +66,9 @@ Toholed::Toholed()
 
 
     /* do this automatically at startup */
-    setVddState("on");
-    enableOled("");
-    setInterruptEnable("on");
+    setVddState(true);
+    enableOled();
+    setInterruptEnable(true);
 
     timeUpdateOverride = true; /* Update clock at first run */
 }
@@ -125,7 +125,9 @@ void Toholed::timerTimeout()
 
 }
 
-QString Toholed::testIcons(const QString &arg)
+/* DBus Exposed call methods */
+
+QString Toholed::testIcons()
 {
     drawIcon(MESSAGE, screenBuffer);
     drawIcon(CALL, screenBuffer);
@@ -135,33 +137,9 @@ QString Toholed::testIcons(const QString &arg)
     if (oledInitDone)
         updateOled(screenBuffer);
 
-    return QString("you have been served. %1").arg(arg);
+    return QString("All possible icons now active");
 }
 
-/* Function to set VDD (3.3V for OH) */
-QString Toholed::setVddState(const QString &arg)
-{
-    QString tmp = QString("VDD control request - turn %1 ").arg(arg);
-    QString turn = QString("%1").arg(arg);
-    QByteArray ba = tmp.toLocal8Bit();
-
-    printf("%s\n", ba.data());
-
-    usleep(100000);
-
-    if (controlVdd( ( QString::localeAwareCompare( turn, "on") ? 0 : 1) ) < 0)
-    {
-        vddEnabled = false;
-        printf("VDD control FAILED\n");
-    }
-    else
-    {
-        vddEnabled = QString::localeAwareCompare( turn, "on") ? false : true;
-        printf("VDD control OK\n");
-    }
-
-    return QString("you have been served. %1").arg(arg);
-}
 
 QString Toholed::setScreenCaptureOnProximity(const QString &arg)
 {
@@ -170,15 +148,46 @@ QString Toholed::setScreenCaptureOnProximity(const QString &arg)
     ScreenCaptureOnProximity =  QString::localeAwareCompare( turn, "on") ? false : true;
 
     if (ScreenCaptureOnProximity)
+    {
         printf("Screen capture on proximity interrupt enabled\n");
+        return QString("Screen capture on proximity interrupt enabled");
+    }
     else
+    {
         printf("Screen capture on proximity interrupt disabled\n");
+        return QString("Screen capture on proximity interrupt disabled");
+    }
+}
 
-    return QString("you have been served. Screencapture on proximity = %1").arg(arg);
+
+/* Function to set VDD (3.3V for OH) */
+void Toholed::setVddState(bool turn)
+{
+    printf("VDD Control request turn %s : ", (turn ? "on" : "off"));
+
+    usleep(100000);
+
+    if (vddEnabled == turn)
+    {
+        printf("Already in that state\n");
+        return;
+    }
+
+    if (controlVdd( ( turn ? 1 : 0) ) < 0)
+    {
+        vddEnabled = false;
+        printf("FAILED\n");
+    }
+    else
+    {
+        vddEnabled = turn;
+        printf("OK\n");
+    }
+
 }
 
 /* Initialze and clear oled */
-QString Toholed::enableOled(const QString &arg)
+void Toholed::enableOled()
 {
     if (vddEnabled)
     {
@@ -190,62 +199,14 @@ QString Toholed::enableOled(const QString &arg)
         sleep(2);
 
         oledInitDone = true;
-
         printf("OLED Display initialized and cleared\n");
     }
     else
+    {
         oledInitDone = false;
-
-    return QString("you have been served. %1").arg(arg);
-}
-
-QString Toholed::disableOled(const QString &arg)
-{
-    if (vddEnabled && oledInitDone)
-    {
-        deinitOled();
-
-        oledInitDone = false;
-
-        printf("OLED Display cleared and shut down\n");
+        printf("OLED Display initialize failed (VDD Not enabled)\n");
     }
 
-    return QString("you have been served. %1").arg(arg);
-}
-
-/* adjust contrast */
-QString Toholed::setOledContrast(const QString &arg)
-{
-    /* Allowed high, med, low */
-    QString brightness = QString("%1").arg(arg);
-
-    printf("Setting brightness to %s\n", qPrintable(brightness));
-
-    if (!(QString::localeAwareCompare( brightness, "high")))
-    {
-        setContrastOled(BRIGHTNESS_HIGH);
-    }
-    else if (!(QString::localeAwareCompare( brightness, "med")))
-    {
-        setContrastOled(BRIGHTNESS_MED);
-    }
-    if (!(QString::localeAwareCompare( brightness, "low")))
-    {
-        setContrastOled(BRIGHTNESS_LOW);
-    }
-    else
-        return QString("FAILED %s").arg(arg);
-
-    return QString("you have been served. %1").arg(arg);
-}
-
-/* Kills toholed daemon */
-QString Toholed::kill(const QString &arg)
-{
-    printf("Someone wants to kill me\n");
-    QMetaObject::invokeMethod(QCoreApplication::instance(), "quit");
-
-    return QString("AAARGH. %1").arg(arg);
 }
 
 
@@ -254,27 +215,28 @@ QString Toholed::kill(const QString &arg)
  */
 
 
-QString Toholed::setInterruptEnable(const QString &arg)
+int Toholed::setInterruptEnable(bool turn)
 {
-    QString turn = QString("%1").arg(arg);
     int fd;
 
-    if(QString::localeAwareCompare( turn, "on") == 0)
+    if(turn)
     {
         mutex.lock();
 
-        printf("enabling interrupt\n");
+        printf("Enabling interrupts\n");
 
         fd = tsl2772_initComms(0x39);
         if (fd <0)
         {
-            printf("failed to start communication with TSL2772\n");
+            printf("Failed to start communication with TSL2772\n");
             mutex.unlock();
-            return QString("failed");
+            return -1;
         }
         tsl2772_initialize(fd);
         tsl2772_clearInterrupt(fd);
         tsl2772_closeComms(fd);
+
+        printf("TSL2772 initialised succesfully\n");
 
         gpio_fd = getTohInterrupt();
 
@@ -293,25 +255,25 @@ QString Toholed::setInterruptEnable(const QString &arg)
 
             worker->requestWork(gpio_fd, proximity_fd);
 
-            printf("worker started\n");
+            printf("Worker started\n");
 
             interruptsEnabled = true;
             mutex.unlock();
 
-            return QString("success");
+            return 1;
         }
         else
         {
-            printf("Failed to get gpio or proximity file descriptor\n");
+            printf("Failed to register TOH or proximity interrupt\n");
             interruptsEnabled = false;
             mutex.unlock();
-            return QString("failed");
+            return -1;
         }
     }
     else
     {
 
-        printf("disabling interrupt\n");
+        printf("Disabling interrupts\n");
 
         interruptsEnabled = false;
 
@@ -324,7 +286,7 @@ QString Toholed::setInterruptEnable(const QString &arg)
         releaseProximityInterrupt(proximity_fd);
 
         mutex.unlock();
-        return QString("disabled");
+        return 1;
     }
 
 }
