@@ -4,9 +4,16 @@ CONFIG -= app_bundle
 QT += dbus
 QT -= gui
 
-GITREFRESH = $$system(git --git-dir $$PWD/.git update-index --refresh)
-REVISION = $$system(git --git-dir $$PWD/.git --work-tree $$PWD describe --dirty)
+#Force building toholed.cpp to update version and build-date
+system(rm $$OUT_PWD/toholed.o)
+
+#show some info about git status
+system(git --git-dir $$PWD/.git diff --name-only)
+
+REVISION = $$system(git --git-dir $$PWD/.git --work-tree $$PWD describe --dirty=-dev --always)
 DEFINES += "GITHASH=\\\"$${REVISION}\\\""
+
+message($${REVISION})
 
 INCLUDEPATH += ./inc
 
