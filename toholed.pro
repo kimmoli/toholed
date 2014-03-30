@@ -4,6 +4,7 @@ CONFIG -= app_bundle
 QT += dbus
 QT -= gui
 
+GITREFRESH = $$system(git --git-dir $$PWD/.git update-index --refresh)
 REVISION = $$system(git --git-dir $$PWD/.git --work-tree $$PWD describe --dirty)
 DEFINES += "GITHASH=\\\"$${REVISION}\\\""
 
