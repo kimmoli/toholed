@@ -203,7 +203,7 @@ QString Toholed::draw(const QDBusMessage& msg)
             height = bitmapData[22] + (bitmapData[23]<<8) + (bitmapData[24]<<16) + (bitmapData[25]<<24);
             invert = (bitmapData[54] == 0xff);
             rowsize = 4*((width+31)/32);
-            printf("Bitmap size %d == %d, offset %d, w:%d h:%d, rowsize %d\n", size, byteArray.count(), offset, width, height, rowsize);
+            /* printf("Bitmap size %d == %d, offset %d, w:%d h:%d, rowsize %d\n", size, byteArray.count(), offset, width, height, rowsize); */
             if ((height > 64) || (width > 128))
                 return QString("Invalid bitmap - too large");
         }

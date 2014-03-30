@@ -288,22 +288,18 @@ void drawBitmap(int x, int y, int height, int width, int offset, int rowsize, bo
         {
             if (invert != (((*(bitmap+offset+((n*rowsize)+d))) & ( 0x80 >> (i%8) )) == ( 0x80 >> (i%8) )))
             {
-                printf("#");//DEBUG
                 (*(sb+((y+n)/8)+((x+i)*8))) |= ( 0x01 << ( (y+n) % 8 ) );
             }
             else
             {
-                printf(".");//DEBUG
                 (*(sb+((y+n)/8)+((x+i)*8))) &= ~( 0x01 << ( (y+n) % 8 ) );
             }
         }
-        printf("\n");
 
         if ( (i%8) == 7 ) // byte vaihtuu
             d++;
 
     }
-    printf("Bitmap draw done\n");
 }
 
 /* Clears screen buffer */
