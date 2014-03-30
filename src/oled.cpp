@@ -274,7 +274,7 @@ void drawCircle(int x0, int y0, int r,  int color, char *screenBuffer)
     }
 }
 
-void drawBitmap(int x, int y, int height, int width, int offset, int rowsize, const char *bitmap, char *screenBuffer)
+void drawBitmap(int x, int y, int height, int width, int offset, int rowsize, bool invert, const char *bitmap, char *screenBuffer)
 {
     char* sb = screenBuffer;
 
@@ -286,7 +286,7 @@ void drawBitmap(int x, int y, int height, int width, int offset, int rowsize, co
     {
         for (n=0 ; n<height ; n++) //  korkeus
         {
-            if ((*(bitmap+offset+((n*rowsize)+d))) & ( 0x80 >> (i%8) ))
+            if (invert != (((*(bitmap+offset+((n*rowsize)+d))) & ( 0x80 >> (i%8) )) == ( 0x80 >> (i%8) )))
             {
                 printf("#");//DEBUG
                 (*(sb+((y+n)/8)+((x+i)*8))) |= ( 0x01 << ( (y+n) % 8 ) );

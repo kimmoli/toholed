@@ -26,7 +26,7 @@ void invertOled(bool invert); /* Select between invert and normal image */
 void drawDerp(char *screenBuffer); /* Draw derp image to screen */
 void drawPixel(int x, int y, int color, char *screenBuffer); /* Draw single pixel to screen */
 void drawCircle(int x0, int y0, int r,  int color, char *screenBuffer); /* Draw circle to screen r=radius */
-void drawBitmap(int x, int y, int height, int width, int offset, int rowsize, const char *bitmap, char *screenBuffer);
+void drawBitmap(int x, int y, int height, int width, int offset, int rowsize, bool invert, const char *bitmap, char *screenBuffer);
 
 
 #endif
