@@ -435,14 +435,15 @@ void Toholed::handleNotificationClosed(const QDBusMessage& msg)
 
     unsigned int notificationId = outArgs.at(0).toInt();
 
-    printf("Notification id %d closed\n", notificationId);
-
     /* Manage the screenshot notification id clear to zero.
      * if id is nonzero and non-existent, it will not appear
      */
 
     if (notificationId == ssNotifyReplacesId)
+    {
+        printf("Screenshot notification id %d closed\n", notificationId);
         ssNotifyReplacesId = 0;
+    }
 
     mutex.lock();
     /* Clear all icons and their status flags */
@@ -688,7 +689,7 @@ void Toholed::handleNotificationActionInvoked(const QDBusMessage& msg)
     /* Manage the screenshot notification id action. */
     if (notificationId == ssNotifyReplacesId)
     {
-        printf("Notification id %d Action invoked - opening image %s\n", notificationId, qPrintable(ssFilename));
+        printf("Screenshot notification id %d Action invoked - opening image %s\n", notificationId, qPrintable(ssFilename));
 
         QDBusMessage m = QDBusMessage::createMethodCall("com.jolla.gallery",
                                                         "/com/jolla/gallery/ui",
