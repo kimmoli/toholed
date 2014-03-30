@@ -236,6 +236,44 @@ void drawPixel(int x, int y, int color, char *screenBuffer)
         (*(sb+(x*8)+(y/8))) &= ~( 1 << ( y % 8 ));
 }
 
+void drawCircle(int x0, int y0, int r,  int color, char *screenBuffer)
+{
+    char * sb = screenBuffer;
+
+    int f = 1 - r;
+    int ddF_x = 1;
+    int ddF_y = -2 * r;
+    int x = 0;
+    int y = r;
+
+    drawPixel(x0  , y0+r, color, sb);
+    drawPixel(x0  , y0-r, color, sb);
+    drawPixel(x0+r, y0  , color, sb);
+    drawPixel(x0-r, y0  , color, sb);
+
+    while (x<y)
+    {
+        if (f >= 0)
+        {
+            y--;
+            ddF_y += 2;
+            f += ddF_y;
+        }
+        x++;
+        ddF_x += 2;
+        f += ddF_x;
+
+        drawPixel(x0 + x, y0 + y, color, sb);
+        drawPixel(x0 - x, y0 + y, color, sb);
+        drawPixel(x0 + x, y0 - y, color, sb);
+        drawPixel(x0 - x, y0 - y, color, sb);
+        drawPixel(x0 + y, y0 + x, color, sb);
+        drawPixel(x0 - y, y0 + x, color, sb);
+        drawPixel(x0 + y, y0 - x, color, sb);
+        drawPixel(x0 - y, y0 - x, color, sb);
+    }
+}
+
 
 /* Clears screen buffer */
 int clearOled(char *screenBuffer)

@@ -140,22 +140,48 @@ QString Toholed::testIcons()
     return QString("All possible icons now active");
 }
 
-QString Toholed::setPixel(const QDBusMessage& msg)
+QString Toholed::draw(const QDBusMessage& msg)
 {
+    int x,y,r;
+
     QList<QVariant> args = msg.arguments();
 
-    if (args.count() != 2)
-        return QString("Pixelzet fail - gimme x and y");
+    if (args.count() == 0)
+        return QString("Draw fail; missing arguments");
 
-    int x = args.at(0).toInt();
-    int y = args.at(1).toInt();
+    if (!QString::localeAwareCompare( args.at(0).toString(), "pixel"))
+    {
+        if (args.count() != 3)
+            return QString("Pixel fail; expecting int32:x, int32:y");
 
-    drawPixel(x, y, 1, screenBuffer);
+        x = args.at(1).toInt();
+        y = args.at(2).toInt();
 
-    if (oledInitDone)
-        updateOled(screenBuffer);
+        drawPixel(x, y, 1, screenBuffer);
 
-    return QString("Pixelzet %1 %2").arg(x).arg(y);
+        if (oledInitDone)
+            updateOled(screenBuffer);
+
+        return QString("Pixel %1 %2").arg(x).arg(y);
+    }
+    else if (!QString::localeAwareCompare( args.at(0).toString(), "circle"))
+    {
+        if (args.count() != 4)
+            return QString("Circle fail; expecting int32:x, int32:y, int32:radius");
+
+        x = args.at(1).toInt();
+        y = args.at(2).toInt();
+        r = args.at(3).toInt();
+
+        drawCircle(x, y, r, 1, screenBuffer);
+
+        if (oledInitDone)
+            updateOled(screenBuffer);
+
+        return QString("Circle %1 %2 %2").arg(x).arg(y).arg(r);
+    }
+
+    return QString("Draw fail; Unsupported function");
 }
 
 
