@@ -35,12 +35,15 @@ public:
 
 public slots:
     QString testIcons(const QString &arg);
+    QString setScreenCaptureOnProximity(const QString &arg);
+
+private slots:
     QString setVddState(const QString &arg);
     QString enableOled(const QString &arg);
     QString disableOled(const QString &arg);
     QString setOledContrast(const QString &arg);
     QString kill(const QString &arg);
-    QString setScreenCaptureOnProximity(const QString &arg);
+
 
     /* interrupts */
     QString setInterruptEnable(const QString &arg);
@@ -57,7 +60,6 @@ public slots:
     void handleActiveSync(const QDBusMessage& msg);
     void handleNotificationActionInvoked(const QDBusMessage& msg);
 
-private slots:
     void timerTimeout();
     void checkNewMailNotifications();
     void notificationSend(QString summary, QString body);
