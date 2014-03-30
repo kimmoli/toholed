@@ -142,7 +142,7 @@ QString Toholed::testIcons()
 
 QString Toholed::draw(const QDBusMessage& msg)
 {
-    int x,y,r;
+    int x, y, r, size, offset, height, width, rowsize;
 
     QList<QVariant> args = msg.arguments();
 
@@ -162,7 +162,7 @@ QString Toholed::draw(const QDBusMessage& msg)
         if (oledInitDone)
             updateOled(screenBuffer);
 
-        return QString("Pixel %1 %2").arg(x).arg(y);
+        return QString("Pixel x:%1 y:%2").arg(x).arg(y);
     }
     else if (!QString::localeAwareCompare( args.at(0).toString(), "circle"))
     {
@@ -178,7 +178,42 @@ QString Toholed::draw(const QDBusMessage& msg)
         if (oledInitDone)
             updateOled(screenBuffer);
 
-        return QString("Circle %1 %2 %2").arg(x).arg(y).arg(r);
+        return QString("Circle x:%1 y:%2 r:%3").arg(x).arg(y).arg(r);
+    }
+    else if (!QString::localeAwareCompare( args.at(0).toString(), "bitmap"))
+    {
+        if (args.count() != 4)
+            return QString("Bitmap fail; expecting int32:x, int32:y, array of bytes:data");
+
+        x = args.at(1).toInt();
+        y = args.at(2).toInt();
+
+        QByteArray byteArray = args.at(3).toByteArray();
+        const char* bitmapData = byteArray.constData();
+
+        if (byteArray.count() < 50)
+            return QString("Invalid bitmap - too few bytes");
+        /* Checks BM, header size 40, 1 bit/pixel */
+        if ( (bitmapData[0] == 0x42) && (bitmapData[1] == 0x4d) && (bitmapData[14] == 0x28) && (bitmapData[28] == 0x01))
+        {
+            size   = bitmapData[2]  + (bitmapData[3]<<8)  + (bitmapData[4]<<16)  + (bitmapData[5]<<24);
+            offset = bitmapData[10] + (bitmapData[11]<<8) + (bitmapData[12]<<16) + (bitmapData[13]<<24);
+            width  = bitmapData[18] + (bitmapData[19]<<8) + (bitmapData[20]<<16) + (bitmapData[21]<<24);
+            height = bitmapData[22] + (bitmapData[23]<<8) + (bitmapData[24]<<16) + (bitmapData[25]<<24);
+            rowsize = 4*((width+31)/32);
+            printf("Bitmap size %d == %d, offset %d, w:%d h:%d, rowsize %d\n", size, byteArray.count(), offset, width, height, rowsize);
+            if ((height > 64) || (width > 128))
+                return QString("Invalid bitmap - too large");
+        }
+        else
+            return QString("Invalid bitmap - Wrong format");
+
+        drawBitmap(x, y, height, width, offset, rowsize, bitmapData, screenBuffer);
+
+        if (oledInitDone)
+            updateOled(screenBuffer);
+
+        return QString("Bitmap x:%1 y:%2 len:%3").arg(x).arg(y).arg(byteArray.count());
     }
 
     return QString("Draw fail; Unsupported function");
