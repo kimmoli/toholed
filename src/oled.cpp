@@ -37,7 +37,7 @@ void drawDerp(char *screenBuffer)
             off = ( n * derpWidthPages ) + d;
             t = derpBitmaps[off] & ( 0x80 >> ( (s + i) % 8) );
             if (t)
-                (*(sb+((o+n)/8)+((h+i)*8))) = (*(sb+((o+n)/8)+((h+i)*8))) | ( 0x01 << ( (o+n) % 8 ) );
+                (*(sb+((o+n)/8)+((h+i)*8))) |= ( 0x01 << ( (o+n) % 8 ) );
         }
 
         if ( ((s+i) % 8) == 7 )
@@ -70,7 +70,7 @@ void drawIcon(int icon, char *screenBuffer)
                     off = ( n * iconsWidthPages ) + d;
                     t = iconsBitmaps[off] & ( 0x80 >> ( (s + i) % 8) );
                     if (t)
-                        (*(sb+((o+n)/8)+((h+i)*8))) = (*(sb+((o+n)/8)+((h+i)*8))) | ( 0x01 << ( (o+n) % 8 ) );
+                        (*(sb+((o+n)/8)+((h+i)*8))) |= ( 0x01 << ( (o+n) % 8 ) );
                 }
 
                 if ( ((s+i) % 8) == 7 )
@@ -101,7 +101,7 @@ void clearIcon(int icon, char *screenBuffer)
             {
                 for (n=0; n<iconsHeightPixels ; n++) // merkin korkeus
                 {
-                    (*(sb+((o+n)/8)+((h+i)*8))) = (*(sb+((o+n)/8)+((h+i)*8))) & ( 0xff ^ ( 0x01 << ( (o+n) % 8 ) ) );
+                    (*(sb+((o+n)/8)+((h+i)*8))) &= ~( 0x01 << ( (o+n) % 8 ) );
                 }
 
                 if ( ((s+i) % 8) == 7 )
@@ -161,7 +161,7 @@ void drawBatteryLevel(const char *batLevel, char *screenBuffer)
                             off = ( n * pieniFonttiWidthPages ) + d;
                             t = pieniFonttiBitmaps[off] & ( 0x80 >> ( (s + i) % 8) );
                             if (t)
-                                (*(sb+((o+n)/8)+((h+i)*8))) = (*(sb+((o+n)/8)+((h+i)*8))) | ( 0x01 << ( (o+n) % 8 ) );
+                                (*(sb+((o+n)/8)+((h+i)*8))) |= ( 0x01 << ( (o+n) % 8 ) );
                         }
 
                         if ( ((s+i) % 8) == 7 )
@@ -208,7 +208,7 @@ void drawTime(const char *tNow, char *screenBuffer)
                             off = ( n * jollaFonttiWidthPages ) + d;
                             t = jollaFonttiBitmaps[off] & ( 0x80 >> ( (s + i) % 8) );
                             if (t)
-                                (*(sb+(n/8)+((h+i)*8))) = (*(sb+(n/8)+((h+i)*8))) | ( 0x01 << ( n % 8 ) );
+                                (*(sb+(n/8)+((h+i)*8))) |= ( 0x01 << ( n % 8 ) );
                         }
 
                         if ( ((s+i) % 8) == 7 )
@@ -220,6 +220,20 @@ void drawTime(const char *tNow, char *screenBuffer)
             }
         }
     }
+}
+
+void drawPixel(int x, int y, int color, char *screenBuffer)
+{
+    char * sb = screenBuffer;
+
+    if ((x < 0) || (x >= OLEDWIDTH) || (y < 0) || (y >= OLEDHEIGHT))
+        return;
+
+    // x is which column
+    if (color == 1)
+        (*(sb+(x*8)+(y/8))) |= 1 << ( y % 8 );
+    else
+        (*(sb+(x*8)+(y/8))) &= ~( 1 << ( y % 8 ));
 }
 
 
@@ -238,6 +252,7 @@ int clearOled(char *screenBuffer)
 
     return 0;
 }
+
 
 /* Draws screem buffer to OLED */
 int updateOled(const char *screenBuffer)

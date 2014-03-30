@@ -4,7 +4,7 @@ CONFIG -= app_bundle
 QT += dbus
 QT -= gui
 
-REVISION = $$system(git --git-dir $$PWD/.git --work-tree $$PWD describe)
+REVISION = $$system(git --git-dir $$PWD/.git --work-tree $$PWD describe --dirty)
 DEFINES += "GITHASH=\\\"$${REVISION}\\\""
 
 INCLUDEPATH += ./inc

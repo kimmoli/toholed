@@ -140,6 +140,24 @@ QString Toholed::testIcons()
     return QString("All possible icons now active");
 }
 
+QString Toholed::setPixel(const QDBusMessage& msg)
+{
+    QList<QVariant> args = msg.arguments();
+
+    if (args.count() != 2)
+        return QString("Pixelzet fail - gimme x and y");
+
+    int x = args.at(0).toInt();
+    int y = args.at(1).toInt();
+
+    drawPixel(x, y, 1, screenBuffer);
+
+    if (oledInitDone)
+        updateOled(screenBuffer);
+
+    return QString("Pixelzet %1 %2").arg(x).arg(y);
+}
+
 
 QString Toholed::setScreenCaptureOnProximity(const QString &arg)
 {
