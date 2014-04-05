@@ -447,30 +447,31 @@ void invertOled(bool invert)
 /* Initializes OLED SSD1306 chip */
 int initOled(unsigned int level)
 {
-    unsigned char init_seq[28] = {0xae, /* display off */
-                                  0x20,0x01, /* memory addressing mode = Vertical 01 Horizontal 00 */
-                                  0xb0, /* page start address */
-                                  0xc0, /* scan direction */
-                                  0x00, /* lower column start address */
-                                  0x10, /* higher column start address */
-                                  0x40, /* display start line */
-                                  0x81,0xcf, /* contrast (was af)*/
-                                  0xa0, /* segment remap */
-                                  0xa6, /* normal display  (a7 = inverse) */
-                                  0xa8,0x3f, /* mux ratio = 64 */
-                                  0xa4, /* display follows gdram */
-                                  0xd3,0x00, /* display offset = 0*/
-                                  0xd5,0xf0, /* oscillator */
-                                  0xd9,0xf1, /* precharge period (was 22)*/
-                                  0xda,0x12, /* configure COM pins */
-                                  0xdb,0x40, /* set VCOM level (was 20)*/
-                                  0x8d,0x14, /* enable charge pump. (0x10 disables) */
-                                  0xaf}; /* display on*/
+    unsigned char init_seq[30] = {0xae,         /* display off */
+                                  0x20,0x01,    /* memory addressing mode = Vertical 01 Horizontal 00 */
+                                  0xb0,         /* page start address */
+                                  0xc0,         /* scan direction */
+                                  0x00,         /* lower column start address */
+                                  0x10,         /* higher column start address */
+                                  0x40,         /* display start line */
+                                  0x81,0xcf,    /* contrast */
+                                  0xa0,         /* segment remap */
+                                  0xa6,         /* normal display  (a7 = inverse) */
+                                  0xa8,0x3f,    /* mux ratio = 64 */
+                                  0xa4,         /* display follows gdram */
+                                  0xd3,0x00,    /* display offset = 0*/
+                                  0xd5,0xf0,    /* oscillator */
+                                  0xd9,0xf1,    /* precharge period */
+                                  0xda,0x12,    /* configure COM pins */
+                                  0xdb,0x40,    /* set VCOM level */
+                                  0x23,0x00,    /* disable blinks and fading */
+                                  0x8d,0x14,    /* enable charge pump. (0x10 disables) */
+                                  0xaf};        /* display on*/
 								  
     int i, file;
     unsigned char buf[2] = {0};
 
-    /* Override contrast level if valid one given */
+    /* Override contrast/precharge level if valid one given */
     if ( (level == BRIGHTNESS_HIGH) || (level == BRIGHTNESS_LOW) || (level == BRIGHTNESS_MED))
     {
         init_seq[20] = ((level >> 8 ) & 0xff);
@@ -492,7 +493,7 @@ int initOled(unsigned int level)
     buf[0] = 0x80; // control reg
 
     // send init sequence
-    for (i=0; i<28; i++)
+    for (i=0; i<30; i++)
     {
         buf[1] = init_seq[i];
         if (write(file, buf, 2) != 2)
