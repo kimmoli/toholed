@@ -10,7 +10,6 @@
 #define BRIGHTNESS_LOW 0x1011
 
 
-
 int initOled(unsigned int level); /* Initializes OLED SSD1306 chip, brightness level arg */
 int deinitOled();
 int clearOled(char *screenBuffer); /* Clears screen buffer */

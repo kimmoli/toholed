@@ -444,7 +444,6 @@ void invertOled(bool invert)
 }
 
 
-
 /* Initializes OLED SSD1306 chip */
 int initOled(unsigned int level)
 {

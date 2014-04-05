@@ -34,7 +34,7 @@ public:
     }
 
 public slots:
-    QString testIcons();
+    QString testSomething();
     QString draw(const QDBusMessage& msg);
     QString setScreenCaptureOnProximity(const QString &arg);
 

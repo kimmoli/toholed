@@ -127,17 +127,10 @@ void Toholed::timerTimeout()
 
 /* DBus Exposed call methods */
 
-QString Toholed::testIcons()
+QString Toholed::testSomething()
 {
-    drawIcon(MESSAGE, screenBuffer);
-    drawIcon(CALL, screenBuffer);
-    drawIcon(MAIL, screenBuffer);
-    drawIcon(TWEET, screenBuffer);
-    drawIcon(IRC, screenBuffer);
-    if (oledInitDone)
-        updateOled(screenBuffer);
 
-    return QString("All possible icons now active");
+    return QString("Sorry, there is nothing to test...");
 }
 
 QString Toholed::draw(const QDBusMessage& msg)
