@@ -5,7 +5,7 @@
 Summary: The Other Half OLED
 Name: toholed
 Version: 0.1
-Release: 9
+Release: 18
 License: MIT
 Group: Development/Tools
 SOURCE0 : %{name}-%{version}.tar.gz
@@ -29,7 +29,6 @@ mkdir -p  %{buildroot}
 # in builddir
 cp -a * %{buildroot}
 
-
 %clean
 rm -rf %{buildroot}
 
@@ -48,7 +47,8 @@ systemctl stop %{name}.service
 systemctl disable %{name}.service
 
 %changelog
+* Sat Apr 05 2014  Kimmo Lindholm <kimmo.lindholm@gmail.com> 0.1-18
+- Brightness settings, ALS Interrupt hysteresis
 * Mon Mar 31 2014  Kimmo Lindholm <kimmo.lindholm@gmail.com> 0.1-9
 - First RPM
-
 

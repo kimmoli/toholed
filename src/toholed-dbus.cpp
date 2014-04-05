@@ -579,9 +579,6 @@ void Toholed::checkNewMailNotifications()
 
 
 /* GPIO interrupt handler */
-/*
- * TODO : add hysteresis
- */
 
 void Toholed::handleGpioInterrupt()
 {
@@ -621,9 +618,9 @@ void Toholed::handleGpioInterrupt()
         fd = tsl2772_initComms(0x39);
 
         if (newBrightness == BRIGHTNESS_LOW)
-            tsl2772_setAlsThresholds(fd, ALSLIM_BRIGHTNESS_LOW, 0);
+            tsl2772_setAlsThresholds(fd, ALSLIM_BRIGHTNESS_LOW + ALS_HYST_LOW, 0);
         else if (newBrightness == BRIGHTNESS_HIGH)
-            tsl2772_setAlsThresholds(fd, 0xffff, ALSLIM_BRIGHTNESS_HIGH);
+            tsl2772_setAlsThresholds(fd, 0xffff, ALSLIM_BRIGHTNESS_HIGH - ALS_HYST_HIGH);
         else
             tsl2772_setAlsThresholds(fd, ALSLIM_BRIGHTNESS_HIGH, ALSLIM_BRIGHTNESS_LOW);
 
@@ -636,7 +633,7 @@ void Toholed::handleGpioInterrupt()
 
     if ((prox > PROX_LIMIT) && (prevProx < PROX_LIMIT))
     {
-        printf("Interrupt: Proximity detect: ALS C0 %5lu C1 %5lu prox %5lu\n", alsC0, alsC1, prox);
+        printf("Interrupt: Proximity detect:       ALS C0 %5lu C1 %5lu prox %5lu\n", alsC0, alsC1, prox);
         fd = tsl2772_initComms(0x39);
         tsl2772_setProxThresholds(fd, 0xFFFF, PROX_LIMIT);
         tsl2772_closeComms(fd);
@@ -645,7 +642,7 @@ void Toholed::handleGpioInterrupt()
     }
     else if ((prox < PROX_LIMIT) && (prevProx > PROX_LIMIT))
     {
-        printf("Interrupt: Proximity cleared: ALS C0 %5lu C1 %5lu prox %5lu\n", alsC0, alsC1, prox);
+        printf("Interrupt: Proximity cleared:      ALS C0 %5lu C1 %5lu prox %5lu\n", alsC0, alsC1, prox);
         fd = tsl2772_initComms(0x39);
         tsl2772_setProxThresholds(fd, PROX_LIMIT, 0);
         tsl2772_closeComms(fd);

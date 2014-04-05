@@ -5,6 +5,9 @@
 #define ALSLIM_BRIGHTNESS_HIGH (10000)
 #define PROX_LIMIT (650)
 
+#define ALS_HYST_LOW (100)
+#define ALS_HYST_HIGH (500)
+
 int tsl2772_initialize(int file);
 int tsl2772_initComms(unsigned char addr);
 int tsl2772_closeComms(int file);
