@@ -5,7 +5,7 @@
 Summary: The Other Half OLED
 Name: toholed
 Version: 0.1
-Release: 18
+Release: 20
 License: MIT
 Group: Development/Tools
 SOURCE0 : %{name}-%{version}.tar.gz
@@ -39,14 +39,26 @@ rm -rf %{buildroot}
 /etc/dbus-1/system.d/%{name}.conf
 
 %post
-systemctl enable %{name}.service
 systemctl start %{name}.service
+systemctl enable %{name}.service
+
+%pre
+# In case of update, stop first
+if [ "$1" = "2" ]; then
+  systemctl stop %{name}.service
+  systemctl disable %{name}.service
+fi
 
 %preun
-systemctl stop %{name}.service
-systemctl disable %{name}.service
+# in case of complete removal, stop
+if [ "$1" = "0" ]; then
+  systemctl stop %{name}.service
+  systemctl disable %{name}.service
+fi
 
 %changelog
+* Sun Apr 06 2014  Kimmo Lindholm <kimmo.lindholm@gmail.com> 0.1-20
+- Charging indicator
 * Sat Apr 05 2014  Kimmo Lindholm <kimmo.lindholm@gmail.com> 0.1-18
 - Brightness settings, ALS Interrupt hysteresis
 * Mon Mar 31 2014  Kimmo Lindholm <kimmo.lindholm@gmail.com> 0.1-9

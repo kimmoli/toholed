@@ -90,10 +90,10 @@ void Toholed::timerTimeout()
                         .arg((int) current.minute(), 2, 10, QLatin1Char('0'));
         QByteArray baNow = tNow.toLocal8Bit();
 
-        QString batNow = QString("%1%")
-                          .arg((int) chargerGetCapacity(), 3, 10, QLatin1Char(' '));
+        int chargeLevel = chargerGetCapacity();
+        QString charging = (chargerConnected && (chargeLevel < 100)) ? "*" : "";
+        QString batNow = QString("%1%2%").arg(charging).arg(chargeLevel, 2, 10, QLatin1Char(' '));
         QByteArray babatNow = batNow.toLocal8Bit();
-
 
         clearOled(screenBuffer);
         drawTime(baNow.data(), screenBuffer);
@@ -113,7 +113,8 @@ void Toholed::timerTimeout()
         if (iconIRC)
             drawIcon(IRC, screenBuffer);
 
-        updateOled(screenBuffer);
+        if (oledInitDone)
+            updateOled(screenBuffer);
 
         if (!timeUpdateOverride)
             printf("Time now: %s Battery: %s\n", baNow.data(), babatNow.data() );
@@ -757,5 +758,28 @@ void Toholed::handleNotificationActionInvoked(const QDBusMessage& msg)
             printf("Failed to invoke gallery to show %s\n", qPrintable(ssFilename));
     }
 
+
+}
+
+
+/* Charger */
+
+void Toholed::handleChargerStatus(const QDBusMessage& msg)
+{
+    QList<QVariant> args = msg.arguments();
+    QString tmp = args.at(0).toString();
+
+    if (!(QString::localeAwareCompare( tmp, "charger_connected")) && !chargerConnected)
+    {
+        printf("Charger connected\n");
+        chargerConnected = true;
+        timeUpdateOverride = true;
+    }
+    else if (!(QString::localeAwareCompare( tmp, "charger_disconnected")) && chargerConnected)
+    {
+        printf("Charger disconnected\n");
+        chargerConnected = false;
+        timeUpdateOverride = true;
+    }
 
 }
