@@ -123,7 +123,6 @@ void clearIcons(char *screenBuffer)
         *(sb+i) = 0x00;
         *(sb+i+1) = 0x00;
     }
-
 }
 
 
@@ -147,7 +146,7 @@ void drawBatteryLevel(const char *batLevel, char *screenBuffer)
         }
         else
         {
-            for (x=0; x < 11 ; x++)
+            for (x=0; x < 12 ; x++)
             {
                 if ( batLevel[m] == pieniFonttiMap[x] )
                 {

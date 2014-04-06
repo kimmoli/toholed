@@ -56,6 +56,7 @@ private slots:
     void handleCommuni(const QDBusMessage& msg);
     void handleActiveSync(const QDBusMessage& msg);
     void handleNotificationActionInvoked(const QDBusMessage& msg);
+    void handleChargerStatus(const QDBusMessage& msg);
 
     void timerTimeout();
     void checkNewMailNotifications();
@@ -96,6 +97,8 @@ private:
     static bool iconCALL;
     static bool iconTWEET;
     static bool iconIRC;
+
+    static bool chargerConnected;
 
 };
 

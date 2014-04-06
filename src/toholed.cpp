@@ -37,6 +37,7 @@ bool Toholed::iconIRC = false;
 bool Toholed::ScreenCaptureOnProximity = false;
 int Toholed::activeHighlights = 0;
 unsigned int Toholed::ssNotifyReplacesId = 0;
+bool Toholed::chargerConnected = false;
 
 int main(int argc, char **argv)
 {
@@ -168,6 +169,18 @@ int main(int argc, char **argv)
         printf("com.nokia.asdbus.syncCompleted Connected\n");
     else
         printf("com.nokia.asdbus.syncCompleted Connected\n%s\n", qPrintable(asdbusConn.lastError().message()));
+
+
+    /* Charger connected/disconnected */
+
+    static QDBusConnection chargerConnectionconn = QDBusConnection::systemBus();
+    chargerConnectionconn.connect("com.meego.usb_moded", "/com/meego/usb_moded", "com.meego.usb_moded", "sig_usb_state_ind",
+                          &toholed, SLOT(handleChargerStatus(const QDBusMessage&)));
+
+    if(chargerConnectionconn.isConnected())
+        printf("com.meego.usb_moded.sig_usb_state_ind Connected\n");
+    else
+        printf("com.meego.usb_moded.sig_usb_state_ind Not connected\n%s\n", qPrintable(chargerConnectionconn.lastError().message()));
 
 
     /* TODO
