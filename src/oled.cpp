@@ -442,6 +442,41 @@ void invertOled(bool invert)
     close(file);
 }
 
+int checkOled()
+{
+    unsigned char buf[1] = {0};
+    int file;
+
+
+    if ((file = open( "/dev/i2c-1", O_RDWR )) < 0)
+    {
+        return -1;
+    }
+    if (ioctl( file, I2C_SLAVE, 0x3c) < 0)
+    {
+        close(file);
+        return -1;
+    }
+
+    buf[0] = 0x00;
+
+    // send invert change sequence
+    if (write(file, buf, 1) != 1)
+    {
+        close(file);
+        return -1;
+    }
+
+    if (read( file, buf, 1 ) != 1)
+    {
+        close(file);
+        return -1;
+    }
+    close(file);
+
+    return (int) buf[0];
+}
+
 
 /* Initializes OLED SSD1306 chip */
 int initOled(unsigned int level)

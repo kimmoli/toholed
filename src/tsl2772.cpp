@@ -192,4 +192,24 @@ unsigned long tsl2772_getADC(int file, int ch) /*CH0, CH1, CH2 for Proximity*/
     return i;
 }
 
+unsigned long tsl2772_getReg(int file, unsigned char reg)
+{
+    unsigned char buf[1] = {0};
+
+    buf[0] = 0xa0 + (reg & 0x1f);
+
+    if (write(file, buf, 1) != 1)
+    {
+       close(file);
+       return 0xFFFF;
+    }
+
+    if (read( file, buf, 1 ) != 1)
+    {
+        close(file);
+        return 0xFFFF;
+    }
+
+    return buf[0];
+}
 

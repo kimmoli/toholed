@@ -17,6 +17,6 @@ void tsl2772_enableInterrupts(int file);
 unsigned long tsl2772_getADC(int file, int ch);
 int tsl2772_setAlsThresholds(int file, unsigned int high, unsigned int low);
 int tsl2772_setProxThresholds(int file, unsigned int high, unsigned int low);
-
+unsigned long tsl2772_getReg(int file, unsigned char reg);
 
 #endif // TSL2772_H

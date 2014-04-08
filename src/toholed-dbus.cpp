@@ -480,8 +480,39 @@ void Toholed::handleCall(const QDBusMessage& msg)
 void Toholed::handleDisplayStatus(const QDBusMessage& msg)
 {
     QList<QVariant> args = msg.arguments();
+    int fd;
+    int tmp;
+    unsigned long reg;
 
     printf("Display status changed to %s\n", qPrintable(args.at(0).toString()));
+
+    if (!(QString::localeAwareCompare( args.at(0).toString(), "on")))
+    {
+        tmp = checkOled();
+        if (tmp == -1)
+            printf("Failed to check OLED status\n");
+        else if (tmp == 1)
+            printf("Display is active\n");
+        else
+            printf("Display is off (%02x)\n", tmp);
+
+
+        fd = tsl2772_initComms(0x39);
+        if (fd <0)
+        {
+            printf("failed to start communication with TSL2772\n");
+            tsl2772_closeComms(fd);
+            return;
+        }
+        reg = tsl2772_getReg(fd, 0x00);
+        tsl2772_closeComms(fd);
+
+        if (reg == 0xffff)
+            printf("Failed to read register from TSL2772\n");
+        else
+            printf("TSL2772 enable register = %02x\n", (reg & 0xff));
+
+    }
 }
 
 
