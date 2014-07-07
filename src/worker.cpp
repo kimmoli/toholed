@@ -80,7 +80,7 @@ void Worker::doWork()
         }
         if (fdset[1].revents != 0)
         {
-            dummy += read(fdset[1].fd, buf, 200);
+            dummy += read(fdset[1].fd, buf, 20);
             emit proxInterruptCaptured();
         }
 

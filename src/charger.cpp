@@ -18,6 +18,7 @@ long long chargerGetCurrent()
 {
 	
 	int fd;
+    int retval = 0;
 	char buf[20];
     long long now = 0;
 
@@ -25,7 +26,7 @@ long long chargerGetCurrent()
 	
 	if (fd != -1)
 	{
-		read(fd, buf, sizeof(buf)-1);
+        retval += read(fd, buf, sizeof(buf)-1);
         now = atoll(buf);
 		close(fd);
 	}
@@ -37,6 +38,7 @@ long long chargerGetVoltage()
 {
 	
 	int fd;
+    int retval = 0;
 	char buf[20];
     long long now = 0;
 
@@ -44,7 +46,7 @@ long long chargerGetVoltage()
 	
 	if (fd != -1)
 	{
-		read(fd, buf, sizeof(buf)-1);
+        retval += read(fd, buf, sizeof(buf)-1);
         now = atoll(buf);
 		close(fd);
 	}
@@ -56,6 +58,7 @@ int chargerGetCapacity()
 {
 	
 	int fd;
+    int retval = 0;
 	char buf[20];
 	int now = 0;
 
@@ -63,7 +66,7 @@ int chargerGetCapacity()
 	
 	if (fd != -1)
 	{
-		read(fd, buf, sizeof(buf)-1);
+        retval += read(fd, buf, sizeof(buf)-1);
 		now = atoi(buf);
 		close(fd);
 	}
@@ -75,6 +78,7 @@ long chargerGetTemperature()
 {
 	
 	int fd;
+    int retval = 0;
 	char buf[20];
 	long now = 0;
 
@@ -82,7 +86,7 @@ long chargerGetTemperature()
 	
 	if (fd != -1)
 	{
-		read(fd, buf, sizeof(buf)-1);
+        retval += read(fd, buf, sizeof(buf)-1);
 		now = atoi(buf);
 		close(fd);
 	}

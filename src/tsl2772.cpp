@@ -164,15 +164,17 @@ int tsl2772_clearInterrupt(int file)
 void tsl2772_disableInterrupts(int file)
 {
     char buf[2] = {0xa0, 0x0f};
+    int retval = 0;
 
-    write(file, buf, 2);
+    retval += write(file, buf, 2);
 }
 
 void tsl2772_enableInterrupts(int file)
 {
     char buf[2] = {0xa0, 0x3f};
+    int retval = 0;
 
-    write(file, buf, 2);
+    retval += write(file, buf, 2);
 }
 
 

@@ -20,12 +20,13 @@ int controlVdd(int state)
 {
 	
 	int fd;
+    int retval = 0;
 
 	fd = open("/sys/devices/platform/reg-userspace-consumer.0/state", O_WRONLY);
 	
     if (!(fd < 0))
 	{
-		write (fd, state ? "1" : "0", 1);
+        retval += write (fd, state ? "1" : "0", 1);
 		close(fd);
 	}
 	
@@ -36,6 +37,7 @@ int releaseTohInterrupt(int fdGpio)
 {
 
     int fd;
+    int retval = 0;
 
     close(fdGpio);
 
@@ -43,7 +45,7 @@ int releaseTohInterrupt(int fdGpio)
 
     if (!(fd < 0))
     {
-        write (fd, GPIO_INT, strlen(GPIO_INT));
+        retval += write (fd, GPIO_INT, strlen(GPIO_INT));
         close(fd);
     }
     return fd;
@@ -55,12 +57,13 @@ int getTohInterrupt()
 {
 
     int fd;
+    int retval = 0;
 
     fd = open("/sys/class/gpio/export", O_WRONLY);
 
     if (!(fd < 0))
     {
-        write (fd, GPIO_INT, strlen(GPIO_INT));
+        retval += write (fd, GPIO_INT, strlen(GPIO_INT));
         close(fd);
     }
 
@@ -68,7 +71,7 @@ int getTohInterrupt()
 
     if (!(fd < 0))
     {
-        write (fd, GPIO_INT_EDGE, strlen(GPIO_INT_EDGE));
+        retval += write (fd, GPIO_INT_EDGE, strlen(GPIO_INT_EDGE));
         close(fd);
     }
     else
@@ -93,11 +96,12 @@ void releaseProximityInterrupt(int fdProx)
 bool getProximityStatus()
 {
     int fd;
+    int retval = 0;
     char buf[2] = {0};
 
     fd = open("/sys/devices/virtual/input/input10/prx_detect", O_RDONLY);
     if (!(fd < 0))
-        read(fd, buf, 1);
+        retval += read(fd, buf, 1);
     close(fd);
 
     return (buf[0]=='1');
@@ -113,11 +117,12 @@ bool getProximityStatus()
 unsigned int getEepromConfig(int number)
 {
     int fd;
+    int retval = 0;
     char buf[64] = { 0xFF };
 
     fd = open("/sys/devices/platform/toh-core.0/config_data", O_RDONLY);
     if (!(fd < 0))
-        read(fd, buf, 64);
+        retval += read(fd, buf, 64);
     close(fd);
 
     printf("EEPROM parameter %d value %d\n", number, ((buf[number*2]<<8) | (buf[(number*2)+1])));
