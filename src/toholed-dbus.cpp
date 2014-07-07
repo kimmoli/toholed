@@ -667,20 +667,20 @@ void Toholed::handleGpioInterrupt()
     }
 
 
-    if ((prox > PROX_LIMIT) && (prevProx < PROX_LIMIT))
+    if ((prox > prox_limit) && (prevProx < prox_limit))
     {
         printf("Interrupt: Proximity detect:       ALS C0 %5lu C1 %5lu prox %5lu\n", alsC0, alsC1, prox);
         fd = tsl2772_initComms(0x39);
-        tsl2772_setProxThresholds(fd, 0xFFFF, PROX_LIMIT);
+        tsl2772_setProxThresholds(fd, 0xFFFF, prox_limit);
         tsl2772_closeComms(fd);
         deinitOled();
         oledInitDone = false;
     }
-    else if ((prox < PROX_LIMIT) && (prevProx > PROX_LIMIT))
+    else if ((prox < prox_limit) && (prevProx > prox_limit))
     {
         printf("Interrupt: Proximity cleared:      ALS C0 %5lu C1 %5lu prox %5lu\n", alsC0, alsC1, prox);
         fd = tsl2772_initComms(0x39);
-        tsl2772_setProxThresholds(fd, PROX_LIMIT, 0);
+        tsl2772_setProxThresholds(fd, prox_limit, 0);
         tsl2772_closeComms(fd);
         initOled(prevBrightness);
         oledInitDone = true;

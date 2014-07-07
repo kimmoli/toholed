@@ -19,4 +19,6 @@ int tsl2772_setAlsThresholds(int file, unsigned int high, unsigned int low);
 int tsl2772_setProxThresholds(int file, unsigned int high, unsigned int low);
 unsigned long tsl2772_getReg(int file, unsigned char reg);
 
+extern unsigned int prox_limit;
+
 #endif // TSL2772_H

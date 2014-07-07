@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include "tsl2772.h"
+#include "toh.h"
 
 /*
  *  ALS Value relation to brightness
@@ -17,6 +18,8 @@
  *
  *
  */
+
+unsigned int prox_limit;
 
 int tsl2772_setAlsThresholds(int file, unsigned int high, unsigned int low)
 {
@@ -62,6 +65,11 @@ int tsl2772_setProxThresholds(int file, unsigned int high, unsigned int low)
 
 int tsl2772_initialize(int file)
 {
+    prox_limit = getEepromConfig(0);
+
+    if (prox_limit == 0xFFFF)
+        prox_limit = PROX_LIMIT;
+
     char buf[17] = {
         0xa0, /* Command Register, Auto increment protocol, address 0 */
         0x00, /* Reg00 ENABLE - Disable all */
@@ -74,8 +82,8 @@ int tsl2772_initialize(int file)
         ((ALSLIM_BRIGHTNESS_HIGH >> 8) & 0xff), /* Reg07 AIHTH */
         0x00,                                   /* Reg08 PILTL  - Proximity interrupt threshod*/
         0x00,                                   /* Reg09 PILTH  - Low */
-        (PROX_LIMIT & 0xff),                    /* Reg0a PIHTL */
-        ((PROX_LIMIT >> 8) & 0xff),             /* Reg0b PIHTH */
+        (prox_limit & 0xff),                    /* Reg0a PIHTL */
+        ((prox_limit >> 8) & 0xff),             /* Reg0b PIHTH */
         0x11, /* Reg0c PERS   - APERS = 1, PPERS = 1 */
         0x00, /* Reg0d CONFIG - AGL = 0, WLONG = 0, PLD = 0 */
         0x08, /* Reg0e PPULSE - 8 pulses during prox accum */

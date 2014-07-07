@@ -103,3 +103,25 @@ bool getProximityStatus()
     return (buf[0]=='1');
 
 }
+
+/*
+ *  Reads eeprom contents.
+ *  Configuration values are stored as 16-bit big-endian
+ *
+ */
+
+unsigned int getEepromConfig(int number)
+{
+    int fd;
+    char buf[64] = { 0xFF };
+
+    fd = open("/sys/devices/platform/toh-core.0/config_data", O_RDONLY);
+    if (!(fd < 0))
+        read(fd, buf, 64);
+    close(fd);
+
+    printf("EEPROM parameter %d value %d\n", number, ((buf[number*2]<<8) | (buf[(number*2)+1])));
+
+    return ((buf[number*2]<<8) | (buf[(number*2)+1]));
+
+}
