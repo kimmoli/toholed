@@ -136,7 +136,8 @@ QString Toholed::testSomething()
 
 QString Toholed::draw(const QDBusMessage& msg)
 {
-    int x, y, r, size, offset, height, width, rowsize;
+    int x, y, r, offset, height, width, rowsize;
+    // int size;
     bool invert;
 
     QList<QVariant> args = msg.arguments();
@@ -191,7 +192,7 @@ QString Toholed::draw(const QDBusMessage& msg)
         /* Checks BM, header size 40, 1 bit/pixel */
         if ( (bitmapData[0] == 0x42) && (bitmapData[1] == 0x4d) && (bitmapData[14] == 0x28) && (bitmapData[28] == 0x01))
         {
-            size   = bitmapData[2]  + (bitmapData[3]<<8)  + (bitmapData[4]<<16)  + (bitmapData[5]<<24);
+            //size   = bitmapData[2]  + (bitmapData[3]<<8)  + (bitmapData[4]<<16)  + (bitmapData[5]<<24);
             offset = bitmapData[10] + (bitmapData[11]<<8) + (bitmapData[12]<<16) + (bitmapData[13]<<24);
             width  = bitmapData[18] + (bitmapData[19]<<8) + (bitmapData[20]<<16) + (bitmapData[21]<<24);
             height = bitmapData[22] + (bitmapData[23]<<8) + (bitmapData[24]<<16) + (bitmapData[25]<<24);
@@ -389,6 +390,7 @@ void Toholed:: handleSMS(const QDBusMessage& msg)
 
 void Toholed::handleTweetian(const QDBusMessage& msg)
 {
+    Q_UNUSED(msg);
     printf("You have been mentioned in a Tweet\n");
 
     mutex.lock();
@@ -510,7 +512,7 @@ void Toholed::handleDisplayStatus(const QDBusMessage& msg)
         if (reg == 0xffff)
             printf("Failed to read register from TSL2772\n");
         else
-            printf("TSL2772 enable register = %02x\n", (reg & 0xff));
+            printf("TSL2772 enable register = %02x\n", (int)(reg & 0xff));
 
     }
 }
@@ -553,6 +555,8 @@ void Toholed::handleNotificationClosed(const QDBusMessage& msg)
  */
 void Toholed::handleActiveSync(const QDBusMessage& msg)
 {
+    Q_UNUSED(msg);
+
     /* Just return if icon is already active */
     if (iconEMAIL)
         return;
