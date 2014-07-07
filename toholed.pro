@@ -43,3 +43,9 @@ HEADERS += \
     inc/tsl2772.h \
     inc/derp.h
 
+OTHER_FILES += \
+    rpm/toholed.spec \
+    config/toholed.conf \
+    config/toholed.service \
+    config/95-toholed.rules
+
