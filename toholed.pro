@@ -1,19 +1,27 @@
+TARGET = toholed
+
 TEMPLATE = app
 CONFIG += console
 CONFIG -= app_bundle
 QT += dbus
 QT -= gui
 
-#Force building toholed.cpp to update version and build-date
-system(rm $$OUT_PWD/toholed.o)
+target.path = /usr/sbin/
 
-#show some info about git status
-system(git --git-dir $$PWD/.git diff --name-only)
+systemd.path = /etc/systemd/system/
+systemd.files = config/$${TARGET}.service
 
-REVISION = $$system(git --git-dir $$PWD/.git --work-tree $$PWD describe --dirty=-dev --always)
-DEFINES += "GITHASH=\\\"$${REVISION}\\\""
+udevrule.path = /etc/udev/rules.d/
+udevrule.files = config/95-$${TARGET}.rules
 
-message($${REVISION})
+dbusconf.path = /etc/dbus-1/system.d/
+dbusconf.files = config/$${TARGET}.conf
+
+DEFINES += "APPVERSION=\\\"$${SPECVERSION}\\\""
+
+message($${DEFINES})
+
+INSTALLS += target systemd udevrule dbusconf
 
 INCLUDEPATH += ./inc
 

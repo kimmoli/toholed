@@ -48,7 +48,7 @@ int main(int argc, char **argv)
     setlinebuf(stdout);
     setlinebuf(stderr);
 
-    printf("Starting toholed daemon. Version %s build %s %s\n", GITHASH, __DATE__, __TIME__);
+    printf("Starting toholed daemon. Version %s.\n", APPVERSION);
 
     if (!QDBusConnection::systemBus().isConnected())
     {

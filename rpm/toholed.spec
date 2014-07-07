@@ -1,66 +1,75 @@
-%define        __spec_install_post %{nil}
-%define          debug_package %{nil}
-%define        __os_install_post %{_dbpath}/brp-compress
+#
+# toholed spec
+# (C) kimmoli 2014
+#
 
-Summary: The Other Half OLED
 Name: toholed
-Version: 0.1
-Release: 20
-License: MIT
-Group: Development/Tools
-SOURCE0 : %{name}-%{version}.tar.gz
-URL: https://bitbucket.org/tohs/toholed_daemon
 
-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
+%{!?qtc_qmake:%define qtc_qmake %qmake}
+%{!?qtc_qmake5:%define qtc_qmake5 %qmake5}
+%{!?qtc_make:%define qtc_make make}
+%{?qtc_builddir:%define _builddir %qtc_builddir}
+
+Summary: The OtherHalf OLED daemon
+Version: 0.1
+Release: 21
+Group: Qt/Qt
+License: LICENSE
+URL: https://github.com/kimmoli/toholed
+Source0: %{name}-%{version}.tar.bz2
+
+BuildRequires: pkgconfig(Qt5Core)
+BuildRequires: pkgconfig(Qt5DBus)
 
 %description
-%{summary}
+The OtherHalf OLED daemon
 
 %prep
-%setup -q
+%setup -q -n %{name}-%{version}
 
 %build
-# Empty section.
+
+%qtc_qmake5 SPECVERSION=%{version}
+
+%qtc_make %{?_smp_mflags}
 
 %install
 rm -rf %{buildroot}
-mkdir -p  %{buildroot}
 
-# in builddir
-cp -a * %{buildroot}
-
-%clean
-rm -rf %{buildroot}
+%qmake5_install
 
 %files
 %defattr(-,root,root,-)
-%{_sbindir}/*
-/etc/systemd/system/%{name}.service
-/etc/dbus-1/system.d/%{name}.conf
+%{_sbindir}/%{name}
+%config /etc/systemd/system/%{name}.service
+%config /etc/udev/rules.d/95-%{name}.rules
+%config /etc/dbus-1/system.d/%{name}.conf
+
 
 %post
-systemctl start %{name}.service
-systemctl enable %{name}.service
+#reload udev rules
+udevadm control --reload
+# if toholed is connected, start daemon now
+if [ -e /sys/devices/platform/toh-core.0/vendor ]; then
+ if grep -q 19276 /sys/devices/platform/toh-core.0/vendor ; then
+  if grep -q 2 /sys/devices/platform/toh-core.0/product ; then
+   systemctl start %{name}.service
+  fi
+ fi
+fi
 
 %pre
-# In case of update, stop first
+# In case of update, stop and disable first
 if [ "$1" = "2" ]; then
   systemctl stop %{name}.service
   systemctl disable %{name}.service
+  udevadm control --reload
 fi
 
 %preun
-# in case of complete removal, stop
+# in case of complete removal, stop and disable
 if [ "$1" = "0" ]; then
   systemctl stop %{name}.service
   systemctl disable %{name}.service
+  udevadm control --reload
 fi
-
-%changelog
-* Sun Apr 06 2014  Kimmo Lindholm <kimmo.lindholm@gmail.com> 0.1-20
-- Charging indicator
-* Sat Apr 05 2014  Kimmo Lindholm <kimmo.lindholm@gmail.com> 0.1-18
-- Brightness settings, ALS Interrupt hysteresis
-* Mon Mar 31 2014  Kimmo Lindholm <kimmo.lindholm@gmail.com> 0.1-9
-- First RPM
-
