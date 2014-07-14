@@ -12,7 +12,7 @@ Name: toholed
 
 Summary: The OtherHalf OLED daemon
 Version: 0.1
-Release: 23
+Release: 24
 Group: Qt/Qt
 License: LICENSE
 URL: https://github.com/kimmoli/toholed
@@ -61,6 +61,7 @@ if [ -e /sys/devices/platform/toh-core.0/vendor ]; then
   fi
  fi
 fi
+%_ambience_post
 
 %pre
 # In case of update, stop and disable first

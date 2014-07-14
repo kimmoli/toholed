@@ -6,6 +6,6 @@
     "primaryColor"              : "#FFFFFF",
     "secondaryColor"            : "#FFFFFF99",
     "ringerVolume"              : 100,
-    "favorite"			: false
+    "favorite"			: true
 }
 
