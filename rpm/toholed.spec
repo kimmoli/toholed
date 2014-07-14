@@ -12,7 +12,7 @@ Name: toholed
 
 Summary: The OtherHalf OLED daemon
 Version: 0.1
-Release: 22
+Release: 23
 Group: Qt/Qt
 License: LICENSE
 URL: https://github.com/kimmoli/toholed
@@ -20,6 +20,8 @@ Source0: %{name}-%{version}.tar.bz2
 
 BuildRequires: pkgconfig(Qt5Core)
 BuildRequires: pkgconfig(Qt5DBus)
+
+Requires:   ambienced
 
 %description
 The OtherHalf OLED daemon
@@ -44,7 +46,9 @@ rm -rf %{buildroot}
 %config /etc/systemd/system/%{name}.service
 %config /etc/udev/rules.d/95-%{name}.rules
 %config /etc/dbus-1/system.d/%{name}.conf
-
+%{_datadir}/ambience/%{name}
+%{_datadir}/ambience/%{name}/%{name}.ambience
+%{_datadir}/ambience/%{name}/images/*
 
 %post
 #reload udev rules

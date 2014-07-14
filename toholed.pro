@@ -17,11 +17,18 @@ udevrule.files = config/95-$${TARGET}.rules
 dbusconf.path = /etc/dbus-1/system.d/
 dbusconf.files = config/$${TARGET}.conf
 
+ambience.files = ambience/$${TARGET}.ambience
+ambience.path = /usr/share/ambience/$${TARGET}
+
+images.files = ambience/images/*
+images.path = $${ambience.path}/images
+
+
 DEFINES += "APPVERSION=\\\"$${SPECVERSION}\\\""
 
 message($${DEFINES})
 
-INSTALLS += target systemd udevrule dbusconf
+INSTALLS += target systemd udevrule dbusconf ambience images
 
 INCLUDEPATH += ./inc
 
@@ -55,5 +62,7 @@ OTHER_FILES += \
     rpm/toholed.spec \
     config/toholed.conf \
     config/toholed.service \
-    config/95-toholed.rules
+    config/95-toholed.rules \
+    ambience/toholed.ambience \
+    ambience/images/toholed.jpg
 
