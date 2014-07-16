@@ -710,14 +710,15 @@ void Toholed::handleProxInterrupt()
         QDate ssDate = QDate::currentDate();
         QTime ssTime = QTime::currentTime();
 
-        ssFilename = QString("/home/nemo/Pictures/ss%1%2%3-%4%5%6-%7.png")
+        ssFilename = QString("%7/ss%1%2%3-%4%5%6-%7.png")
                         .arg((int) ssDate.day(),    2, 10, QLatin1Char('0'))
                         .arg((int) ssDate.month(),  2, 10, QLatin1Char('0'))
                         .arg((int) ssDate.year(),   2, 10, QLatin1Char('0'))
                         .arg((int) ssTime.hour(),   2, 10, QLatin1Char('0'))
                         .arg((int) ssTime.minute(), 2, 10, QLatin1Char('0'))
                         .arg((int) ssTime.second(), 2, 10, QLatin1Char('0'))
-                        .arg((int) ssTime.msec(),   3, 10, QLatin1Char('0'));
+                        .arg((int) ssTime.msec(),   3, 10, QLatin1Char('0'))
+                        .arg(QStandardPaths::writableLocation(QStandardPaths::PicturesLocation));
 
 
         QDBusMessage m = QDBusMessage::createMethodCall("org.nemomobile.lipstick",
