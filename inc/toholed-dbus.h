@@ -36,7 +36,7 @@ public:
 public slots:
     QString testSomething();
     QString draw(const QDBusMessage& msg);
-    QString setScreenCaptureOnProximity(const QString &arg);
+    QString setScreenCaptureOnProximity(const QDBusMessage &msg);
 
 private slots:
     void setVddState(bool turn);
@@ -78,6 +78,7 @@ private:
 
     static unsigned int ssNotifyReplacesId;
     QString ssFilename;
+    QString ScreenCaptureOnProximityStorePath;
 
     static int activeHighlights;
 
@@ -98,8 +99,7 @@ private:
     static bool iconTWEET;
     static bool iconIRC;
 
-    static bool chargerConnected;
-
+    static bool chargerConnected;    
 };
 
 

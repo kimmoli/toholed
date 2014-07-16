@@ -217,9 +217,16 @@ QString Toholed::draw(const QDBusMessage& msg)
 }
 
 
-QString Toholed::setScreenCaptureOnProximity(const QString &arg)
+QString Toholed::setScreenCaptureOnProximity(const QDBusMessage& msg)
 {
-    QString turn = QString("%1").arg(arg);
+    QList<QVariant> args = msg.arguments();
+
+    if (args.count() != 2)
+        return QString("SSP Failed, requires on|off path");
+
+
+    QString turn = args.at(0).toString();
+    ScreenCaptureOnProximityStorePath = args.at(1).toString();
 
     ScreenCaptureOnProximity =  QString::localeAwareCompare( turn, "on") ? false : true;
 
@@ -710,7 +717,7 @@ void Toholed::handleProxInterrupt()
         QDate ssDate = QDate::currentDate();
         QTime ssTime = QTime::currentTime();
 
-        ssFilename = QString("%7/ss%1%2%3-%4%5%6-%7.png")
+        ssFilename = QString("%8/ss%1%2%3-%4%5%6-%7.png")
                         .arg((int) ssDate.day(),    2, 10, QLatin1Char('0'))
                         .arg((int) ssDate.month(),  2, 10, QLatin1Char('0'))
                         .arg((int) ssDate.year(),   2, 10, QLatin1Char('0'))
@@ -718,7 +725,7 @@ void Toholed::handleProxInterrupt()
                         .arg((int) ssTime.minute(), 2, 10, QLatin1Char('0'))
                         .arg((int) ssTime.second(), 2, 10, QLatin1Char('0'))
                         .arg((int) ssTime.msec(),   3, 10, QLatin1Char('0'))
-                        .arg(QStandardPaths::writableLocation(QStandardPaths::PicturesLocation));
+                        .arg(ScreenCaptureOnProximityStorePath);
 
 
         QDBusMessage m = QDBusMessage::createMethodCall("org.nemomobile.lipstick",
