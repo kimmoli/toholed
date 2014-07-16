@@ -1,0 +1,4 @@
+Title   Toholed
+Description Toholed is the OtherHalf providing an additional low-power OLED display to your Jolla.
+Summary The OLED OtherHalf
+Icon    kimmoli.png
