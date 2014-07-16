@@ -3,7 +3,7 @@
 # (C) kimmoli 2014
 #
 
-Name: toholed
+Name: harbour-toholed
 
 %{!?qtc_qmake:%define qtc_qmake %qmake}
 %{!?qtc_qmake5:%define qtc_qmake5 %qmake5}
@@ -12,7 +12,7 @@ Name: toholed
 
 Summary: The OtherHalf OLED daemon
 Version: 0.1
-Release: 24
+Release: 25
 Group: Qt/Qt
 License: LICENSE
 URL: https://github.com/kimmoli/toholed
@@ -41,8 +41,8 @@ rm -rf %{buildroot}
 %qmake5_install
 
 %files
-%defattr(-,root,root,-)
-%{_sbindir}/%{name}
+%defattr(644,root,root,755)
+%attr(755,root,root) %{_bindir}/%{name}
 %config /etc/systemd/system/%{name}.service
 %config /etc/udev/rules.d/95-%{name}.rules
 %config /etc/dbus-1/system.d/%{name}.conf

@@ -1,4 +1,4 @@
-TARGET = toholed
+TARGET = harbour-toholed
 
 TEMPLATE = app
 CONFIG += console
@@ -6,7 +6,7 @@ CONFIG -= app_bundle
 QT += dbus
 QT -= gui
 
-target.path = /usr/sbin/
+target.path = /usr/bin/
 
 systemd.path = /etc/systemd/system/
 systemd.files = config/$${TARGET}.service
@@ -17,12 +17,11 @@ udevrule.files = config/95-$${TARGET}.rules
 dbusconf.path = /etc/dbus-1/system.d/
 dbusconf.files = config/$${TARGET}.conf
 
-ambience.files = ambience/$${TARGET}.ambience
 ambience.path = /usr/share/ambience/$${TARGET}
+ambience.files = ambience/$${TARGET}.ambience
 
-images.files = ambience/images/*
 images.path = $${ambience.path}/images
-
+images.files = ambience/images/*
 
 DEFINES += "APPVERSION=\\\"$${SPECVERSION}\\\""
 
@@ -60,9 +59,9 @@ HEADERS += \
 
 OTHER_FILES += \
     rpm/toholed.spec \
-    config/toholed.conf \
-    config/toholed.service \
-    config/95-toholed.rules \
-    ambience/toholed.ambience \
+    config/$${TARGET}.conf \
+    config/$${TARGET}.service \
+    config/95-$${TARGET}.rules \
+    ambience/$${TARGET}.ambience \
     ambience/images/toholed.jpg
 
