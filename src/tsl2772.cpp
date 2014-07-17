@@ -67,7 +67,7 @@ int tsl2772_initialize(int file)
 {
     prox_limit = getEepromConfig(0);
 
-    if (prox_limit == 0xFFFF)
+    if ((prox_limit == 0) || (prox_limit > 1024)) /* Use default value if out of limits */
         prox_limit = PROX_LIMIT;
 
     char buf[17] = {
