@@ -34,10 +34,12 @@ bool Toholed::iconSMS = false;
 bool Toholed::iconEMAIL = false;
 bool Toholed::iconTWEET = false;
 bool Toholed::iconIRC = false;
+bool Toholed::iconMITAKUULUU = false;
 bool Toholed::ScreenCaptureOnProximity = false;
 int Toholed::activeHighlights = 0;
 unsigned int Toholed::ssNotifyReplacesId = 0;
 bool Toholed::chargerConnected = false;
+int Toholed::mitakuuluuUnread = 0;
 
 int main(int argc, char **argv)
 {
@@ -181,6 +183,18 @@ int main(int argc, char **argv)
         printf("com.meego.usb_moded.sig_usb_state_ind Connected\n");
     else
         printf("com.meego.usb_moded.sig_usb_state_ind Not connected\n%s\n", qPrintable(chargerConnectionconn.lastError().message()));
+
+
+    /* Mitäkuuluu unread */
+
+    static QDBusConnection mitakuuluuConn = QDBusConnection::sessionBus();
+    mitakuuluuConn.connect("harbour.mitakuuluu2.client", "/", "harbour.mitakuuluu2.client", "totalUnreadValue",
+                           &toholed, SLOT(handleMitakuuluu(const QDBusMessage&)));
+
+    if (mitakuuluuConn.isConnected())
+        printf("harbour.mitakuuluu2.client totalUnreadValue Connected\n");
+    else
+        printf("harbour.mitakuuluu2.client totalUnreadValue Not connected\n%s\n", qPrintable(mitakuuluuConn.lastError().message()));
 
 
     /* TODO

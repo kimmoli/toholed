@@ -6,8 +6,9 @@
 #define MESSAGE 3
 #define TWEET 4
 #define IRC 5
+#define MITAKUULUU 6
 
-#define LASTICON IRC
+#define LASTICON MITAKUULUU
 
 extern const char iconsBitmaps[];
 extern const int iconsWidthPages;

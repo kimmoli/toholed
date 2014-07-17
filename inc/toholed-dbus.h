@@ -57,6 +57,7 @@ private slots:
     void handleActiveSync(const QDBusMessage& msg);
     void handleNotificationActionInvoked(const QDBusMessage& msg);
     void handleChargerStatus(const QDBusMessage& msg);
+    void handleMitakuuluu(const QDBusMessage& msg);
 
     void timerTimeout();
     void checkNewMailNotifications();
@@ -81,6 +82,7 @@ private:
     QString ScreenCaptureOnProximityStorePath;
 
     static int activeHighlights;
+    static int mitakuuluuUnread;
 
     static int timerCount;
     QTime prevTime;
@@ -98,6 +100,7 @@ private:
     static bool iconCALL;
     static bool iconTWEET;
     static bool iconIRC;
+    static bool iconMITAKUULUU;
 
     static bool chargerConnected;    
 };

@@ -102,8 +102,20 @@ void Toholed::timerTimeout()
         if (!iconEMAIL && !timeUpdateOverride && !mailCheckTimer->isActive())
             checkNewMailNotifications();
 
-        if (iconSMS)
-            drawIcon(MESSAGE, screenBuffer);
+        if (iconSMS && iconMITAKUULUU) /* If both are on, toggle them */
+        {
+            if (current.minute() & 1)
+                drawIcon(MESSAGE, screenBuffer);
+            else
+                drawIcon(MITAKUULUU, screenBuffer);
+        }
+        else
+        {
+            if (iconSMS)
+                drawIcon(MESSAGE, screenBuffer);
+            if (iconMITAKUULUU)
+                drawIcon(MITAKUULUU, screenBuffer);
+        }
         if (iconCALL)
             drawIcon(CALL, screenBuffer);
         if (iconEMAIL)
@@ -825,5 +837,40 @@ void Toholed::handleChargerStatus(const QDBusMessage& msg)
         chargerConnected = false;
         timeUpdateOverride = true;
     }
+
+}
+
+
+void Toholed::handleMitakuuluu(const QDBusMessage& msg)
+{
+    QList<QVariant> args = msg.arguments();
+
+    int mkUnread = args.at(0).toInt();
+    printf("Mitakuuluu: total unread %d\n", mkUnread);
+
+    if (mkUnread > mitakuuluuUnread) /* Number of total unread increased */
+    {
+        mutex.lock();
+        drawIcon(MITAKUULUU, screenBuffer);
+        if (oledInitDone)
+        {
+            updateOled(screenBuffer);
+            blinkOled(2);
+        }
+        iconMITAKUULUU = true;
+        mutex.unlock();
+
+    }
+    else if ((mkUnread == 0) && iconMITAKUULUU) /* All read */
+    {
+        mutex.lock();
+        clearIcon(MITAKUULUU, screenBuffer);
+        if (oledInitDone)
+            updateOled(screenBuffer);
+        iconMITAKUULUU = false;
+        mutex.unlock();
+    }
+
+    mitakuuluuUnread = mkUnread;
 
 }
