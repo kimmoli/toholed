@@ -267,6 +267,7 @@ void Toholed::setVddState(bool turn)
         printf("OK\n");
     }
 
+    usleep(350000); /* Wait for the reset ic RT9818C-29GV to release reset */
 }
 
 /* Initialze and clear oled */
