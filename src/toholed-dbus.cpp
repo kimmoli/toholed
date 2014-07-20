@@ -163,9 +163,13 @@ QString Toholed::setSettings(const QDBusMessage &msg)
 {
     QList<QVariant> args = msg.arguments();
 
+    if (args.size() != 4)
+        return QString("Failed");
+
     blinkOnNotification = QString::localeAwareCompare( args.at(0).toString(), "on") ? false : true;
     alsEnabled = QString::localeAwareCompare( args.at(1).toString(), "on") ? false : true;
     proximityEnabled = QString::localeAwareCompare( args.at(2).toString(), "on") ? false : true;
+    /* chargemon args.at(3) */
 
     QSettings settings(QSettings::SystemScope, "harbour-toholed", "toholed");
 
@@ -175,7 +179,24 @@ QString Toholed::setSettings(const QDBusMessage &msg)
     settings.setValue("als", alsEnabled);
     settings.endGroup();
 
-    /* Add here something to re-enable interrupts... */
+    int fd = tsl2772_initComms(0x39);
+    tsl2772_enableInterrupts(fd);
+    tsl2772_closeComms(fd);
+
+    if (!proximityEnabled && !oledInitDone)
+    {
+        initOled(prevBrightness);
+        oledInitDone = true;
+        timeUpdateOverride = true;
+    }
+
+    if (!alsEnabled)
+    {
+        setContrastOled(BRIGHTNESS_MED);
+        prevBrightness = BRIGHTNESS_MED;
+    }
+
+    timerTimeout();
 
     return QString("Yep");
 }
@@ -693,56 +714,61 @@ void Toholed::handleGpioInterrupt()
     tsl2772_clearInterrupt(fd);
     tsl2772_closeComms(fd);
 
-    if (alsC0 < ALSLIM_BRIGHTNESS_LOW)
-        newBrightness = BRIGHTNESS_LOW;
-    else if (alsC0 > ALSLIM_BRIGHTNESS_HIGH)
-        newBrightness = BRIGHTNESS_HIGH;
-    else
-        newBrightness = BRIGHTNESS_MED;
-
-    if (newBrightness != prevBrightness)
+    if (alsEnabled)
     {
-        printf("Interrupt: Auto brightness adjust: ALS C0 %5lu C1 %5lu prox %5lu\n", alsC0, alsC1, prox);
-
-        /* set new interrupt thresholds */
-        fd = tsl2772_initComms(0x39);
-
-        if (newBrightness == BRIGHTNESS_LOW)
-            tsl2772_setAlsThresholds(fd, ALSLIM_BRIGHTNESS_LOW + ALS_HYST_LOW, 0);
-        else if (newBrightness == BRIGHTNESS_HIGH)
-            tsl2772_setAlsThresholds(fd, 0xffff, ALSLIM_BRIGHTNESS_HIGH - ALS_HYST_HIGH);
+        if (alsC0 < ALSLIM_BRIGHTNESS_LOW)
+            newBrightness = BRIGHTNESS_LOW;
+        else if (alsC0 > ALSLIM_BRIGHTNESS_HIGH)
+            newBrightness = BRIGHTNESS_HIGH;
         else
-            tsl2772_setAlsThresholds(fd, ALSLIM_BRIGHTNESS_HIGH, ALSLIM_BRIGHTNESS_LOW);
+            newBrightness = BRIGHTNESS_MED;
 
-        tsl2772_closeComms(fd);
+        if (newBrightness != prevBrightness)
+        {
+            printf("Interrupt: Auto brightness adjust: ALS C0 %5lu C1 %5lu prox %5lu\n", alsC0, alsC1, prox);
 
-        setContrastOled(newBrightness);
-        prevBrightness = newBrightness;
+            /* set new interrupt thresholds */
+            fd = tsl2772_initComms(0x39);
+
+            if (newBrightness == BRIGHTNESS_LOW)
+                tsl2772_setAlsThresholds(fd, ALSLIM_BRIGHTNESS_LOW + ALS_HYST_LOW, 0);
+            else if (newBrightness == BRIGHTNESS_HIGH)
+                tsl2772_setAlsThresholds(fd, 0xffff, ALSLIM_BRIGHTNESS_HIGH - ALS_HYST_HIGH);
+            else
+                tsl2772_setAlsThresholds(fd, ALSLIM_BRIGHTNESS_HIGH, ALSLIM_BRIGHTNESS_LOW);
+
+            tsl2772_closeComms(fd);
+
+            setContrastOled(newBrightness);
+            prevBrightness = newBrightness;
+        }
     }
 
-
-    if ((prox > prox_limit) && (prevProx < prox_limit))
+    if (proximityEnabled)
     {
-        printf("Interrupt: Proximity detect:       ALS C0 %5lu C1 %5lu prox %5lu\n", alsC0, alsC1, prox);
-        fd = tsl2772_initComms(0x39);
-        tsl2772_setProxThresholds(fd, 0xFFFF, prox_limit);
-        tsl2772_closeComms(fd);
-        deinitOled();
-        oledInitDone = false;
-    }
-    else if ((prox < prox_limit) && (prevProx > prox_limit))
-    {
-        printf("Interrupt: Proximity cleared:      ALS C0 %5lu C1 %5lu prox %5lu\n", alsC0, alsC1, prox);
-        fd = tsl2772_initComms(0x39);
-        tsl2772_setProxThresholds(fd, prox_limit, 0);
-        tsl2772_closeComms(fd);
-        initOled(prevBrightness);
-        oledInitDone = true;
-        timeUpdateOverride = true;
-        timerTimeout();
-    }
+        if ((prox > prox_limit) && (prevProx < prox_limit))
+        {
+            printf("Interrupt: Proximity detect:       ALS C0 %5lu C1 %5lu prox %5lu\n", alsC0, alsC1, prox);
+            fd = tsl2772_initComms(0x39);
+            tsl2772_setProxThresholds(fd, 0xFFFF, prox_limit);
+            tsl2772_closeComms(fd);
+            deinitOled();
+            oledInitDone = false;
+        }
+        else if ((prox < prox_limit) && (prevProx > prox_limit))
+        {
+            printf("Interrupt: Proximity cleared:      ALS C0 %5lu C1 %5lu prox %5lu\n", alsC0, alsC1, prox);
+            fd = tsl2772_initComms(0x39);
+            tsl2772_setProxThresholds(fd, prox_limit, 0);
+            tsl2772_closeComms(fd);
+            initOled(prevBrightness);
+            oledInitDone = true;
+            timeUpdateOverride = true;
+            timerTimeout();
+        }
 
-    prevProx = prox;
+        prevProx = prox;
+    }
 
     fd = tsl2772_initComms(0x39);
     tsl2772_enableInterrupts(fd);
@@ -751,6 +777,8 @@ void Toholed::handleGpioInterrupt()
     mutex.unlock();
 
 }
+
+/* Front proximity interrupt */
 
 void Toholed::handleProxInterrupt()
 {
