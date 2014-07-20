@@ -5,6 +5,7 @@
 TARGET = toholed-settings-ui
 
 CONFIG += sailfishapp
+QT += dbus
 
 DEFINES += "APPVERSION=\\\"$${SPECVERSION}\\\""
 

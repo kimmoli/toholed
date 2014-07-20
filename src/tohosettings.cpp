@@ -12,6 +12,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <QSettings>
 #include <QCoreApplication>
 #include <QDebug>
+#include <QtDBus/QtDBus>
+#include <QDBusArgument>
 
 TohoSettings::TohoSettings(QObject *parent) :
     QObject(parent)
@@ -60,6 +62,46 @@ void TohoSettings::writeSettings()
 
     /**/
     qDebug() << "write settings";
+
+    QDBusMessage m = QDBusMessage::createMethodCall("com.kimmoli.toholed",
+                                                    "/",
+                                                    "com.kimmoli.toholed",
+                                                    "setSettings" );
+
+    QList<QVariant> args;
+    args.append(QString(m_blink ? "on" : "off"));
+    args.append(QString(m_als ? "on" : "off"));
+    args.append(QString(m_prox ? "on" : "off"));
+    args.append(QString(m_chargemon ? "on" : "off"));
+    m.setArguments(args);
+
+    if (QDBusConnection::systemBus().send(m))
+    {
+        qDebug() << "success" << args;
+    }
+    else
+    {
+        qDebug() << "failed" << QDBusConnection::systemBus().lastError().message();
+    }
+
+    m = QDBusMessage::createMethodCall("com.kimmoli.toholed",
+                                                    "/",
+                                                    "com.kimmoli.toholed",
+                                                    "setScreenCaptureOnProximity" );
+
+    args.clear();
+    args.append(QString(m_ssp ? "on" : "off"));
+    args.append(QStandardPaths::writableLocation(QStandardPaths::PicturesLocation));
+    m.setArguments(args);
+
+    if (QDBusConnection::systemBus().send(m))
+    {
+        qDebug() << "success" << args;
+    }
+    else
+    {
+        qDebug() << "failed" << QDBusConnection::systemBus().lastError().message();
+    }
 
 
 }
