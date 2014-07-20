@@ -20,6 +20,8 @@
  */
 
 unsigned int prox_limit;
+bool proximityEnabled;
+bool alsEnabled;
 
 int tsl2772_setAlsThresholds(int file, unsigned int high, unsigned int low)
 {
@@ -97,7 +99,7 @@ int tsl2772_initialize(int file)
 
     /* enable clocks, Prox Int, ALS Int, power on */
     buf[0] = 0xa0;
-    buf[1] = 0x3f;
+    buf[1] = 0x0f | (proximityEnabled ? 0x20 : 0) | (alsEnabled ? 0x10 : 0);
 /*
  *       7  Reserved
  *  SAI  6  Sleep after interrupt.
@@ -173,6 +175,8 @@ void tsl2772_enableInterrupts(int file)
 {
     char buf[2] = {0xa0, 0x3f};
     int retval = 0;
+
+    buf[1] = 0x0f | (proximityEnabled ? 0x20 : 0) | (alsEnabled ? 0x10 : 0);
 
     retval += write(file, buf, 2);
 }

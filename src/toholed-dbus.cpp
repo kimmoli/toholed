@@ -38,6 +38,8 @@ static char screenBuffer[SCREENBUFFERSIZE] = { 0 };
 /* Main */
 Toholed::Toholed()
 {
+    reloadSettings();
+
     timer = new QTimer(this);
     timer->setInterval(1000);
     connect(timer, SIGNAL(timeout()), this, SLOT(timerTimeout()));
@@ -144,6 +146,38 @@ QString Toholed::testSomething()
 {
 
     return QString("Sorry, there is nothing to test...");
+}
+
+void Toholed::reloadSettings()
+{
+    QSettings settings(QSettings::SystemScope, "harbour-toholed", "toholed");
+
+    settings.beginGroup("basic");
+    blinkOnNotification = settings.value("blink", true).toBool();
+    proximityEnabled = settings.value("proximity", true).toBool();
+    alsEnabled = settings.value("als", true).toBool();
+    settings.endGroup();
+}
+
+QString Toholed::setSettings(const QDBusMessage &msg)
+{
+    QList<QVariant> args = msg.arguments();
+
+    blinkOnNotification = QString::localeAwareCompare( args.at(0).toString(), "on") ? false : true;
+    alsEnabled = QString::localeAwareCompare( args.at(1).toString(), "on") ? false : true;
+    proximityEnabled = QString::localeAwareCompare( args.at(2).toString(), "on") ? false : true;
+
+    QSettings settings(QSettings::SystemScope, "harbour-toholed", "toholed");
+
+    settings.beginGroup("basic");
+    settings.setValue("blink", blinkOnNotification);
+    settings.setValue("proximity", proximityEnabled);
+    settings.setValue("als", alsEnabled);
+    settings.endGroup();
+
+    /* Add here something to re-enable interrupts... */
+
+    return QString("Yep");
 }
 
 QString Toholed::draw(const QDBusMessage& msg)

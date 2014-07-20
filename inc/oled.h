@@ -28,4 +28,6 @@ void drawPixel(int x, int y, int color, char *screenBuffer); /* Draw single pixe
 void drawCircle(int x0, int y0, int r,  int color, char *screenBuffer); /* Draw circle to screen r=radius */
 void drawBitmap(int x, int y, int height, int width, int offset, int rowsize, bool invert, const char *bitmap, char *screenBuffer);
 
+extern bool blinkOnNotification;
+
 #endif

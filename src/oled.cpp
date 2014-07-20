@@ -18,6 +18,8 @@
 
 #define DBGPRINT
 
+bool blinkOnNotification;
+
 void drawDerp(char *screenBuffer)
 {
     char* sb = screenBuffer;
@@ -401,6 +403,9 @@ int setContrastOled(unsigned int level)
 void blinkOled(int count)
 {
     int i;
+
+    if (!blinkOnNotification)
+        return;
 
     for (i=0; i<count; i++)
     {

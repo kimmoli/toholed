@@ -20,5 +20,7 @@ int tsl2772_setProxThresholds(int file, unsigned int high, unsigned int low);
 unsigned long tsl2772_getReg(int file, unsigned char reg);
 
 extern unsigned int prox_limit;
+extern bool proximityEnabled;
+extern bool alsEnabled;
 
 #endif // TSL2772_H

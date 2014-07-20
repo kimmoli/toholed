@@ -37,10 +37,12 @@ public slots:
     QString testSomething();
     QString draw(const QDBusMessage& msg);
     QString setScreenCaptureOnProximity(const QDBusMessage &msg);
+    QString setSettings(const QDBusMessage& msg);
 
 private slots:
     void setVddState(bool turn);
     void enableOled();
+    void reloadSettings();
 
     /* interrupts */
     int setInterruptEnable(bool turn);
