@@ -1,1 +1,4 @@
-*.spec eol=lf 
+*.spec eol=lf
+*.rules eol=lf
+*.conf eol=lf
+*.service eol=lf
