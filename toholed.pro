@@ -1,12 +1,12 @@
 TARGET = harbour-toholed
 
 TEMPLATE = app
-CONFIG += console link_pkgconfig
+CONFIG += console
 CONFIG -= app_bundle
 QT += dbus
 QT -= gui
 
-PKGCONFIG += libiphb
+LIBS += -lrt
 
 target.path = /usr/bin/
 
@@ -31,7 +31,12 @@ message($${DEFINES})
 
 INSTALLS += target systemd udevrule dbusconf ambience images
 
-INCLUDEPATH += ./inc
+INCLUDEPATH += \
+    ./inc \
+    ./3rdparty/libdsme/include/ \
+    ./3rdparty/mce-dev/include/ \
+    ./3rdparty/libiphb/src/
+
 
 SOURCES += \
     src/toholed.cpp \
@@ -44,7 +49,8 @@ SOURCES += \
     src/pienifontti.cpp \
     src/icons.cpp \
     src/tsl2772.cpp \
-    src/derp.c
+    src/derp.c \
+    3rdparty/libiphb/src/libiphb.c
 
 HEADERS += \
     inc/toholed.h \
@@ -57,7 +63,11 @@ HEADERS += \
     inc/pienifontti.h \
     inc/icons.h \
     inc/tsl2772.h \
-    inc/derp.h
+    inc/derp.h \
+    3rdparty/libiphb/src/libiphb.h \
+    3rdparty/libiphb/src/iphb_internal.h \
+    3rdparty/libdsme/include/dsme/messages.h \
+    3rdparty/mce-dev/include/mce/dbus-names.h
 
 OTHER_FILES += \
     rpm/toholed.spec \
