@@ -31,6 +31,10 @@
 #include "icons.h"
 #include "tsl2772.h"
 
+extern "C"
+{
+    #include "iphbd/libiphb.h"
+}
 
 
 static char screenBuffer[SCREENBUFFERSIZE] = { 0 };
@@ -41,9 +45,32 @@ Toholed::Toholed()
     reloadSettings();
 
     timer = new QTimer(this);
-    timer->setInterval(1000);
+    timer->setInterval(30000);
     connect(timer, SIGNAL(timeout()), this, SLOT(timerTimeout()));
     timer->start();
+
+    iphbRunning = false;
+    iphbdHandler = iphb_open(0);
+
+    if (!iphbdHandler)
+        printf("Error opening iphb\n");
+
+    iphb_fd = iphb_get_fd(iphbdHandler);
+
+    iphbNotifier = new QSocketNotifier(iphb_fd, QSocketNotifier::Read);
+
+    if (!QObject::connect(iphbNotifier, SIGNAL(activated(int)), this, SLOT(heartbeatReceived(int))))
+    {
+        delete iphbNotifier, iphbNotifier = 0;
+        printf("failed to connect iphbNotifier\n");
+    }
+    else
+    {
+        iphbNotifier->setEnabled(false);
+    }
+
+    if (iphbNotifier)
+        printf("iphb initialized succesfully\n");
 
     mailCheckTimer = new QTimer(this);
     mailCheckTimer->setSingleShot(true);
@@ -72,7 +99,10 @@ Toholed::Toholed()
     enableOled();
     setInterruptEnable(true);
 
-    timeUpdateOverride = true; /* Update clock at first run */
+    /* Update screen and start iphb */
+    heartbeatReceived(0);
+
+    printf("initialisation complete\n");
 }
 
 /* Timer routine to update OLED clock */
@@ -139,6 +169,64 @@ void Toholed::timerTimeout()
     timerCount++;
 
 }
+
+/* iphb wakeup stuff */
+
+void Toholed::heartbeatReceived(int sock)
+{
+    Q_UNUSED(sock);
+
+    iphbStop();
+    timeUpdateOverride = true;
+    printf("Wakywaky by iphb (%d)\n", timerCount);
+    timerTimeout();
+    iphbStart();
+}
+
+void Toholed::iphbStart()
+{
+    if (iphbRunning)
+        return;
+
+    if (!(iphbdHandler && iphbNotifier))
+    {
+        printf("iphbStart iphbHandler not ok\n");
+        return;
+    }
+
+    time_t unixTime = iphb_wait(iphbdHandler, 25, 35 , 0);
+
+    if (unixTime == (time_t)-1)
+    {
+        printf("iphbStart timer failed\n");
+        return;
+    }
+
+    iphbNotifier->setEnabled(true);
+    iphbRunning = true;
+
+}
+
+void Toholed::iphbStop()
+{
+    if (!iphbRunning)
+        return;
+
+    if (!(iphbdHandler && iphbNotifier))
+    {
+        printf("iphbStop iphbHandler not ok\n");
+        return;
+    }
+
+    iphbNotifier->setEnabled(false);
+
+    (void)iphb_discard_wakeups(iphbdHandler);
+
+    iphbRunning = false;
+
+}
+
+
 
 /* DBus Exposed call methods */
 
@@ -565,6 +653,8 @@ void Toholed::handleDisplayStatus(const QDBusMessage& msg)
 
     if (!(QString::localeAwareCompare( args.at(0).toString(), "on")))
     {
+        iphbStop();
+
         tmp = checkOled();
         if (tmp == -1)
             printf("Failed to check OLED status\n");
@@ -589,6 +679,11 @@ void Toholed::handleDisplayStatus(const QDBusMessage& msg)
         else
             printf("TSL2772 enable register = %02x\n", (int)(reg & 0xff));
 
+    }
+    else if (!(QString::localeAwareCompare( args.at(0).toString(), "off")))
+    {
+        timer->start();
+        iphbStart();
     }
 }
 

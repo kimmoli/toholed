@@ -12,7 +12,10 @@
 
 #define SERVICE_NAME "com.kimmoli.toholed"
 
-
+extern "C"
+{
+    #include "iphbd/libiphb.h"
+}
 
 
 /* main class */
@@ -28,6 +31,13 @@ public:
     ~Toholed()
     {
         /* Disable everything */
+
+        if(iphbdHandler)
+            (void)iphb_close(iphbdHandler);
+
+        if(iphbNotifier)
+            delete iphbNotifier;
+
         setInterruptEnable(false);
         deinitOled();
         setVddState(false);
@@ -65,6 +75,9 @@ private slots:
     void checkNewMailNotifications();
     void notificationSend(QString summary, QString body);
 
+    void heartbeatReceived(int sock);
+    void iphbStop();
+    void iphbStart();
 
 private:
     QThread *thread;
@@ -93,6 +106,11 @@ private:
     QTimer *mailCheckTimer;
 
     QMutex mutex;
+
+    iphb_t iphbdHandler;
+    int iphb_fd;
+    QSocketNotifier *iphbNotifier;
+    bool iphbRunning;
 
     int gpio_fd;
     int proximity_fd;

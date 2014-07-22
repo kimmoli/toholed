@@ -1,10 +1,12 @@
 TARGET = harbour-toholed
 
 TEMPLATE = app
-CONFIG += console
+CONFIG += console link_pkgconfig
 CONFIG -= app_bundle
 QT += dbus
 QT -= gui
+
+PKGCONFIG += libiphb
 
 target.path = /usr/bin/
 

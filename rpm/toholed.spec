@@ -12,7 +12,7 @@ Name: harbour-toholed
 
 Summary: The OtherHalf OLED daemon
 Version: 0.1
-Release: 30
+Release: 31
 Group: Qt/Qt
 License: LICENSE
 URL: https://github.com/kimmoli/toholed
@@ -20,6 +20,7 @@ Source0: %{name}-%{version}.tar.bz2
 
 BuildRequires: pkgconfig(Qt5Core)
 BuildRequires: pkgconfig(Qt5DBus)
+BuildRequires: libiphb-devel
 
 Requires:   ambienced
 
