@@ -71,6 +71,12 @@ private slots:
     void handleChargerStatus(const QDBusMessage& msg);
     void handleMitakuuluu(const QDBusMessage& msg);
 
+    void handleEmailNotify();
+    void handleTwitterNotify();
+    void handleFacebookNotify();
+    void handleOtherNotify();
+    void handleIrssiNotify();
+
     void timerTimeout();
     void checkNewMailNotifications();
     void notificationSend(QString summary, QString body);

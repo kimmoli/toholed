@@ -22,6 +22,8 @@
 
 #include "toholed-dbus.h"
 
+#include "notificationmanager.h"
+
 
 bool Toholed::oledInitDone = false;
 bool Toholed::vddEnabled = false;
@@ -195,12 +197,13 @@ int main(int argc, char **argv)
         printf("harbour.mitakuuluu2.client totalUnreadValue Not connected\n%s\n", qPrintable(mitakuuluuConn.lastError().message()));
 
 
-    /* TODO
-     *
-     * Connect to somethinf that indicates new IM message
-     */
+    NotificationManager notifications;
 
-
+    notifications.connect(&notifications, SIGNAL(emailNotify()), &toholed, SLOT(handleEmailNotify()));
+    notifications.connect(&notifications, SIGNAL(twitterNotify()), &toholed, SLOT(handleTwitterNotify()));
+    notifications.connect(&notifications, SIGNAL(facebookNotify()), &toholed, SLOT(handleFacebookNotify()));
+    notifications.connect(&notifications, SIGNAL(irssiNotify()), &toholed, SLOT(handleIrssiNotify()));
+    notifications.connect(&notifications, SIGNAL(otherNotify()), &toholed, SLOT(handleOtherNotify()));
 
     return app.exec();
 

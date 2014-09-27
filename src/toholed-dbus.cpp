@@ -1031,3 +1031,30 @@ void Toholed::handleMitakuuluu(const QDBusMessage& msg)
     mitakuuluuUnread = mkUnread;
 
 }
+
+/* Slots for Notificationsmanager */
+
+void Toholed::handleEmailNotify()
+{
+    printf("handleEmailNotify()\n");
+}
+
+void Toholed::handleTwitterNotify()
+{
+    printf("handleTwitterNotify()\n");
+}
+
+void Toholed::handleFacebookNotify()
+{
+    printf("handleFacebookNotify()\n");
+}
+
+void Toholed::handleIrssiNotify()
+{
+    printf("handleIrssiNotify()\n");
+}
+
+void Toholed::handleOtherNotify()
+{
+    printf("handleOtherNotify()\n");
+}

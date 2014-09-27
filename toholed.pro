@@ -49,7 +49,8 @@ SOURCES += \
     src/icons.cpp \
     src/tsl2772.cpp \
     src/derp.c \
-    3rdparty/libiphb/src/libiphb.c
+    3rdparty/libiphb/src/libiphb.c \
+    src/notificationmanager.cpp
 
 HEADERS += \
     3rdparty/libiphb/src/libiphb.h \
@@ -66,7 +67,8 @@ HEADERS += \
     src/jollafontti.h \
     src/icons.h \
     src/derp.h \
-    src/charger.h
+    src/charger.h \
+    src/notificationmanager.h
 
 OTHER_FILES += \
     rpm/toholed.spec \
