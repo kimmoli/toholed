@@ -42,6 +42,7 @@ int Toholed::activeHighlights = 0;
 unsigned int Toholed::ssNotifyReplacesId = 0;
 bool Toholed::chargerConnected = false;
 int Toholed::mitakuuluuUnread = 0;
+bool Toholed::silentProfile = false;
 
 int main(int argc, char **argv)
 {
@@ -183,6 +184,18 @@ int main(int argc, char **argv)
         printf("harbour.mitakuuluu2.client totalUnreadValue Connected\n");
     else
         printf("harbour.mitakuuluu2.client totalUnreadValue Not connected\n%s\n", qPrintable(mitakuuluuConn.lastError().message()));
+
+
+    /* Silent profile */
+
+    static QDBusConnection profileChangedConn = QDBusConnection::sessionBus();
+    profileChangedConn.connect("com.nokia.profiled", "/com/nokia/profiled", "com.nokia.profiled", "profile_changed",
+                           &toholed, SLOT(handleProfileChanged(const QDBusMessage&)));
+
+    if (profileChangedConn.isConnected())
+        printf("com.nokia.profiled profile_changed Connected\n");
+    else
+        printf("com.nokia.profiled profile_changed Not connected\n%s\n", qPrintable(mitakuuluuConn.lastError().message()));
 
 
     NotificationManager notifications;

@@ -89,6 +89,8 @@ Toholed::Toholed()
     timeUpdateOverride = false;
     interruptsEnabled = false;
 
+    /* Get the current profile status */
+    silentProfile = (getCurrentProfile() == "silent");
 
     /* do this automatically at startup */
     setVddState(true);
@@ -119,28 +121,31 @@ void Toholed::timerTimeout()
         QByteArray baNow = tNow.toLocal8Bit();
 
         int chargeLevel = chargerGetCapacity();
-        QString charging = (chargerConnected && (chargeLevel < 100)) ? "*" : "";
-        QString batNow = QString("%1%2%").arg(charging).arg(chargeLevel, 2, 10, QLatin1Char(' '));
+        QString firstCharIndicator;
+        if ((chargerConnected && silentProfile && (timerCount & 1)) || (chargerConnected && !silentProfile))
+        {
+            firstCharIndicator = (chargeLevel < 100) ? "*" : ""; /* Charger icon */
+        }
+        else if ((chargerConnected && silentProfile && !(timerCount & 1)) || (!chargerConnected && silentProfile))
+        {
+            firstCharIndicator = (chargeLevel < 100) ? "!" : ""; /* Silent profile icon */
+        }
+        QString batNow = QString("%1%2%").arg(firstCharIndicator).arg(chargeLevel, 2, 10, QLatin1Char(' '));
         QByteArray babatNow = batNow.toLocal8Bit();
 
         clearOled(screenBuffer);
         drawTime(baNow.data(), screenBuffer);
         drawBatteryLevel(babatNow.data(), screenBuffer);
 
-        if (iconSMS && iconMITAKUULUU) /* If both are on, toggle them */
+        if ((iconSMS && iconMITAKUULUU && (timerCount & 1)) || (iconSMS && !iconMITAKUULUU))
         {
-            if (current.minute() & 1)
-                drawIcon(MESSAGE, screenBuffer);
-            else
-                drawIcon(MITAKUULUU, screenBuffer);
+            drawIcon(MESSAGE, screenBuffer);
         }
-        else
+        else if ((iconSMS && iconMITAKUULUU && !(timerCount & 1)) || (!iconSMS && iconMITAKUULUU))
         {
-            if (iconSMS)
-                drawIcon(MESSAGE, screenBuffer);
-            if (iconMITAKUULUU)
-                drawIcon(MITAKUULUU, screenBuffer);
+            drawIcon(MITAKUULUU, screenBuffer);
         }
+
         if (iconCALL)
             drawIcon(CALL, screenBuffer);
         if (iconEMAIL)
@@ -159,8 +164,6 @@ void Toholed::timerTimeout()
         timeUpdateOverride = false;
     }
 
-    timerCount++;
-
 }
 
 /* iphb wakeup stuff */
@@ -171,6 +174,7 @@ void Toholed::heartbeatReceived(int sock)
 
     iphbStop();
     timeUpdateOverride = true;
+    timerCount++;
     printf("Wakywaky by iphb (%d)\n", timerCount);
     timerTimeout();
     iphbStart();
@@ -916,12 +920,14 @@ void Toholed::handleChargerStatus(const QDBusMessage& msg)
         printf("Charger connected\n");
         chargerConnected = true;
         timeUpdateOverride = true;
+        timerTimeout();
     }
     else if (!(QString::localeAwareCompare( tmp, "charger_disconnected")) && chargerConnected)
     {
         printf("Charger disconnected\n");
         chargerConnected = false;
         timeUpdateOverride = true;
+        timerTimeout();
     }
 
 }
@@ -959,6 +965,37 @@ void Toholed::handleMitakuuluu(const QDBusMessage& msg)
 
     mitakuuluuUnread = mkUnread;
 
+}
+
+void Toholed::handleProfileChanged(const QDBusMessage& msg)
+{
+    QList<QVariant> args = msg.arguments();
+    QString tmp = args.at(2).toString();
+
+    printf("Profile changed to %s\n", qPrintable(tmp));
+
+    if (tmp == "silent")
+    {
+        silentProfile = true;
+        timeUpdateOverride = true;
+        timerTimeout();
+    }
+    else
+    {
+        silentProfile = false;
+        timeUpdateOverride = true;
+        timerTimeout();
+    }
+}
+
+QString Toholed::getCurrentProfile()
+{
+    QDBusInterface getProfileCall("com.nokia.profiled", "/com/nokia/profiled", "com.nokia.profiled");
+    getProfileCall.setTimeout(2);
+
+    QDBusMessage getProfileCallReply = getProfileCall.call(QDBus::AutoDetect, "get_profile");
+
+    return getProfileCallReply.arguments().at(0).toString();
 }
 
 /* Slots for Notificationsmanager */

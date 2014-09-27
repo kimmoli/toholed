@@ -41,6 +41,7 @@ public:
         setInterruptEnable(false);
         deinitOled();
         setVddState(false);
+        printf("Toholed terminated!\n");
     }
 
 public slots:
@@ -69,6 +70,7 @@ private slots:
     void handleNotificationActionInvoked(const QDBusMessage& msg);
     void handleChargerStatus(const QDBusMessage& msg);
     void handleMitakuuluu(const QDBusMessage& msg);
+    void handleProfileChanged(const QDBusMessage& msg);
 
     void handleEmailNotify();
     void handleTwitterNotify();
@@ -127,7 +129,10 @@ private:
     static bool iconIRC;
     static bool iconMITAKUULUU;
 
-    static bool chargerConnected;    
+    static bool chargerConnected;
+    static bool silentProfile;
+
+    QString getCurrentProfile();
 };
 
 

@@ -148,7 +148,7 @@ void drawBatteryLevel(const char *batLevel, char *screenBuffer)
         }
         else
         {
-            for (x=0; x < 12 ; x++)
+            for (x=0; x < 13 ; x++)
             {
                 if ( batLevel[m] == pieniFonttiMap[x] )
                 {
