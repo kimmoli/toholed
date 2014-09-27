@@ -66,7 +66,6 @@ private slots:
     void handleCall(const QDBusMessage& msg);
     void handleTweetian(const QDBusMessage& msg);
     void handleCommuni(const QDBusMessage& msg);
-    void handleActiveSync(const QDBusMessage& msg);
     void handleNotificationActionInvoked(const QDBusMessage& msg);
     void handleChargerStatus(const QDBusMessage& msg);
     void handleMitakuuluu(const QDBusMessage& msg);
@@ -74,11 +73,11 @@ private slots:
     void handleEmailNotify();
     void handleTwitterNotify();
     void handleFacebookNotify();
-    void handleOtherNotify();
     void handleIrssiNotify();
+    void handleImNotify();
+    void handleOtherNotify();
 
     void timerTimeout();
-    void checkNewMailNotifications();
     void notificationSend(QString summary, QString body);
 
     void heartbeatReceived(int sock);

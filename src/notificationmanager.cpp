@@ -79,6 +79,8 @@ uint NotificationManager::Notify(const QString &app_name, uint replaces_id, cons
     Q_UNUSED(app_icon);
     Q_UNUSED(actions);
     Q_UNUSED(expire_timeout);
+    Q_UNUSED(summary);
+    Q_UNUSED(body);
 
     // Ignore notifcations from myself
     if (app_name == "toholed")
@@ -100,14 +102,10 @@ uint NotificationManager::Notify(const QString &app_name, uint replaces_id, cons
     }
     else if (app_name == "twitter-notifications-client")  /* Build-in twitter */
     {
-        printf("twitter-notifications-client notification\n");
-
         emit this->twitterNotify();
     }
     else if (app_name == "irssi") /* This is irssi mqtt notification */
     {
-        printf("irssi notification\n");
-
         emit this->irssiNotify();
     }
     else if (app_name == "commhistoryd")
@@ -115,8 +113,6 @@ uint NotificationManager::Notify(const QString &app_name, uint replaces_id, cons
         QString category = hints.value("category", "").toString();
         if (category == "x-nemo.messaging.im")
         {
-            printf("im notification\n");
-
             emit this->imNotify();
         }
         else
@@ -124,7 +120,7 @@ uint NotificationManager::Notify(const QString &app_name, uint replaces_id, cons
             printf("Other commhistoryd notification: category=%s\n", qPrintable(category));
         }
     }
-    else
+    else /* Other notification */
     {
         QString subject = hints.value("x-nemo-preview-summary", "").toString();
         QString data = hints.value("x-nemo-preview-body", "").toString();

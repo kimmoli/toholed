@@ -161,18 +161,6 @@ int main(int argc, char **argv)
         printf("com.communi.irc.highlightedSimple Connected\n%s\n", qPrintable(communiConn.lastError().message()));
 
 
-    /* asdbus synCompleted */
-
-    static QDBusConnection asdbusConn = QDBusConnection::sessionBus();
-    asdbusConn.connect("com.nokia.asdbus", "/com/nokia/asdbus", "com.nokia.asdbus", "syncCompleted",
-                          &toholed, SLOT(handleActiveSync(const QDBusMessage&)));
-
-    if(asdbusConn.isConnected())
-        printf("com.nokia.asdbus.syncCompleted Connected\n");
-    else
-        printf("com.nokia.asdbus.syncCompleted Connected\n%s\n", qPrintable(asdbusConn.lastError().message()));
-
-
     /* Charger connected/disconnected */
 
     static QDBusConnection chargerConnectionconn = QDBusConnection::systemBus();
@@ -203,6 +191,7 @@ int main(int argc, char **argv)
     notifications.connect(&notifications, SIGNAL(twitterNotify()), &toholed, SLOT(handleTwitterNotify()));
     notifications.connect(&notifications, SIGNAL(facebookNotify()), &toholed, SLOT(handleFacebookNotify()));
     notifications.connect(&notifications, SIGNAL(irssiNotify()), &toholed, SLOT(handleIrssiNotify()));
+    notifications.connect(&notifications, SIGNAL(imNotify()), &toholed, SLOT(handleImNotify()));
     notifications.connect(&notifications, SIGNAL(otherNotify()), &toholed, SLOT(handleOtherNotify()));
 
     return app.exec();

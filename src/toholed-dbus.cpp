@@ -72,10 +72,6 @@ Toholed::Toholed()
     if (iphbNotifier)
         printf("iphb initialized succesfully\n");
 
-    mailCheckTimer = new QTimer(this);
-    mailCheckTimer->setSingleShot(true);
-    connect(mailCheckTimer, SIGNAL(timeout()), this, SLOT(checkNewMailNotifications()));
-
     prevTime = QTime::currentTime();
 
     memset(screenBuffer, 0x00, SCREENBUFFERSIZE);
@@ -130,9 +126,6 @@ void Toholed::timerTimeout()
         clearOled(screenBuffer);
         drawTime(baNow.data(), screenBuffer);
         drawBatteryLevel(babatNow.data(), screenBuffer);
-
-        if (!iconEMAIL && !timeUpdateOverride && !mailCheckTimer->isActive())
-            checkNewMailNotifications();
 
         if (iconSMS && iconMITAKUULUU) /* If both are on, toggle them */
         {
@@ -720,70 +713,6 @@ void Toholed::handleNotificationClosed(const QDBusMessage& msg)
     mutex.unlock();
 }
 
-/*
- * Handle Activesync sync completed
- */
-void Toholed::handleActiveSync(const QDBusMessage& msg)
-{
-    Q_UNUSED(msg);
-
-    /* Just return if icon is already active */
-    if (iconEMAIL)
-        return;
-
-    if (!mailCheckTimer->isActive())
-    {
-        printf("ActiveSync syncCompleted - Checking for active notifications in 5 secs\n");
-        mailCheckTimer->start(5000);
-    }
-}
-
-
-void Toholed::checkNewMailNotifications()
-{
-    /* Just return if icon is already active */
-    if (iconEMAIL)
-        return;
-
-    QList<QVariant> args;
-    args.append(QString("messageserver5"));
-
-    QDBusInterface ms5Call("org.freedesktop.Notifications", "/org/freedesktop/Notifications", "");
-    ms5Call.setTimeout(2);
-
-    QDBusMessage ms5Reply = ms5Call.callWithArgumentList(QDBus::AutoDetect, "GetNotifications", args);
-
-    QList<QVariant> outArgs = ms5Reply.arguments();
-
-    QVariant first = outArgs.at(0);
-
-    const QDBusArgument &dbusArgs = first.value<QDBusArgument>();
-
-    dbusArgs.beginArray();
-
-    /* Just check is there something in the array... */
-    if (!dbusArgs.atEnd())
-    {
-        printf("You have new mail\n");
-
-        mutex.lock();
-        drawIcon(MAIL, screenBuffer);
-        if (oledInitDone)
-        {
-            updateOled(screenBuffer);
-            if (!timeUpdateOverride)
-                blinkOled(5);
-        }
-
-        iconEMAIL = true;
-
-        mutex.unlock();
-    }
-
-    dbusArgs.endArray();
-}
-
-
 /* GPIO interrupt handler */
 
 void Toholed::handleGpioInterrupt()
@@ -1036,25 +965,78 @@ void Toholed::handleMitakuuluu(const QDBusMessage& msg)
 
 void Toholed::handleEmailNotify()
 {
-    printf("handleEmailNotify()\n");
+    printf("email notification\n");
+
+    mutex.lock();
+    drawIcon(MAIL, screenBuffer);
+    if (oledInitDone)
+    {
+        updateOled(screenBuffer);
+        blinkOled(3);
+    }
+    iconEMAIL = true;
+    mutex.unlock();
+
 }
 
 void Toholed::handleTwitterNotify()
 {
-    printf("handleTwitterNotify()\n");
+    printf("twitter notification\n");
+
+    mutex.lock();
+    drawIcon(TWEET, screenBuffer);
+    if (oledInitDone)
+    {
+        updateOled(screenBuffer);
+        blinkOled(3);
+    }
+    iconTWEET = true;
+    mutex.unlock();
 }
 
 void Toholed::handleFacebookNotify()
 {
-    printf("handleFacebookNotify()\n");
+    printf("facebook notification.\n");
 }
 
 void Toholed::handleIrssiNotify()
 {
-    printf("handleIrssiNotify()\n");
+    printf("irssi notification.\n");
+
+    mutex.lock();
+    drawIcon(IRC, screenBuffer);
+    if (oledInitDone)
+    {
+        updateOled(screenBuffer);
+        blinkOled(3);
+    }
+    iconIRC = true;
+    mutex.unlock();
+}
+
+void Toholed::handleImNotify()
+{
+    printf("im notification.\n");
+
+    mutex.lock();
+    drawIcon(MESSAGE, screenBuffer);
+    if (oledInitDone)
+    {
+        updateOled(screenBuffer);
+        blinkOled(2);
+    }
+    iconSMS = true;
+    mutex.unlock();
 }
 
 void Toholed::handleOtherNotify()
 {
-    printf("handleOtherNotify()\n");
+    printf("other notification\n");
+
+    mutex.lock();
+    if (oledInitDone)
+    {
+        blinkOled(1);
+    }
+    mutex.unlock();
 }
