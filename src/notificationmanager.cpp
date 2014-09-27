@@ -79,7 +79,6 @@ uint NotificationManager::Notify(const QString &app_name, uint replaces_id, cons
     Q_UNUSED(app_icon);
     Q_UNUSED(actions);
     Q_UNUSED(expire_timeout);
-    Q_UNUSED(summary);
     Q_UNUSED(body);
 
     // Ignore notifcations from myself
@@ -88,7 +87,9 @@ uint NotificationManager::Notify(const QString &app_name, uint replaces_id, cons
         return 0;
     }
 
+#ifdef NOTIFICATIONDEBUG
     printf("Got notification via dbus from %s\n", qPrintable(app_name));
+#endif
 
     // Avoid sending a reply for this method call, since we've received it because we're eavesdropping.
     // The actual target of the method call will send the proper reply.
@@ -111,15 +112,18 @@ uint NotificationManager::Notify(const QString &app_name, uint replaces_id, cons
     else if (app_name == "commhistoryd")
     {
         QString category = hints.value("category", "").toString();
-        if (category == "x-nemo.messaging.im")
+        if (category == "x-nemo.messaging.im" && summary != "")
         {
             emit this->imNotify();
         }
+#ifdef NOTIFICATIONDEBUG
         else
         {
             printf("Other commhistoryd notification: category=%s\n", qPrintable(category));
         }
+#endif
     }
+#ifdef NOTIFICATIONDEBUG
     else /* Other notification */
     {
         QString subject = hints.value("x-nemo-preview-summary", "").toString();
@@ -130,6 +134,6 @@ uint NotificationManager::Notify(const QString &app_name, uint replaces_id, cons
 
         emit this->otherNotify();
     }
-
+#endif
     return 0;
 }
