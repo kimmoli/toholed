@@ -81,8 +81,6 @@ int main(int argc, char **argv)
 
     QDBusConnection::systemBus().registerObject("/", &toholed, QDBusConnection::ExportAllSlots);
 
-
-
     /* Ofono MessageManager IncomingMessage
      * This signal is emitted when new SMS message arrives */
 
