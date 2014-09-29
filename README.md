@@ -1,5 +1,5 @@
 Toholed
 =======
 
-The OtherHalf OLED daemon for Jolla
+The OtherHalf OLED daemon
 
