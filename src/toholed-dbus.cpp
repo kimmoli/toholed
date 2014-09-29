@@ -49,6 +49,10 @@ Toholed::Toholed()
     connect(timer, SIGNAL(timeout()), this, SLOT(timerTimeout()));
     timer->start();
 
+    alarmTimer = new QTimer(this);
+    alarmTimer->setInterval(500);
+    connect(alarmTimer, SIGNAL(timeout()), this, SLOT(alarmTimerTimeout()));
+
     iphbRunning = false;
     iphbdHandler = iphb_open(0);
 
@@ -88,6 +92,7 @@ Toholed::Toholed()
 
     timeUpdateOverride = false;
     interruptsEnabled = false;
+    printTime = false;
 
     /* Get the current profile status */
     silentProfile = (getCurrentProfile() == "silent");
@@ -158,10 +163,11 @@ void Toholed::timerTimeout()
         if (oledInitDone)
             updateOled(screenBuffer);
 
-        if (!timeUpdateOverride)
-            printf("Time now: %s Battery: %s\n", baNow.data(), babatNow.data() );
+        if (!timeUpdateOverride || printTime)
+            printf("Time now: %s Battery: %s (%d)\n", baNow.data(), babatNow.data(), timerCount );
 
         timeUpdateOverride = false;
+        printTime = false;
     }
 
 }
@@ -174,8 +180,8 @@ void Toholed::heartbeatReceived(int sock)
 
     iphbStop();
     timeUpdateOverride = true;
+    printTime = true;
     timerCount++;
-    printf("Wakywaky by iphb (%d)\n", timerCount);
     timerTimeout();
     iphbStart();
 }
@@ -651,6 +657,7 @@ void Toholed::handleDisplayStatus(const QDBusMessage& msg)
     if (!(QString::localeAwareCompare( args.at(0).toString(), "on")))
     {
         iphbStop();
+        timer->start(); /* Change to timer-mode when display is active */
 
         tmp = checkOled();
         if (tmp == -1)
@@ -679,8 +686,8 @@ void Toholed::handleDisplayStatus(const QDBusMessage& msg)
     }
     else if (!(QString::localeAwareCompare( args.at(0).toString(), "off")))
     {
-        timer->start();
         iphbStart();
+        timer->stop(); /* Change to iphb-mode when display is off */
     }
 }
 
@@ -996,6 +1003,31 @@ QString Toholed::getCurrentProfile()
     QDBusMessage getProfileCallReply = getProfileCall.call(QDBus::AutoDetect, "get_profile");
 
     return getProfileCallReply.arguments().at(0).toString();
+}
+
+void Toholed::handleAlarm(const QDBusMessage& msg)
+{
+    QList<QVariant> args = msg.arguments();
+    int tmp = args.at(0).toInt();
+
+    if (tmp == 0) /* Alarm dialog on screen */
+    {
+        alarmTimer->start();
+        printf("Alarm activated.\n");
+    }
+    else if (tmp == 1) /* Alarm dialog not on screen */
+    {
+        alarmTimer->stop();
+        printf("Alarm cleared.\n");
+    }
+}
+
+void Toholed::alarmTimerTimeout()
+{
+    if (oledInitDone)
+    {
+        blinkOled(1);
+    }
 }
 
 /* Slots for Notificationsmanager */

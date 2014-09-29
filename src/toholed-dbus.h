@@ -71,6 +71,7 @@ private slots:
     void handleChargerStatus(const QDBusMessage& msg);
     void handleMitakuuluu(const QDBusMessage& msg);
     void handleProfileChanged(const QDBusMessage& msg);
+    void handleAlarm(const QDBusMessage& msg);
 
     void handleEmailNotify();
     void handleTwitterNotify();
@@ -80,6 +81,7 @@ private slots:
     void handleOtherNotify();
 
     void timerTimeout();
+    void alarmTimerTimeout();
     void notificationSend(QString summary, QString body);
 
     void heartbeatReceived(int sock);
@@ -109,8 +111,9 @@ private:
     static int timerCount;
     QTime prevTime;
     bool timeUpdateOverride;
+    bool printTime;
     QTimer *timer;
-    QTimer *mailCheckTimer;
+    QTimer *alarmTimer;
 
     QMutex mutex;
 

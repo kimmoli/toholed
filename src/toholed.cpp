@@ -195,7 +195,18 @@ int main(int argc, char **argv)
     if (profileChangedConn.isConnected())
         printf("com.nokia.profiled profile_changed Connected\n");
     else
-        printf("com.nokia.profiled profile_changed Not connected\n%s\n", qPrintable(mitakuuluuConn.lastError().message()));
+        printf("com.nokia.profiled profile_changed Not connected\n%s\n", qPrintable(profileChangedConn.lastError().message()));
+
+    /* Alarms */
+
+    static QDBusConnection alarmConn = QDBusConnection::systemBus();
+    alarmConn.connect("com.nokia.voland.signal", "/com/nokia/voland/signal", "com.nokia.voland.signal", "visual_reminders_status",
+                           &toholed, SLOT(handleAlarm(const QDBusMessage&)));
+
+    if (alarmConn.isConnected())
+        printf("com.nokia.voland.signal visual_reminders_status Connected\n");
+    else
+        printf("com.nokia.voland.signal visual_reminders_status Not connected\n%s\n", qPrintable(alarmConn.lastError().message()));
 
 
     NotificationManager notifications;
