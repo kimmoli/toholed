@@ -72,6 +72,7 @@ private slots:
     void handleMitakuuluu(const QDBusMessage& msg);
     void handleProfileChanged(const QDBusMessage& msg);
     void handleAlarm(const QDBusMessage& msg);
+    void handleNetworkRegistration(const QDBusMessage& msg);
 
     void handleEmailNotify();
     void handleTwitterNotify();
@@ -136,6 +137,9 @@ private:
     static bool silentProfile;
 
     QString getCurrentProfile();
+    QString getCurrentNetworkTechnology();
+
+    QString networkType;
 };
 
 

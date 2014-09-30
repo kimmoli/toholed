@@ -106,6 +106,8 @@ Toholed::Toholed()
     heartbeatReceived(0);
 
     printf("initialisation complete\n");
+
+    getCurrentNetworkTechnology();
 }
 
 /* Timer routine to update OLED clock */
@@ -1029,6 +1031,70 @@ void Toholed::alarmTimerTimeout()
         blinkOled(1);
     }
 }
+
+void Toholed::handleNetworkRegistration(const QDBusMessage& msg)
+{
+    QList<QVariant> args = msg.arguments();
+    QVariant val = args.at(1).value<QDBusVariant>().variant();
+
+    printf("Network registration %s changed: ", qPrintable(args.at(0).toString()) );
+    if (val.type() == 10)
+        printf("%s\n", qPrintable(val.toString()));
+    else
+        printf("%d\n", val.toInt());
+
+    if (args.at(0).toString() == "Technology")
+    {
+        if (val.toString() == "gsm") /* 2G */
+            networkType = "2G";
+        else if (val.toString() == "umts") /* 3G */
+            networkType = "3G";
+        else if (val.toString() == "umts") /* 4G */
+            networkType = "4G";
+    }
+}
+
+QString Toholed::getCurrentNetworkTechnology()
+{
+    QDBusInterface getNetworkTechnologyCall("org.ofono", "/ril_0", "org.ofono.NetworkRegistration", QDBusConnection::systemBus());
+    getNetworkTechnologyCall.setTimeout(2000);
+
+    QDBusMessage getNetworkTechnologyCallReply = getNetworkTechnologyCall.call(QDBus::AutoDetect, "GetProperties");
+
+//    qDebug() << getNetworkTechnologyCallReply;
+
+    const QDBusArgument myArg = getNetworkTechnologyCallReply.arguments().at(0).value<QDBusArgument>();
+
+//    qDebug() << myArg.currentSignature();
+//    qDebug() << myArg.currentType(); /* 4 = Maptype like QMap<> or QHash */
+
+    myArg.beginMap();
+
+    QMap<QString, QString> m;
+
+    while ( ! myArg.atEnd())
+    {
+        QString key;
+        QDBusVariant value;
+        myArg.beginMapEntry();
+        myArg >> key >> value;
+        myArg.endMapEntry();
+        m.insert(key, value.variant().toString());
+    }
+    myArg.endMap();
+
+//    QList<QVariant> s = getNetworkTechnologyCallReply.arguments();
+
+//    qDebug() << s;
+//    qDebug() << s.at(0).type();
+
+//    printf("dict.count = %d %d\n", dict.count(), args.at(0).type());
+
+    printf("Current network Technology is '%s'\n", qPrintable(m.value("Technology", "undefined")));
+
+    return "kissa";
+}
+
 
 /* Slots for Notificationsmanager */
 

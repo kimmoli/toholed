@@ -210,6 +210,19 @@ int main(int argc, char **argv)
     else
         printf("com.nokia.voland.signal visual_reminders_status Not connected\n%s\n", qPrintable(alarmConn.lastError().message()));
 
+    /* Network technology */
+
+    // path=/ril_0; interface=org.ofono.NetworkRegistration; member=PropertyChanged
+
+    static QDBusConnection networkRegConn = QDBusConnection::systemBus();
+    networkRegConn.connect("org.ofono", "/ril_0", "org.ofono.NetworkRegistration", "PropertyChanged",
+                           &toholed, SLOT(handleNetworkRegistration(const QDBusMessage&)));
+
+    if (networkRegConn.isConnected())
+        printf("org.ofono.NetworkRegistration PropertyChanged Connected\n");
+    else
+        printf("org.ofono.NetworkRegistration PropertyChanged Not connected\n%s\n", qPrintable(networkRegConn.lastError().message()));
+
 
     NotificationManager notifications;
 
