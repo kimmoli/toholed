@@ -24,6 +24,8 @@
 
 #include "notificationmanager.h"
 
+#include <QtGlobal>
+
 
 bool Toholed::oledInitDone = false;
 bool Toholed::vddEnabled = false;
@@ -239,6 +241,8 @@ void daemonize()
 	signal(SIGTTIN,SIG_IGN);
 	signal(SIGHUP,signalHandler); /* catch hangup signal */
 	signal(SIGTERM,signalHandler); /* catch kill signal */
+
+    qInstallMessageHandler(myMessageOutput);
 }
 
 
@@ -258,4 +262,24 @@ void signalHandler(int sig) /* signal handler function */
 			exit(0);
 			break;		
 	}	
+}
+
+
+void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    QByteArray localMsg = msg.toLocal8Bit();
+    switch (type) {
+    case QtDebugMsg:
+        fprintf(stderr, "Debug: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        break;
+    case QtWarningMsg:
+        fprintf(stderr, "Warning: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        break;
+    case QtCriticalMsg:
+        fprintf(stderr, "Critical: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        break;
+    case QtFatalMsg:
+        fprintf(stderr, "Fatal: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        break;
+    }
 }
