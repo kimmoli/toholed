@@ -92,7 +92,6 @@ Toholed::Toholed()
 
     timeUpdateOverride = false;
     interruptsEnabled = false;
-    printTime = false;
 
     /* Get the current profile status */
     silentProfile = (getCurrentProfile() == "silent");
@@ -108,6 +107,9 @@ Toholed::Toholed()
     printf("initialisation complete\n");
 
     getCurrentNetworkTechnology();
+
+    timeUpdateOverride = true;
+    timerTimeout();
 }
 
 /* Timer routine to update OLED clock */
@@ -162,14 +164,25 @@ void Toholed::timerTimeout()
         if (iconIRC)
             drawIcon(IRC, screenBuffer);
 
+        if (!iconCALL && !iconEMAIL && !iconIRC && !iconMITAKUULUU && !iconSMS && !iconTWEET)
+        {
+            /* No notifications shown, we can show other stuff instead */
+            /* Network type indicator is coded in pienifontti, g=2G, u=3G, l=4G (gms, umts, lte) */
+            drawNetworkType(networkType.toLocal8Bit().data(), screenBuffer);
+            noIconsActive = true;
+        }
+        else
+        {
+            noIconsActive = false;
+        }
+
         if (oledInitDone)
             updateOled(screenBuffer);
 
-        if (!timeUpdateOverride || printTime)
+        if (!timeUpdateOverride)
             printf("Time now: %s Battery: %s (%d)\n", baNow.data(), babatNow.data(), timerCount );
 
         timeUpdateOverride = false;
-        printTime = false;
     }
 
 }
@@ -181,8 +194,6 @@ void Toholed::heartbeatReceived(int sock)
     Q_UNUSED(sock);
 
     iphbStop();
-    timeUpdateOverride = true;
-    printTime = true;
     timerCount++;
     timerTimeout();
     iphbStart();
@@ -543,11 +554,16 @@ void Toholed:: handleSMS(const QDBusMessage& msg)
     printf("New SMS: %s\n", qPrintable(args.at(0).toString()));
 
     mutex.lock();
+    if (noIconsActive)
+    {
+        noIconsActive = false;
+        clearIcons(screenBuffer);
+    }
     drawIcon(MESSAGE, screenBuffer);
     if (oledInitDone)
     {
         updateOled(screenBuffer);
-        blinkOled(10);
+        blinkOled(2);
     }
     mutex.unlock();
 
@@ -562,11 +578,16 @@ void Toholed::handleTweetian(const QDBusMessage& msg)
     printf("You have been mentioned in a Tweet\n");
 
     mutex.lock();
+    if (noIconsActive)
+    {
+        noIconsActive = false;
+        clearIcons(screenBuffer);
+    }
     drawIcon(TWEET, screenBuffer);
     if (oledInitDone)
     {
         updateOled(screenBuffer);
-        blinkOled(5);
+        blinkOled(2);
     }
     mutex.unlock();
 
@@ -585,11 +606,16 @@ void Toholed::handleCommuni(const QDBusMessage& msg)
     if (ah > activeHighlights) /* Number of active highlights increased */
     {
         mutex.lock();
+        if (noIconsActive)
+        {
+            noIconsActive = false;
+            clearIcons(screenBuffer);
+        }
         drawIcon(IRC, screenBuffer);
         if (oledInitDone)
         {
             updateOled(screenBuffer);
-            blinkOled(5);
+            blinkOled(2);
         }
         iconIRC = true;
         mutex.unlock();
@@ -622,11 +648,16 @@ void Toholed::handleCall(const QDBusMessage& msg)
     {
         printf("Incoming call\n");
         mutex.lock();
+        if (noIconsActive)
+        {
+            noIconsActive = false;
+            clearIcons(screenBuffer);
+        }
         drawIcon(CALL, screenBuffer);
         if (oledInitDone)
         {
             updateOled(screenBuffer);
-            blinkOled(10);
+            blinkOled(2);
         }
         iconCALL = true;
 
@@ -712,10 +743,6 @@ void Toholed::handleNotificationClosed(const QDBusMessage& msg)
     }
 
     mutex.lock();
-    /* Clear all icons and their status flags */
-    clearIcons(screenBuffer);
-    if (oledInitDone)
-        updateOled(screenBuffer);
 
     iconSMS = false;
     iconEMAIL = false;
@@ -724,6 +751,9 @@ void Toholed::handleNotificationClosed(const QDBusMessage& msg)
     iconIRC = false;
 
     mutex.unlock();
+
+    timeUpdateOverride = true;
+    timerTimeout();
 }
 
 /* GPIO interrupt handler */
@@ -952,6 +982,11 @@ void Toholed::handleMitakuuluu(const QDBusMessage& msg)
     if (mkUnread > mitakuuluuUnread) /* Number of total unread increased */
     {
         mutex.lock();
+        if (noIconsActive)
+        {
+            noIconsActive = false;
+            clearIcons(screenBuffer);
+        }
         drawIcon(MITAKUULUU, screenBuffer);
         if (oledInitDone)
         {
@@ -1037,40 +1072,36 @@ void Toholed::handleNetworkRegistration(const QDBusMessage& msg)
     QList<QVariant> args = msg.arguments();
     QVariant val = args.at(1).value<QDBusVariant>().variant();
 
-    printf("Network registration %s changed: ", qPrintable(args.at(0).toString()) );
+    printf("NetworkRegistration: %s changed: ", qPrintable(args.at(0).toString()) );
     if (val.type() == 10)
-        printf("%s\n", qPrintable(val.toString()));
-    else
-        printf("%d\n", val.toInt());
-
-    if (args.at(0).toString() == "Technology")
     {
-        if (val.toString() == "gsm") /* 2G */
-            networkType = "2G";
-        else if (val.toString() == "umts") /* 3G */
-            networkType = "3G";
-        else if (val.toString() == "umts") /* 4G */
-            networkType = "4G";
+        printf("%s\n", qPrintable(val.toString()));
+    }
+    else
+    {
+        printf("%d\n", val.toInt());
+    }
+
+    if (args.at(0).toString() == "Technology" && networkType != val.toString())
+    {
+        networkType = val.toString();
+        timeUpdateOverride = true;
+        timerTimeout();
     }
 }
 
-QString Toholed::getCurrentNetworkTechnology()
+void Toholed::getCurrentNetworkTechnology()
 {
     QDBusInterface getNetworkTechnologyCall("org.ofono", "/ril_0", "org.ofono.NetworkRegistration", QDBusConnection::systemBus());
     getNetworkTechnologyCall.setTimeout(2000);
 
     QDBusMessage getNetworkTechnologyCallReply = getNetworkTechnologyCall.call(QDBus::AutoDetect, "GetProperties");
 
-//    qDebug() << getNetworkTechnologyCallReply;
-
     const QDBusArgument myArg = getNetworkTechnologyCallReply.arguments().at(0).value<QDBusArgument>();
 
-//    qDebug() << myArg.currentSignature();
-//    qDebug() << myArg.currentType(); /* 4 = Maptype like QMap<> or QHash */
+    QMap<QString, QString> m;
 
     myArg.beginMap();
-
-    QMap<QString, QString> m;
 
     while ( ! myArg.atEnd())
     {
@@ -1083,16 +1114,9 @@ QString Toholed::getCurrentNetworkTechnology()
     }
     myArg.endMap();
 
-//    QList<QVariant> s = getNetworkTechnologyCallReply.arguments();
+    networkType = m.value("Technology", "undefined");
 
-//    qDebug() << s;
-//    qDebug() << s.at(0).type();
-
-//    printf("dict.count = %d %d\n", dict.count(), args.at(0).type());
-
-    printf("Current network Technology is '%s'\n", qPrintable(m.value("Technology", "undefined")));
-
-    return "kissa";
+    printf("Current network Technology is '%s'\n", qPrintable(networkType));
 }
 
 
@@ -1103,11 +1127,16 @@ void Toholed::handleEmailNotify()
     printf("email notification\n");
 
     mutex.lock();
+    if (noIconsActive)
+    {
+        noIconsActive = false;
+        clearIcons(screenBuffer);
+    }
     drawIcon(MAIL, screenBuffer);
     if (oledInitDone)
     {
         updateOled(screenBuffer);
-        blinkOled(3);
+        blinkOled(2);
     }
     iconEMAIL = true;
     mutex.unlock();
@@ -1119,11 +1148,16 @@ void Toholed::handleTwitterNotify()
     printf("twitter notification\n");
 
     mutex.lock();
+    if (noIconsActive)
+    {
+        noIconsActive = false;
+        clearIcons(screenBuffer);
+    }
     drawIcon(TWEET, screenBuffer);
     if (oledInitDone)
     {
         updateOled(screenBuffer);
-        blinkOled(3);
+        blinkOled(2);
     }
     iconTWEET = true;
     mutex.unlock();
@@ -1139,11 +1173,16 @@ void Toholed::handleIrssiNotify()
     printf("irssi notification.\n");
 
     mutex.lock();
+    if (noIconsActive)
+    {
+        noIconsActive = false;
+        clearIcons(screenBuffer);
+    }
     drawIcon(IRC, screenBuffer);
     if (oledInitDone)
     {
         updateOled(screenBuffer);
-        blinkOled(3);
+        blinkOled(2);
     }
     iconIRC = true;
     mutex.unlock();
@@ -1154,6 +1193,11 @@ void Toholed::handleImNotify()
     printf("im notification.\n");
 
     mutex.lock();
+    if (noIconsActive)
+    {
+        noIconsActive = false;
+        clearIcons(screenBuffer);
+    }
     drawIcon(MESSAGE, screenBuffer);
     if (oledInitDone)
     {
@@ -1171,7 +1215,7 @@ void Toholed::handleOtherNotify()
     mutex.lock();
     if (oledInitDone)
     {
-        blinkOled(1);
+        blinkOled(2);
     }
     mutex.unlock();
 }

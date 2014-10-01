@@ -112,7 +112,6 @@ private:
     static int timerCount;
     QTime prevTime;
     bool timeUpdateOverride;
-    bool printTime;
     QTimer *timer;
     QTimer *alarmTimer;
 
@@ -133,11 +132,13 @@ private:
     static bool iconIRC;
     static bool iconMITAKUULUU;
 
+    static bool noIconsActive;
+
     static bool chargerConnected;
     static bool silentProfile;
 
     QString getCurrentProfile();
-    QString getCurrentNetworkTechnology();
+    void getCurrentNetworkTechnology();
 
     QString networkType;
 };

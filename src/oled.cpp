@@ -79,6 +79,7 @@ void drawIcon(int icon, char *screenBuffer)
                     d++;
 
             }
+            break;
         }
     }
 }
@@ -110,6 +111,7 @@ void clearIcon(int icon, char *screenBuffer)
                     d++;
 
             }
+            break;
         }
     }
 }
@@ -137,7 +139,7 @@ void drawBatteryLevel(const char *batLevel, char *screenBuffer)
     int i,d,off,s,n,o,x,h,t;
     unsigned m;
 
-    h=0;
+    h = 0;
     o = 50; // rivi mistä tulostus alkaa
 
     for (m = 0; m<strlen(batLevel) ; m++)
@@ -148,7 +150,7 @@ void drawBatteryLevel(const char *batLevel, char *screenBuffer)
         }
         else
         {
-            for (x=0; x < 13 ; x++)
+            for (x=0; x < pieniFonttiNumOfChars ; x++)
             {
                 if ( batLevel[m] == pieniFonttiMap[x] )
                 {
@@ -170,11 +172,63 @@ void drawBatteryLevel(const char *batLevel, char *screenBuffer)
 
                     }
                     h = h + pieniFonttiWidth[x] +0; // vaakakoordinaatti johon seuraava merkkitulee
+                    break;
                 }
             }
         }
     }
 }
+
+/* Draw network type indicator */
+void drawNetworkType(const char *type, char *screenBuffer)
+{
+    char* sb = screenBuffer;
+
+    int i,d,off,s,n,o,x,h,t;
+    unsigned m;
+
+    h = 50;
+    o = 50; // rivi mistä tulostus alkaa
+
+//    for (m = 0; m<strlen(type) ; m++)
+// just check the first char
+    m = 0;
+    {
+        if ( type[m] == ' ') // space. just proceed cursor
+        {
+            h = h + 4;
+        }
+        else
+        {
+            for (x=0; x < pieniFonttiNumOfChars ; x++)
+            {
+                if ( type[m] == pieniFonttiMap[x] )
+                {
+                    d = pieniFonttiStart[x] / 8; // byte offset
+                    s = pieniFonttiStart[x] - d*8; // bit offset
+
+                    for (i=0 ; i<pieniFonttiWidth[x] ; i++) // merkin leveys
+                    {
+                        for (n=0; n<pieniFonttiHeightPixels ; n++) // merkin korkeus
+                        {
+                            off = ( n * pieniFonttiWidthPages ) + d;
+                            t = pieniFonttiBitmaps[off] & ( 0x80 >> ( (s + i) % 8) );
+                            if (t)
+                                (*(sb+((o+n)/8)+((h+i)*8))) |= ( 0x01 << ( (o+n) % 8 ) );
+                        }
+
+                        if ( ((s+i) % 8) == 7 )
+                            d++;
+
+                    }
+                    h = h + pieniFonttiWidth[x] +0; // vaakakoordinaatti johon seuraava merkkitulee
+                    break;
+                }
+            }
+        }
+    }
+}
+
 
 
 /* Draws clock to screen buffer */
@@ -217,6 +271,7 @@ void drawTime(const char *tNow, char *screenBuffer)
 
                     }
                     h = h + jollaFonttiWidth[x] +2; // vaakakoordinaatti johon seuraava merkkitulee
+                    break;
                 }
             }
         }
