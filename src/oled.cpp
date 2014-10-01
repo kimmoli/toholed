@@ -187,12 +187,10 @@ void drawNetworkType(const char *type, char *screenBuffer)
     int i,d,off,s,n,o,x,h,t;
     unsigned m;
 
-    h = 50;
+    h = 45;
     o = 50; // rivi mistä tulostus alkaa
 
-//    for (m = 0; m<strlen(type) ; m++)
-// just check the first char
-    m = 0;
+    for (m = 0; m<strlen(type) ; m++)
     {
         if ( type[m] == ' ') // space. just proceed cursor
         {

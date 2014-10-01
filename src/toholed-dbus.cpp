@@ -168,7 +168,10 @@ void Toholed::timerTimeout()
         {
             /* No notifications shown, we can show other stuff instead */
             /* Network type indicator is coded in pienifontti, g=2G, u=3G, l=4G (gms, umts, lte) */
-            drawNetworkType(networkType.toLocal8Bit().data(), screenBuffer);
+            /* Wifi active = w */
+            /* Bluetooth device connected = b */
+            QString tmp = QString("%1 %2 %3").arg(networkType.at(0)).arg('w').arg('b');
+            drawNetworkType(tmp.toLocal8Bit().data(), screenBuffer);
             noIconsActive = true;
         }
         else
