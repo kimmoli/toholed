@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <sys/time.h>
 #include <time.h>
+#include "math.h"
 #include "oled.h"
 #include "charger.h"
 #include "jollafontti.h"
@@ -19,6 +20,9 @@
 #define DBGPRINT
 
 bool blinkOnNotification;
+
+analogHand minuteHand;
+analogHand hourHand;
 
 void drawDerp(char *screenBuffer)
 {
@@ -328,6 +332,67 @@ void drawCircle(int x0, int y0, int r,  int color, char *screenBuffer)
     }
 }
 
+void drawLine(int x0, int y0, int x1, int y1, int color, char *screenBuffer)
+{
+
+    char* sb = screenBuffer;
+
+    int dy = y1 - y0;
+    int dx = x1 - x0;
+    int stepx, stepy;
+    if (dy < 0)
+    {
+        dy = -dy; stepy = -1;
+    }
+    else
+    {
+        stepy = 1;
+    }
+    if (dx < 0)
+    {
+        dx = -dx; stepx = -1;
+    }
+    else
+    {
+        stepx = 1;
+    }
+    dy <<= 1; // dy is now 2*dy
+    dx <<= 1; // dx is now 2*dx
+
+    drawPixel(x0, y0, color, sb);
+
+    if (dx > dy)
+    {
+        int fraction = dy - (dx >> 1); // same as 2*dy - dx
+        while (x0 != x1)
+        {
+            if (fraction >= 0)
+            {
+                y0 += stepy;
+                fraction -= dx; // same as fraction -= 2*dx
+            }
+            x0 += stepx;
+            fraction += dy; // same as fraction -= 2*dy
+            drawPixel(x0, y0, color, sb);
+        }
+    }
+    else
+    {
+        int fraction = dx - (dy >> 1);
+        while (y0 != y1)
+        {
+            if (fraction >= 0)
+            {
+                x0 += stepx;
+                fraction -= dy;
+            }
+            y0 += stepy;
+            fraction += dx;
+            drawPixel(x0, y0, color, sb);
+        }
+    }
+}
+
 void drawBitmap(int x, int y, int height, int width, int offset, int rowsize, bool invert, const char *bitmap, char *screenBuffer)
 {
     char* sb = screenBuffer;
@@ -355,6 +420,58 @@ void drawBitmap(int x, int y, int height, int width, int offset, int rowsize, bo
 
     }
 }
+
+#define clock_radius (32)
+#define clock_x (64)
+#define clock_y (32)
+
+
+void drawAnalogClock(int hours, int minutes, char *screenBuffer)
+{
+    char* sb = screenBuffer;
+    int r;
+
+    drawCircle(clock_x, clock_y, clock_radius, 1, sb);
+    drawCircle(clock_x, clock_y, clock_radius-1, 1, sb);
+
+    for (r=0; r < 12; r++)
+    {
+        float angle = (2 * pi / 12)*r;
+        int tick_x_out = (clock_radius - 4) * cos (angle) + clock_x;
+        int tick_y_out = (clock_radius - 4) * sin (angle) + clock_y;
+        int tick_x_in = (clock_radius - 7) * cos (angle) + clock_x;
+        int tick_y_in = (clock_radius - 7) * sin (angle) + clock_y;
+        drawLine(tick_x_in, tick_y_in, tick_x_out, tick_y_out, 1, sb);
+    }
+
+    minuteHand.base_radius = 2;
+    minuteHand.hand_radius = clock_radius-3;
+    hourHand.base_radius = 2;
+    hourHand.hand_radius = clock_radius-11;
+
+    minuteHand.angle = ((2 * pi / 60) * minutes) - pi/2;
+    hourHand.angle = ((2 * pi / 12) * (hours + (minutes/60))) - pi/2;
+
+    drawHand(minuteHand, 1, sb);
+    drawHand(hourHand, 1, sb);
+}
+
+void drawHand(const analogHand hand, int color, char *screenBuffer)
+{
+    char * sb = screenBuffer;
+
+    int hand_base_x = hand.base_radius * cos (hand.angle - pi / 2) + clock_x;
+    int hand_base_y = hand.base_radius * sin (hand.angle - pi / 2) + clock_y;
+    int hand_base_x1 = hand.base_radius * cos (hand.angle + pi / 2) + clock_x;
+    int hand_base_y1 = hand.base_radius * sin (hand.angle + pi / 2) + clock_y;
+    int hand_end_x = hand.hand_radius * cos (hand.angle) + clock_x;
+    int hand_end_y = hand.hand_radius * sin (hand.angle) + clock_y;
+
+    drawLine(hand_base_x, hand_base_y, hand_base_x1, hand_base_y1, color, sb);
+    drawLine(hand_base_x, hand_base_y, hand_end_x, hand_end_y, color, sb);
+    drawLine(hand_base_x1, hand_base_y1, hand_end_x, hand_end_y, color, sb);
+}
+
 
 /* Clears screen buffer */
 int clearOled(char *screenBuffer)

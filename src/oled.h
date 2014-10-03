@@ -9,6 +9,14 @@
 #define BRIGHTNESS_MED 0x4071
 #define BRIGHTNESS_LOW 0x1011
 
+#define pi (3.14159)
+
+typedef struct
+{
+    float angle;
+    int base_radius;
+    int hand_radius;
+} analogHand;
 
 int initOled(unsigned int level); /* Initializes OLED SSD1306 chip, brightness level arg */
 int checkOled();
@@ -28,6 +36,9 @@ void drawDerp(char *screenBuffer); /* Draw derp image to screen */
 void drawPixel(int x, int y, int color, char *screenBuffer); /* Draw single pixel to screen */
 void drawCircle(int x0, int y0, int r,  int color, char *screenBuffer); /* Draw circle to screen r=radius */
 void drawBitmap(int x, int y, int height, int width, int offset, int rowsize, bool invert, const char *bitmap, char *screenBuffer);
+
+void drawAnalogClock(int hours, int minutes, char *screenBuffer);
+void drawHand(const analogHand hand, int color, char *screenBuffer);
 
 extern bool blinkOnNotification;
 

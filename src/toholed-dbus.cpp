@@ -143,43 +143,52 @@ void Toholed::timerTimeout()
         QByteArray babatNow = batNow.toLocal8Bit();
 
         clearOled(screenBuffer);
-        drawTime(baNow.data(), screenBuffer);
-        drawBatteryLevel(babatNow.data(), screenBuffer);
 
-        if ((iconSMS && iconMITAKUULUU && (timerCount & 1)) || (iconSMS && !iconMITAKUULUU))
+        if (analogClockFace) /* Experimental */
         {
-            drawIcon(MESSAGE, screenBuffer);
-        }
-        else if ((iconSMS && iconMITAKUULUU && !(timerCount & 1)) || (!iconSMS && iconMITAKUULUU))
-        {
-            drawIcon(MITAKUULUU, screenBuffer);
-        }
-
-        if (iconCALL)
-            drawIcon(CALL, screenBuffer);
-        if (iconEMAIL)
-            drawIcon(MAIL, screenBuffer);
-        if (iconTWEET)
-            drawIcon(TWEET, screenBuffer);
-        if (iconIRC)
-            drawIcon(IRC, screenBuffer);
-
-        if (!iconCALL && !iconEMAIL && !iconIRC && !iconMITAKUULUU && !iconSMS && !iconTWEET)
-        {
-            /* No notifications shown, we can show other stuff instead */
-            /* Network type indicator is coded in pienifontti, g=2G, u=3G, l=4G (gms, umts, lte) */
-            /* Wifi active = w */
-            /* Bluetooth device connected = b */
-            QString tmp = QString("%1 %2 %3")
-                    .arg(cellularPowered ? (cellularConnected ? networkType.at(0).toUpper() : networkType.at(0).toLower()) : ' ')
-                    .arg(wifiPowered ? (wifiConnected ? 'W' : 'w') : ' ')
-                    .arg(bluetoothPowered ? (bluetoothConnected ? 'B' : 'b') : ' ');
-            drawNetworkType(tmp.toLocal8Bit().data(), screenBuffer);
-            noIconsActive = true;
+            drawAnalogClock(current.hour(), current.minute(), screenBuffer);
         }
         else
-        {
-            noIconsActive = false;
+        { /* Digital clock face */
+            drawTime(baNow.data(), screenBuffer);
+
+            drawBatteryLevel(babatNow.data(), screenBuffer);
+
+            if ((iconSMS && iconMITAKUULUU && (timerCount & 1)) || (iconSMS && !iconMITAKUULUU))
+            {
+                drawIcon(MESSAGE, screenBuffer);
+            }
+            else if ((iconSMS && iconMITAKUULUU && !(timerCount & 1)) || (!iconSMS && iconMITAKUULUU))
+            {
+                drawIcon(MITAKUULUU, screenBuffer);
+            }
+
+            if (iconCALL)
+                drawIcon(CALL, screenBuffer);
+            if (iconEMAIL)
+                drawIcon(MAIL, screenBuffer);
+            if (iconTWEET)
+                drawIcon(TWEET, screenBuffer);
+            if (iconIRC)
+                drawIcon(IRC, screenBuffer);
+
+            if (!iconCALL && !iconEMAIL && !iconIRC && !iconMITAKUULUU && !iconSMS && !iconTWEET)
+            {
+                /* No notifications shown, we can show other stuff instead */
+                /* Network type indicator is coded in pienifontti, g=2G, u=3G, l=4G (gms, umts, lte) */
+                /* Wifi active = w */
+                /* Bluetooth device connected = b */
+                QString tmp = QString("%1 %2 %3")
+                        .arg(cellularPowered ? (cellularConnected ? networkType.at(0).toUpper() : networkType.at(0).toLower()) : ' ')
+                        .arg(wifiPowered ? (wifiConnected ? 'W' : 'w') : ' ')
+                        .arg(bluetoothPowered ? (bluetoothConnected ? 'B' : 'b') : ' ');
+                drawNetworkType(tmp.toLocal8Bit().data(), screenBuffer);
+                noIconsActive = true;
+            }
+            else
+            {
+                noIconsActive = false;
+            }
         }
 
         if (oledInitDone)
@@ -267,6 +276,7 @@ void Toholed::reloadSettings()
     proximityEnabled = settings.value("proximity", true).toBool();
     alsEnabled = settings.value("als", true).toBool();
     displayOffWhenMainActive = settings.value("displayOffWhenMainActive", false).toBool();
+    analogClockFace = settings.value("analogClockFace", false).toBool();
     settings.endGroup();
 }
 
@@ -274,7 +284,7 @@ QString Toholed::setSettings(const QDBusMessage &msg)
 {
     QList<QVariant> args = msg.arguments();
 
-    if (args.size() != 4)
+    if (args.size() != 5)
         return QString("Failed");
 
     /* This must match with message sent from settings-ui */
@@ -284,7 +294,7 @@ QString Toholed::setSettings(const QDBusMessage &msg)
     alsEnabled = QString::localeAwareCompare( args.at(1).toString(), "on") ? false : true;
     proximityEnabled = QString::localeAwareCompare( args.at(2).toString(), "on") ? false : true;
     displayOffWhenMainActive = QString::localeAwareCompare( args.at(3).toString(), "on") ? false : true;
-
+    analogClockFace = QString::localeAwareCompare( args.at(4).toString(), "on") ? false : true;
 
     QSettings settings(QSettings::SystemScope, "harbour-toholed", "toholed");
 
@@ -293,6 +303,7 @@ QString Toholed::setSettings(const QDBusMessage &msg)
     settings.setValue("proximity", proximityEnabled);
     settings.setValue("als", alsEnabled);
     settings.setValue("displayOffWhenMainActive", displayOffWhenMainActive);
+    settings.setValue("analogClockFace", analogClockFace);
     settings.endGroup();
 
     if (proximityEnabled || alsEnabled)

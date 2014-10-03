@@ -148,6 +148,7 @@ private:
     static bool silentProfile;
 
     bool displayOffWhenMainActive;
+    bool analogClockFace;
 
     QString getCurrentProfile();
     void getCurrentNetworkConnectionStates();
