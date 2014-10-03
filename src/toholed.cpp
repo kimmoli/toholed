@@ -46,6 +46,10 @@ bool Toholed::chargerConnected = false;
 int Toholed::mitakuuluuUnread = 0;
 bool Toholed::silentProfile = false;
 bool Toholed::noIconsActive = true;
+bool Toholed::wifiPowered = false;
+bool Toholed::bluetoothPowered = false;
+bool Toholed::wifiConnected = false;
+bool Toholed::bluetoothConnected = false;
 
 int main(int argc, char **argv)
 {
@@ -223,6 +227,28 @@ int main(int argc, char **argv)
         printf("org.ofono.NetworkRegistration PropertyChanged Connected\n");
     else
         printf("org.ofono.NetworkRegistration PropertyChanged Not connected\n%s\n", qPrintable(networkRegConn.lastError().message()));
+
+    /* bluetooth */
+
+    static QDBusConnection bluetoothConn = QDBusConnection::systemBus();
+    bluetoothConn.connect("net.connman", "/net/connman/technology/bluetooth", "net.connman.Technology", "PropertyChanged",
+                           &toholed, SLOT(handleBluetooth(const QDBusMessage&)));
+
+    if (bluetoothConn.isConnected())
+        printf("net.connman.Technology bluetooth PropertyChanged Connected\n");
+    else
+        printf("net.connman.Technology bluetooth PropertyChanged PropertyChanged Not connected\n%s\n", qPrintable(bluetoothConn.lastError().message()));
+
+    /* wifi */
+
+    static QDBusConnection wifiConn = QDBusConnection::systemBus();
+    wifiConn.connect("net.connman", "/net/connman/technology/wifi", "net.connman.Technology", "PropertyChanged",
+                           &toholed, SLOT(handleWifi(const QDBusMessage&)));
+
+    if (wifiConn.isConnected())
+        printf("net.connman.Technology wifi PropertyChanged Connected\n");
+    else
+        printf("net.connman.Technology wifi PropertyChanged PropertyChanged Not connected\n%s\n", qPrintable(wifiConn.lastError().message()));
 
 
     NotificationManager notifications;

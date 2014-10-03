@@ -106,7 +106,7 @@ Toholed::Toholed()
 
     printf("initialisation complete\n");
 
-    getCurrentNetworkTechnology();
+    getCurrentNetworkConnectionStates();
 
     timeUpdateOverride = true;
     timerTimeout();
@@ -170,7 +170,7 @@ void Toholed::timerTimeout()
             /* Network type indicator is coded in pienifontti, g=2G, u=3G, l=4G (gms, umts, lte) */
             /* Wifi active = w */
             /* Bluetooth device connected = b */
-            QString tmp = QString("%1 %2 %3").arg(networkType.at(0)).arg('w').arg('b');
+            QString tmp = QString("%1 %2 %3").arg(networkType.at(0)).arg(wifiConnected ? 'w' : ' ').arg(bluetoothPowered ? 'b' : ' ');
             drawNetworkType(tmp.toLocal8Bit().data(), screenBuffer);
             noIconsActive = true;
         }
@@ -1093,14 +1093,63 @@ void Toholed::handleNetworkRegistration(const QDBusMessage& msg)
     }
 }
 
-void Toholed::getCurrentNetworkTechnology()
+void Toholed::handleBluetooth(const QDBusMessage& msg)
 {
-    QDBusInterface getNetworkTechnologyCall("org.ofono", "/ril_0", "org.ofono.NetworkRegistration", QDBusConnection::systemBus());
-    getNetworkTechnologyCall.setTimeout(2000);
+    QList<QVariant> args = msg.arguments();
+    QVariant val = args.at(1).value<QDBusVariant>().variant();
 
-    QDBusMessage getNetworkTechnologyCallReply = getNetworkTechnologyCall.call(QDBus::AutoDetect, "GetProperties");
+    printf("Bluetooth: %s changed: ", qPrintable(args.at(0).toString()) );
 
-    const QDBusArgument myArg = getNetworkTechnologyCallReply.arguments().at(0).value<QDBusArgument>();
+    printf("%s (%d)\n", qPrintable(val.toString()), val.type());
+
+    if (args.at(0).toString() == "Powered" && bluetoothPowered != val.toBool())
+    {
+        bluetoothPowered = val.toBool();
+        timeUpdateOverride = true;
+        timerTimeout();
+    }
+    if (args.at(0).toString() == "Connected" && bluetoothConnected != val.toBool())
+    {
+        bluetoothConnected = val.toBool();
+        timeUpdateOverride = true;
+        timerTimeout();
+    }
+
+}
+
+void Toholed::handleWifi(const QDBusMessage& msg)
+{
+    QList<QVariant> args = msg.arguments();
+    QVariant val = args.at(1).value<QDBusVariant>().variant();
+
+    printf("Wifi: %s changed: ", qPrintable(args.at(0).toString()) );
+
+    printf("%s (%d)\n", qPrintable(val.toString()), val.type());
+
+    if (args.at(0).toString() == "Powered" && wifiPowered != val.toBool())
+    {
+        wifiPowered = val.toBool();
+        timeUpdateOverride = true;
+        timerTimeout();
+    }
+    if (args.at(0).toString() == "Connected" && wifiConnected != val.toBool())
+    {
+        wifiConnected = val.toBool();
+        timeUpdateOverride = true;
+        timerTimeout();
+    }
+
+}
+
+
+void Toholed::getCurrentNetworkConnectionStates()
+{
+    QDBusInterface getProperties("org.ofono", "/ril_0", "org.ofono.NetworkRegistration", QDBusConnection::systemBus());
+    getProperties.setTimeout(2000);
+
+    QDBusMessage getPropertiesReply = getProperties.call(QDBus::AutoDetect, "GetProperties");
+
+    const QDBusArgument myArg = getPropertiesReply.arguments().at(0).value<QDBusArgument>();
 
     QMap<QString, QString> m;
 
@@ -1120,7 +1169,59 @@ void Toholed::getCurrentNetworkTechnology()
     networkType = m.value("Technology", "undefined");
 
     printf("Current network Technology is '%s'\n", qPrintable(networkType));
+
+    /* Bluetooth */
+
+    QDBusInterface getProperties2("net.connman", "/net/connman/technology/bluetooth", "net.connman.Technology", QDBusConnection::systemBus());
+
+    QDBusMessage getPropertiesReply2 = getProperties2.call(QDBus::AutoDetect, "GetProperties");
+
+    const QDBusArgument myArg2 = getPropertiesReply2.arguments().at(0).value<QDBusArgument>();
+
+    QMap<QString, bool> b;
+
+    myArg2.beginMap();
+
+    while ( ! myArg2.atEnd())
+    {
+        QString key;
+        QDBusVariant value;
+        myArg2.beginMapEntry();
+        myArg2 >> key >> value;
+        myArg2.endMapEntry();
+        b.insert(key, value.variant().toBool());
+    }
+    myArg2.endMap();
+
+    bluetoothPowered = b.value("Powered", false);
+    bluetoothConnected = b.value("Connected", false);
+
+    QDBusInterface getProperties3("net.connman", "/net/connman/technology/wifi", "net.connman.Technology", QDBusConnection::systemBus());
+
+    QDBusMessage getPropertiesReply3 = getProperties3.call(QDBus::AutoDetect, "GetProperties");
+
+    const QDBusArgument myArg3 = getPropertiesReply3.arguments().at(0).value<QDBusArgument>();
+
+    QMap<QString, bool> w;
+
+    myArg3.beginMap();
+
+    while ( ! myArg3.atEnd())
+    {
+        QString key;
+        QDBusVariant value;
+        myArg3.beginMapEntry();
+        myArg3 >> key >> value;
+        myArg3.endMapEntry();
+        w.insert(key, value.variant().toBool());
+    }
+    myArg3.endMap();
+
+    wifiPowered = w.value("Powered", false);
+    wifiConnected = w.value("Connected", false);
+
 }
+
 
 
 /* Slots for Notificationsmanager */

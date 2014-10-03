@@ -73,6 +73,8 @@ private slots:
     void handleProfileChanged(const QDBusMessage& msg);
     void handleAlarm(const QDBusMessage& msg);
     void handleNetworkRegistration(const QDBusMessage& msg);
+    void handleBluetooth(const QDBusMessage& msg);
+    void handleWifi(const QDBusMessage& msg);
 
     void handleEmailNotify();
     void handleTwitterNotify();
@@ -133,12 +135,16 @@ private:
     static bool iconMITAKUULUU;
 
     static bool noIconsActive;
+    static bool wifiPowered;
+    static bool bluetoothPowered;
+    static bool wifiConnected;
+    static bool bluetoothConnected;
 
     static bool chargerConnected;
     static bool silentProfile;
 
     QString getCurrentProfile();
-    void getCurrentNetworkTechnology();
+    void getCurrentNetworkConnectionStates();
 
     QString networkType;
 };
