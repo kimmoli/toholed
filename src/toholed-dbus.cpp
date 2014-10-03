@@ -172,6 +172,8 @@ void Toholed::timerTimeout()
             /* Bluetooth device connected = b */
             QString tmp = QString("%1 %2 %3").arg(networkType.at(0)).arg(wifiPowered ? (wifiConnected ? 'W' : 'w') : ' ').arg(bluetoothPowered ? (bluetoothConnected ? 'B' : 'b') : ' ');
             drawNetworkType(tmp.toLocal8Bit().data(), screenBuffer);
+            if (cellularConnected)
+                drawCircle(50, 57, 8, 1, screenBuffer);
             noIconsActive = true;
         }
         else
@@ -1141,6 +1143,30 @@ void Toholed::handleWifi(const QDBusMessage& msg)
 
 }
 
+void Toholed::handleCellular(const QDBusMessage& msg)
+{
+    QList<QVariant> args = msg.arguments();
+    QVariant val = args.at(1).value<QDBusVariant>().variant();
+
+    printf("Cellular: %s changed: ", qPrintable(args.at(0).toString()) );
+
+    printf("%s (%d)\n", qPrintable(val.toString()), val.type());
+
+    if (args.at(0).toString() == "Powered" && cellularPowered != val.toBool())
+    {
+        cellularPowered = val.toBool();
+        timeUpdateOverride = true;
+        timerTimeout();
+    }
+    if (args.at(0).toString() == "Connected" && cellularConnected != val.toBool())
+    {
+        cellularConnected = val.toBool();
+        timeUpdateOverride = true;
+        timerTimeout();
+    }
+
+}
+
 
 void Toholed::getCurrentNetworkConnectionStates()
 {
@@ -1219,6 +1245,31 @@ void Toholed::getCurrentNetworkConnectionStates()
 
     wifiPowered = w.value("Powered", false);
     wifiConnected = w.value("Connected", false);
+
+    QDBusInterface getProperties4("net.connman", "/net/connman/technology/cellular", "net.connman.Technology", QDBusConnection::systemBus());
+
+    QDBusMessage getPropertiesReply4 = getProperties4.call(QDBus::AutoDetect, "GetProperties");
+
+    const QDBusArgument myArg4 = getPropertiesReply4.arguments().at(0).value<QDBusArgument>();
+
+    QMap<QString, bool> c;
+
+    myArg4.beginMap();
+
+    while ( ! myArg4.atEnd())
+    {
+        QString key;
+        QDBusVariant value;
+        myArg4.beginMapEntry();
+        myArg4 >> key >> value;
+        myArg4.endMapEntry();
+        c.insert(key, value.variant().toBool());
+    }
+    myArg4.endMap();
+
+    cellularPowered = c.value("Powered", false);
+    cellularConnected = c.value("Connected", false);
+
 
 }
 

@@ -48,8 +48,10 @@ bool Toholed::silentProfile = false;
 bool Toholed::noIconsActive = true;
 bool Toholed::wifiPowered = false;
 bool Toholed::bluetoothPowered = false;
+bool Toholed::cellularPowered = false;
 bool Toholed::wifiConnected = false;
 bool Toholed::bluetoothConnected = false;
+bool Toholed::cellularConnected = false;
 
 int main(int argc, char **argv)
 {
@@ -249,6 +251,18 @@ int main(int argc, char **argv)
         printf("net.connman.Technology wifi PropertyChanged Connected\n");
     else
         printf("net.connman.Technology wifi PropertyChanged PropertyChanged Not connected\n%s\n", qPrintable(wifiConn.lastError().message()));
+
+
+    /* cellular */
+
+    static QDBusConnection cellularConn = QDBusConnection::systemBus();
+    cellularConn.connect("net.connman", "/net/connman/technology/cellular", "net.connman.Technology", "PropertyChanged",
+                           &toholed, SLOT(handleCellular(const QDBusMessage&)));
+
+    if (cellularConn.isConnected())
+        printf("net.connman.Technology cellular PropertyChanged Connected\n");
+    else
+        printf("net.connman.Technology cellular PropertyChanged PropertyChanged Not connected\n%s\n", qPrintable(cellularConn.lastError().message()));
 
 
     NotificationManager notifications;

@@ -75,6 +75,7 @@ private slots:
     void handleNetworkRegistration(const QDBusMessage& msg);
     void handleBluetooth(const QDBusMessage& msg);
     void handleWifi(const QDBusMessage& msg);
+    void handleCellular(const QDBusMessage& msg);
 
     void handleEmailNotify();
     void handleTwitterNotify();
@@ -135,10 +136,13 @@ private:
     static bool iconMITAKUULUU;
 
     static bool noIconsActive;
+
     static bool wifiPowered;
     static bool bluetoothPowered;
     static bool wifiConnected;
     static bool bluetoothConnected;
+    static bool cellularConnected;
+    static bool cellularPowered;
 
     static bool chargerConnected;
     static bool silentProfile;
