@@ -147,6 +147,8 @@ private:
     static bool chargerConnected;
     static bool silentProfile;
 
+    bool displayOffWhenMainActive;
+
     QString getCurrentProfile();
     void getCurrentNetworkConnectionStates();
 

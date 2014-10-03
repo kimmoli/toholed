@@ -266,6 +266,7 @@ void Toholed::reloadSettings()
     blinkOnNotification = settings.value("blink", true).toBool();
     proximityEnabled = settings.value("proximity", true).toBool();
     alsEnabled = settings.value("als", true).toBool();
+    displayOffWhenMainActive = settings.value("displayOffWhenMainActive", false).toBool();
     settings.endGroup();
 }
 
@@ -276,10 +277,14 @@ QString Toholed::setSettings(const QDBusMessage &msg)
     if (args.size() != 4)
         return QString("Failed");
 
+    /* This must match with message sent from settings-ui */
+    /* https://github.com/kimmoli/toholed-settings-ui.git */
+
     blinkOnNotification = QString::localeAwareCompare( args.at(0).toString(), "on") ? false : true;
     alsEnabled = QString::localeAwareCompare( args.at(1).toString(), "on") ? false : true;
     proximityEnabled = QString::localeAwareCompare( args.at(2).toString(), "on") ? false : true;
-    /* chargemon args.at(3) */
+    displayOffWhenMainActive = QString::localeAwareCompare( args.at(3).toString(), "on") ? false : true;
+
 
     QSettings settings(QSettings::SystemScope, "harbour-toholed", "toholed");
 
@@ -287,23 +292,34 @@ QString Toholed::setSettings(const QDBusMessage &msg)
     settings.setValue("blink", blinkOnNotification);
     settings.setValue("proximity", proximityEnabled);
     settings.setValue("als", alsEnabled);
+    settings.setValue("displayOffWhenMainActive", displayOffWhenMainActive);
     settings.endGroup();
 
-    int fd = tsl2772_initComms(0x39);
-    tsl2772_enableInterrupts(fd);
-    tsl2772_closeComms(fd);
-
-    if (!proximityEnabled && !oledInitDone)
+    if (proximityEnabled || alsEnabled)
     {
-        initOled(prevBrightness);
-        oledInitDone = true;
-        timeUpdateOverride = true;
+        int fd = tsl2772_initComms(0x39);
+        tsl2772_enableInterrupts(fd);
+        tsl2772_closeComms(fd);
+    }
+
+    if (!proximityEnabled && !alsEnabled)
+    {
+        int fd = tsl2772_initComms(0x39);
+        tsl2772_disableInterrupts(fd);
+        tsl2772_closeComms(fd);
     }
 
     if (!alsEnabled)
     {
         setContrastOled(BRIGHTNESS_MED);
         prevBrightness = BRIGHTNESS_MED;
+    }
+
+    if (!proximityEnabled && !oledInitDone)
+    {
+        initOled(prevBrightness);
+        oledInitDone = true;
+        timeUpdateOverride = true;
     }
 
     timerTimeout();
@@ -696,7 +712,19 @@ void Toholed::handleDisplayStatus(const QDBusMessage& msg)
     if (!(QString::localeAwareCompare( args.at(0).toString(), "on")))
     {
         iphbStop();
-        timer->start(); /* Change to timer-mode when display is active */
+
+        if (displayOffWhenMainActive)
+        {
+            deinitOled();
+            oledInitDone = false;
+            int fd = tsl2772_initComms(0x39);
+            tsl2772_disableInterrupts(fd);
+            tsl2772_closeComms(fd);
+        }
+        else
+        {
+            timer->start(); /* Change to timer-mode when display is active */
+        }
 
         tmp = checkOled();
         if (tmp == -1)
@@ -725,6 +753,16 @@ void Toholed::handleDisplayStatus(const QDBusMessage& msg)
     }
     else if (!(QString::localeAwareCompare( args.at(0).toString(), "off")))
     {
+        if (displayOffWhenMainActive)
+        {
+            initOled(prevBrightness);
+            oledInitDone = true;
+            timeUpdateOverride = true;
+            timerTimeout();
+            int fd = tsl2772_initComms(0x39);
+            tsl2772_enableInterrupts(fd);
+            tsl2772_closeComms(fd);
+        }
         iphbStart();
         timer->stop(); /* Change to iphb-mode when display is off */
     }
@@ -1273,7 +1311,6 @@ void Toholed::getCurrentNetworkConnectionStates()
 
 
 }
-
 
 
 /* Slots for Notificationsmanager */
