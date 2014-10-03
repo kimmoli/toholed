@@ -170,10 +170,11 @@ void Toholed::timerTimeout()
             /* Network type indicator is coded in pienifontti, g=2G, u=3G, l=4G (gms, umts, lte) */
             /* Wifi active = w */
             /* Bluetooth device connected = b */
-            QString tmp = QString("%1 %2 %3").arg(networkType.at(0)).arg(wifiPowered ? (wifiConnected ? 'W' : 'w') : ' ').arg(bluetoothPowered ? (bluetoothConnected ? 'B' : 'b') : ' ');
+            QString tmp = QString("%1 %2 %3")
+                    .arg(cellularPowered ? (cellularConnected ? networkType.at(0).toUpper() : networkType.at(0).toLower()) : ' ')
+                    .arg(wifiPowered ? (wifiConnected ? 'W' : 'w') : ' ')
+                    .arg(bluetoothPowered ? (bluetoothConnected ? 'B' : 'b') : ' ');
             drawNetworkType(tmp.toLocal8Bit().data(), screenBuffer);
-            if (cellularConnected)
-                drawCircle(50, 57, 8, 1, screenBuffer);
             noIconsActive = true;
         }
         else
