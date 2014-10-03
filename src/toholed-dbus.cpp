@@ -1166,7 +1166,7 @@ void Toholed::getCurrentNetworkConnectionStates()
     }
     myArg.endMap();
 
-    networkType = m.value("Technology", "undefined");
+    networkType = m.value("Technology", "NONE");
 
     printf("Current network Technology is '%s'\n", qPrintable(networkType));
 
