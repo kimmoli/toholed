@@ -39,17 +39,14 @@ void TohoSettings::readSettings()
     m_als = settings.value("als", true).toBool();
     m_prox = settings.value("proximity", true).toBool();
     m_ssp = settings.value("ssp", false).toBool();
-    settings.endGroup();
-
-    settings.beginGroup("experimental");
-    m_chargemon = settings.value("chargemon", false).toBool();
+    m_displayOffWhenMainActive = settings.value("displayOffWhenMainActive", false).toBool();
     settings.endGroup();
 
     emit blinkChanged();
     emit alsChanged();
     emit proxChanged();
     emit sspChanged();
-    emit chargemonChanged();
+    emit displayOffWhenMainActiveChanged();
 }
 
 TohoSettings::~TohoSettings()
@@ -72,7 +69,7 @@ void TohoSettings::writeSettings()
     args.append(QString(m_blink ? "on" : "off"));
     args.append(QString(m_als ? "on" : "off"));
     args.append(QString(m_prox ? "on" : "off"));
-    args.append(QString(m_chargemon ? "on" : "off"));
+    args.append(QString(m_displayOffWhenMainActive ? "on" : "off"));
     m.setArguments(args);
 
     if (QDBusConnection::systemBus().send(m))

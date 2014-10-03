@@ -71,6 +71,15 @@ Page
 
             TextSwitch
             {
+                text: "Display off when main active"
+                description: "Toholed display off when main display active"
+                checked: tohosettings.displayOffWhenMainActive
+                automaticCheck: false
+                onClicked: tohosettings.displayOffWhenMainActive = !tohosettings.displayOffWhenMainActive
+            }
+
+            TextSwitch
+            {
                 text: "Screenshot mode"
                 description: "Take screenshot from front proximity"
                 checked: tohosettings.ssp
@@ -78,19 +87,6 @@ Page
                 onClicked: tohosettings.ssp = !tohosettings.ssp
             }
 
-            SectionHeader
-            {
-                text: "Experimental"
-            }
-
-            TextSwitch
-            {
-                text: "Charge monitor"
-                description: "Show details whne charging"
-                checked: tohosettings.chargemon
-                automaticCheck: false
-                onClicked: tohosettings.chargemon = !tohosettings.chargemon
-            }
 
             Button
             {

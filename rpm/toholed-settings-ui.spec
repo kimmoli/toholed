@@ -9,8 +9,8 @@ Name:       toholed-settings-ui
 %{!?qtc_make:%define qtc_make make}
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 Summary:    Toholed settings UI
-Version:    0.1
-Release:    1
+Version:    0.2
+Release:    2
 Group:      Qt/Qt
 License:    LICENSE
 URL:        http://example.org/

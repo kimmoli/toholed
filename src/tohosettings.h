@@ -22,7 +22,8 @@ class TohoSettings : public QObject
     Q_PROPERTY(bool als READ readAls WRITE writeAls NOTIFY alsChanged())
     Q_PROPERTY(bool prox READ readProx WRITE writeProx NOTIFY proxChanged())
     Q_PROPERTY(bool ssp READ readSsp WRITE writeSsp NOTIFY sspChanged())
-    Q_PROPERTY(bool chargemon READ readChargemon WRITE writeChargemon NOTIFY chargemonChanged())
+    Q_PROPERTY(bool displayOffWhenMainActive READ readDisplayOffWhenMainActive WRITE writeDisplayOffWhenMainActive NOTIFY displayOffWhenMainActiveChanged())
+
 
 public:
     explicit TohoSettings(QObject *parent = 0);
@@ -34,13 +35,13 @@ public:
     void writeAls(bool x) { m_als = x; emit alsChanged(); }
     void writeProx(bool x) { m_prox = x; emit proxChanged(); }
     void writeSsp(bool x) { m_ssp = x; emit sspChanged(); }
-    void writeChargemon(bool x) { m_chargemon = x; emit chargemonChanged(); }
+    void writeDisplayOffWhenMainActive(bool x) { m_displayOffWhenMainActive = x; emit displayOffWhenMainActiveChanged(); }
 
     bool readBlink() { return m_blink; }
     bool readAls() { return m_als; }
     bool readProx() { return m_prox; }
     bool readSsp() { return m_ssp; }
-    bool readChargemon() { return m_chargemon; }
+    bool readDisplayOffWhenMainActive() { return m_displayOffWhenMainActive; }
 
     Q_INVOKABLE void readSettings();
     Q_INVOKABLE void writeSettings();
@@ -52,14 +53,14 @@ signals:
     void alsChanged();
     void proxChanged();
     void sspChanged();
-    void chargemonChanged();
+    void displayOffWhenMainActiveChanged();
 
 private:
     bool m_blink;
     bool m_als;
     bool m_prox;
     bool m_ssp;
-    bool m_chargemon;
+    bool m_displayOffWhenMainActive;
 };
 
 
