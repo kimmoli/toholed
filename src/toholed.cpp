@@ -26,32 +26,6 @@
 
 #include <QtGlobal>
 
-
-bool Toholed::oledInitDone = false;
-bool Toholed::vddEnabled = false;
-bool Toholed::interruptsEnabled = false;
-int Toholed::timerCount = 0;
-unsigned int Toholed::prevBrightness = BRIGHTNESS_MED;
-unsigned int Toholed::prevProx = 0;
-bool Toholed::iconCALL = false;
-bool Toholed::iconSMS = false;
-bool Toholed::iconEMAIL = false;
-bool Toholed::iconTWEET = false;
-bool Toholed::iconIRC = false;
-bool Toholed::iconMITAKUULUU = false;
-bool Toholed::ScreenCaptureOnProximity = false;
-int Toholed::activeHighlights = 0;
-unsigned int Toholed::ssNotifyReplacesId = 0;
-bool Toholed::chargerConnected = false;
-int Toholed::mitakuuluuUnread = 0;
-bool Toholed::silentProfile = false;
-bool Toholed::wifiPowered = false;
-bool Toholed::bluetoothPowered = false;
-bool Toholed::cellularPowered = false;
-bool Toholed::wifiConnected = false;
-bool Toholed::bluetoothConnected = false;
-bool Toholed::cellularConnected = false;
-
 int main(int argc, char **argv)
 {
     QCoreApplication app(argc, argv);

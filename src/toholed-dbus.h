@@ -96,23 +96,23 @@ private:
     QThread *thread;
     Worker *worker;
 
-    static bool ScreenCaptureOnProximity;
+    bool ScreenCaptureOnProximity;
 
-    static bool oledInitDone;
-    static bool vddEnabled;
-    static bool interruptsEnabled;
+    bool oledInitDone;
+    bool vddEnabled;
+    bool interruptsEnabled;
 
-    static unsigned int prevBrightness;
-    static unsigned int prevProx;
+    unsigned int prevBrightness;
+    unsigned int prevProx;
 
-    static unsigned int ssNotifyReplacesId;
+    unsigned int ssNotifyReplacesId;
     QString ssFilename;
     QString ScreenCaptureOnProximityStorePath;
 
-    static int activeHighlights;
-    static int mitakuuluuUnread;
+    int activeHighlights;
+    int mitakuuluuUnread;
 
-    static int timerCount;
+    int timerCount;
     QTime prevTime;
     QTimer *timer;
     QTimer *alarmTimer;
@@ -127,17 +127,17 @@ private:
     int gpio_fd;
     int proximity_fd;
 
-    static bool iconSMS;
-    static bool iconEMAIL;
-    static bool iconCALL;
-    static bool iconTWEET;
-    static bool iconIRC;
-    static bool iconMITAKUULUU;
+    bool iconSMS;
+    bool iconEMAIL;
+    bool iconCALL;
+    bool iconTWEET;
+    bool iconIRC;
+    bool iconMITAKUULUU;
 
     bool blinkOnNotification;
 
-    static bool chargerConnected;
-    static bool silentProfile;
+    bool chargerConnected;
+    bool silentProfile;
 
     bool displayOffWhenMainActive;
     bool analogClockFace;
@@ -151,12 +151,12 @@ private:
                                   const QDBusConnection & connection = QDBusConnection::sessionBus());
 
     QString networkType;
-    static bool wifiPowered;
-    static bool bluetoothPowered;
-    static bool wifiConnected;
-    static bool bluetoothConnected;
-    static bool cellularConnected;
-    static bool cellularPowered;
+    bool wifiPowered;
+    bool bluetoothPowered;
+    bool wifiConnected;
+    bool bluetoothConnected;
+    bool cellularConnected;
+    bool cellularPowered;
 
 };
 

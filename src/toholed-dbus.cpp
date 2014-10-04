@@ -42,6 +42,31 @@ static char screenBuffer[SCREENBUFFERSIZE] = { 0 };
 /* Main */
 Toholed::Toholed()
 {
+    oledInitDone = false;
+    vddEnabled = false;
+    interruptsEnabled = false;
+    timerCount = 0;
+    prevBrightness = BRIGHTNESS_MED;
+    prevProx = 0;
+    iconCALL = false;
+    iconSMS = false;
+    iconEMAIL = false;
+    iconTWEET = false;
+    iconIRC = false;
+    iconMITAKUULUU = false;
+    ScreenCaptureOnProximity = false;
+    activeHighlights = 0;
+    ssNotifyReplacesId = 0;
+    chargerConnected = false;
+    mitakuuluuUnread = 0;
+    silentProfile = false;
+    wifiPowered = false;
+    bluetoothPowered = false;
+    cellularPowered = false;
+    wifiConnected = false;
+    bluetoothConnected = false;
+    cellularConnected = false;
+
     reloadSettings();
 
     timer = new QTimer(this);
