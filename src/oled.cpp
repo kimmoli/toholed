@@ -86,53 +86,6 @@ void drawIcon(int icon, char *screenBuffer)
     }
 }
 
-void clearIcon(int icon, char *screenBuffer)
-{
-    char* sb = screenBuffer;
-
-    int i,d,s,n,o,x,h;
-
-    o = 50; // rivi mistä tulostus alkaa
-
-    for (x=0; x < LASTICON ; x++)
-    {
-        if ( icon == iconsMap[x] )
-        {
-            h = iconPos[x];
-            d = iconsStart[x] / 8; // byte offset
-            s = iconsStart[x] - d*8; // bit offset
-
-            for (i=0 ; i<iconsWidth[x] ; i++) // merkin leveys
-            {
-                for (n=0; n<iconsHeightPixels ; n++) // merkin korkeus
-                {
-                    (*(sb+((o+n)/8)+((h+i)*8))) &= ~( 0x01 << ( (o+n) % 8 ) );
-                }
-
-                if ( ((s+i) % 8) == 7 )
-                    d++;
-
-            }
-            break;
-        }
-    }
-}
-
-
-void clearIcons(char *screenBuffer)
-{
-    char *sb = screenBuffer;
-    int i;
-
-    for (i=326 ; i < 1024 ; i=i+8 )
-    {
-        *(sb+i) = 0x00;
-        *(sb+i+1) = 0x00;
-    }
-}
-
-
-
 /* Draw Battery percentage level */
 void drawBatteryLevel(const char *batLevel, char *screenBuffer)
 {
