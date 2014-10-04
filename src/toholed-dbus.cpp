@@ -673,15 +673,17 @@ void Toholed::handleCall(const QDBusMessage& msg)
         updateDisplay(true, 0);
         alarmTimer->stop();
     }
-    /* TODO - Other reasons to stop blinking */
+    else if (!(QString::localeAwareCompare( args.at(0).toString(), "none")) )
+    {
+        /* Just stop blinking */
+        alarmTimer->stop();
+    }
 }
 
 void Toholed::handleDisplayStatus(const QDBusMessage& msg)
 {
     QList<QVariant> args = msg.arguments();
-    int fd;
     int tmp;
-    unsigned long reg;
 
     printf("Display status changed to %s\n", qPrintable(args.at(0).toString()));
 
