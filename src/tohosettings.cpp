@@ -40,6 +40,7 @@ void TohoSettings::readSettings()
     m_prox = settings.value("proximity", true).toBool();
     m_ssp = settings.value("ssp", false).toBool();
     m_displayOffWhenMainActive = settings.value("displayOffWhenMainActive", false).toBool();
+    m_analogClockFace = settings.value("analogClockFace", false).toBool();
     settings.endGroup();
 
     emit blinkChanged();
@@ -47,6 +48,7 @@ void TohoSettings::readSettings()
     emit proxChanged();
     emit sspChanged();
     emit displayOffWhenMainActiveChanged();
+    emit analogClockFaceChanged();
 }
 
 TohoSettings::~TohoSettings()
@@ -70,6 +72,7 @@ void TohoSettings::writeSettings()
     args.append(QString(m_als ? "on" : "off"));
     args.append(QString(m_prox ? "on" : "off"));
     args.append(QString(m_displayOffWhenMainActive ? "on" : "off"));
+    args.append(QString(m_analogClockFace ? "on" : "off"));
     m.setArguments(args);
 
     if (QDBusConnection::systemBus().send(m))

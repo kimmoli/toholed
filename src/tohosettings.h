@@ -23,6 +23,7 @@ class TohoSettings : public QObject
     Q_PROPERTY(bool prox READ readProx WRITE writeProx NOTIFY proxChanged())
     Q_PROPERTY(bool ssp READ readSsp WRITE writeSsp NOTIFY sspChanged())
     Q_PROPERTY(bool displayOffWhenMainActive READ readDisplayOffWhenMainActive WRITE writeDisplayOffWhenMainActive NOTIFY displayOffWhenMainActiveChanged())
+    Q_PROPERTY(bool analogClockFace READ readAnalogClockFace WRITE writeAnalogClockFace NOTIFY analogClockFaceChanged())
 
 
 public:
@@ -36,12 +37,14 @@ public:
     void writeProx(bool x) { m_prox = x; emit proxChanged(); }
     void writeSsp(bool x) { m_ssp = x; emit sspChanged(); }
     void writeDisplayOffWhenMainActive(bool x) { m_displayOffWhenMainActive = x; emit displayOffWhenMainActiveChanged(); }
+    void writeAnalogClockFace(bool x) { m_analogClockFace = x; emit analogClockFaceChanged(); }
 
     bool readBlink() { return m_blink; }
     bool readAls() { return m_als; }
     bool readProx() { return m_prox; }
     bool readSsp() { return m_ssp; }
     bool readDisplayOffWhenMainActive() { return m_displayOffWhenMainActive; }
+    bool readAnalogClockFace() { return m_analogClockFace; }
 
     Q_INVOKABLE void readSettings();
     Q_INVOKABLE void writeSettings();
@@ -54,6 +57,7 @@ signals:
     void proxChanged();
     void sspChanged();
     void displayOffWhenMainActiveChanged();
+    void analogClockFaceChanged();
 
 private:
     bool m_blink;
@@ -61,6 +65,7 @@ private:
     bool m_prox;
     bool m_ssp;
     bool m_displayOffWhenMainActive;
+    bool m_analogClockFace;
 };
 
 

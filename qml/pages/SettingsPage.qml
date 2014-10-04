@@ -80,13 +80,21 @@ Page
 
             TextSwitch
             {
+                text: "Show analog clock"
+                description: "Experimental analog clock face"
+                checked: tohosettings.analogClockFace
+                automaticCheck: false
+                onClicked: tohosettings.analogClockFace = !tohosettings.analogClockFace
+            }
+
+            TextSwitch
+            {
                 text: "Screenshot mode"
                 description: "Take screenshot from front proximity"
                 checked: tohosettings.ssp
                 automaticCheck: false
                 onClicked: tohosettings.ssp = !tohosettings.ssp
             }
-
 
             Button
             {
