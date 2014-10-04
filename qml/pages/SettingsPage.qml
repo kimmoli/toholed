@@ -20,7 +20,7 @@ Page
                                           { "version": tohosettings.version,
                                               "year": "2014",
                                               "name": "Toholed settings UI",
-                                              "imagelocation": "/usr/share/icons/hicolor/86x86/apps/toholed-settings-ui.png"} )
+                                              "imagelocation": "/usr/share/icons/hicolor/86x86/apps/harbour-toholed-settings-ui.png"} )
             }
         }
 
