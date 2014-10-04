@@ -689,6 +689,25 @@ void Toholed::handleDisplayStatus(const QDBusMessage& msg)
     {
         iphbStop();
 
+        tmp = checkOled();
+
+        if (tmp == -1)
+        {
+            printf("Failed to check OLED status\n");
+        }
+        else if (tmp != 1)
+        {
+            printf("Display is off (%02x) - Reinitializing.\n", tmp);
+
+            initOled(prevBrightness);
+            oledInitDone = true;
+            updateDisplay(true);
+
+            int fd = tsl2772_initComms(0x39);
+            tsl2772_initialize(fd);
+            tsl2772_closeComms(fd);
+        }
+
         if (displayOffWhenMainActive)
         {
             deinitOled();
@@ -701,31 +720,6 @@ void Toholed::handleDisplayStatus(const QDBusMessage& msg)
         {
             timer->start(); /* Change to timer-mode when display is active */
         }
-
-        tmp = checkOled();
-        if (tmp == -1)
-            printf("Failed to check OLED status\n");
-        else if (tmp == 1)
-            printf("Display is active\n");
-        else
-            printf("Display is off (%02x)\n", tmp);
-
-
-        fd = tsl2772_initComms(0x39);
-        if (fd <0)
-        {
-            printf("failed to start communication with TSL2772\n");
-            tsl2772_closeComms(fd);
-            return;
-        }
-        reg = tsl2772_getReg(fd, 0x00);
-        tsl2772_closeComms(fd);
-
-        if (reg == 0xffff)
-            printf("Failed to read register from TSL2772\n");
-        else
-            printf("TSL2772 enable register = %02x\n", (int)(reg & 0xff));
-
     }
     else if (!(QString::localeAwareCompare( args.at(0).toString(), "off")))
     {

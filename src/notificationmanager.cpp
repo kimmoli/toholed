@@ -130,7 +130,8 @@ uint NotificationManager::Notify(const QString &app_name, uint replaces_id, cons
         QString data = hints.value("x-nemo-preview-body", "").toString();
         QString category = hints.value("category", "").toString();
 
-        printf("Other notification: subject=%s data=%s category=%s\n", qPrintable(subject), qPrintable(data), qPrintable(category));
+        printf("Other notification: summary=%s app_icon=%s body=%s\n", qPrintable(summary), qPrintable(app_icon), qPrintable(body));
+        printf("subject=%s data=%s category=%s\n", qPrintable(subject), qPrintable(data), qPrintable(category));
 
         emit this->otherNotify();
     }
