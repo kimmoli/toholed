@@ -2,15 +2,15 @@
 # spec file for toholed-settings-ui, Toholed settings UI
 # 
 
-Name:       toholed-settings-ui
+Name:       harbour-toholed-settings-ui
 
 %{!?qtc_qmake:%define qtc_qmake %qmake}
 %{!?qtc_qmake5:%define qtc_qmake5 %qmake5}
 %{!?qtc_make:%define qtc_make make}
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 Summary:    Toholed settings UI
-Version:    0.3
-Release:    3
+Version:    0.3.2
+Release:    5
 Group:      Qt/Qt
 License:    LICENSE
 URL:        http://example.org/
@@ -52,7 +52,7 @@ desktop-file-install --delete-original       \
 %{_datadir}/applications/%{name}.desktop
 %{_datadir}/icons/hicolor/86x86/apps/%{name}.png
 /usr/bin
-/usr/share/toholed-settings-ui
+/usr/share/%{name}
 /usr/share/applications
 /usr/share/icons/hicolor/86x86/apps
 

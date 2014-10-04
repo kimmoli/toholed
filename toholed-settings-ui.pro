@@ -2,7 +2,7 @@
 # Project toholed-settings-ui, Toholed settings UI
 #
 
-TARGET = toholed-settings-ui
+TARGET = harbour-toholed-settings-ui
 
 CONFIG += sailfishapp
 QT += dbus
@@ -21,6 +21,6 @@ OTHER_FILES += qml/toholed-settings-ui.qml \
     qml/pages/SettingsPage.qml \
     qml/pages/AboutPage.qml \
     rpm/toholed-settings-ui.spec \
-	toholed-settings-ui.png \
-    toholed-settings-ui.desktop
+    harbour-toholed-settings-ui.png \
+    harbour-toholed-settings-ui.desktop
 
