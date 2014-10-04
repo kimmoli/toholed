@@ -45,7 +45,6 @@ unsigned int Toholed::ssNotifyReplacesId = 0;
 bool Toholed::chargerConnected = false;
 int Toholed::mitakuuluuUnread = 0;
 bool Toholed::silentProfile = false;
-bool Toholed::noIconsActive = true;
 bool Toholed::wifiPowered = false;
 bool Toholed::bluetoothPowered = false;
 bool Toholed::cellularPowered = false;

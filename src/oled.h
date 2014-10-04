@@ -40,6 +40,4 @@ void drawBitmap(int x, int y, int height, int width, int offset, int rowsize, bo
 void drawAnalogClock(int hours, int minutes, char *screenBuffer);
 void drawHand(const analogHand hand, int color, char *screenBuffer);
 
-extern bool blinkOnNotification;
-
 #endif

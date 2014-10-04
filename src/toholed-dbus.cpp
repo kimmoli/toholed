@@ -46,12 +46,12 @@ Toholed::Toholed()
 
     timer = new QTimer(this);
     timer->setInterval(30000);
-    connect(timer, SIGNAL(timeout()), this, SLOT(timerTimeout()));
+    connect(timer, SIGNAL(timeout()), this, SLOT(updateDisplay()));
     timer->start();
 
     alarmTimer = new QTimer(this);
     alarmTimer->setInterval(500);
-    connect(alarmTimer, SIGNAL(timeout()), this, SLOT(alarmTimerTimeout()));
+    connect(alarmTimer, SIGNAL(timeout()), this, SLOT(alarmTimerTimeout( )));
 
     iphbRunning = false;
     iphbdHandler = iphb_open(0);
@@ -90,7 +90,6 @@ Toholed::Toholed()
     connect(thread, SIGNAL(started()), worker, SLOT(doWork()));
     connect(worker, SIGNAL(finished()), thread, SLOT(quit()), Qt::DirectConnection);
 
-    timeUpdateOverride = false;
     interruptsEnabled = false;
 
     /* Get the current profile status */
@@ -108,12 +107,11 @@ Toholed::Toholed()
 
     getCurrentNetworkConnectionStates();
 
-    timeUpdateOverride = true;
-    timerTimeout();
+    updateDisplay(true);
 }
 
 /* Timer routine to update OLED clock */
-void Toholed::timerTimeout()
+void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
 {
 
     QTime current = QTime::currentTime();
@@ -151,9 +149,12 @@ void Toholed::timerTimeout()
         else
         { /* Digital clock face */
             drawTime(baNow.data(), screenBuffer);
+        }
 
-            drawBatteryLevel(babatNow.data(), screenBuffer);
+        drawBatteryLevel(babatNow.data(), screenBuffer);
 
+        if (!analogClockFace)
+        {
             if ((iconSMS && iconMITAKUULUU && (timerCount & 1)) || (iconSMS && !iconMITAKUULUU))
             {
                 drawIcon(MESSAGE, screenBuffer);
@@ -183,11 +184,6 @@ void Toholed::timerTimeout()
                         .arg(wifiPowered ? (wifiConnected ? 'W' : 'w') : ' ')
                         .arg(bluetoothPowered ? (bluetoothConnected ? 'B' : 'b') : ' ');
                 drawNetworkType(tmp.toLocal8Bit().data(), screenBuffer);
-                noIconsActive = true;
-            }
-            else
-            {
-                noIconsActive = false;
             }
         }
 
@@ -197,7 +193,12 @@ void Toholed::timerTimeout()
         if (!timeUpdateOverride)
             printf("Time now: %s Battery: %s (%d)\n", baNow.data(), babatNow.data(), timerCount );
 
-        timeUpdateOverride = false;
+        if ((blinks > 0) && blinkOnNotification)
+        {
+            mutex.lock();
+            blinkOled(blinks);
+            mutex.unlock();
+        }
     }
 
 }
@@ -210,7 +211,7 @@ void Toholed::heartbeatReceived(int sock)
 
     iphbStop();
     timerCount++;
-    timerTimeout();
+    updateDisplay();
     iphbStart();
 }
 
@@ -330,10 +331,9 @@ QString Toholed::setSettings(const QDBusMessage &msg)
     {
         initOled(prevBrightness);
         oledInitDone = true;
-        timeUpdateOverride = true;
     }
 
-    timerTimeout();
+    updateDisplay(true);
 
     return QString("Yep");
 }
@@ -586,21 +586,8 @@ void Toholed:: handleSMS(const QDBusMessage& msg)
 
     printf("New SMS: %s\n", qPrintable(args.at(0).toString()));
 
-    mutex.lock();
-    if (noIconsActive)
-    {
-        noIconsActive = false;
-        clearIcons(screenBuffer);
-    }
-    drawIcon(MESSAGE, screenBuffer);
-    if (oledInitDone)
-    {
-        updateOled(screenBuffer);
-        blinkOled(2);
-    }
-    mutex.unlock();
-
     iconSMS = true;
+    updateDisplay(true, 2);
 }
 
 /* Tweetian handler */
@@ -610,21 +597,9 @@ void Toholed::handleTweetian(const QDBusMessage& msg)
     Q_UNUSED(msg);
     printf("You have been mentioned in a Tweet\n");
 
-    mutex.lock();
-    if (noIconsActive)
-    {
-        noIconsActive = false;
-        clearIcons(screenBuffer);
-    }
-    drawIcon(TWEET, screenBuffer);
-    if (oledInitDone)
-    {
-        updateOled(screenBuffer);
-        blinkOled(2);
-    }
-    mutex.unlock();
-
     iconTWEET = true;
+
+    updateDisplay(true, 2);
 }
 
 /* Communi IRC handler */
@@ -638,34 +613,14 @@ void Toholed::handleCommuni(const QDBusMessage& msg)
 
     if (ah > activeHighlights) /* Number of active highlights increased */
     {
-        mutex.lock();
-        if (noIconsActive)
-        {
-            noIconsActive = false;
-            clearIcons(screenBuffer);
-        }
-        drawIcon(IRC, screenBuffer);
-        if (oledInitDone)
-        {
-            updateOled(screenBuffer);
-            blinkOled(2);
-        }
-        iconIRC = true;
-        mutex.unlock();
-
+        updateDisplay(true, 2);
     }
     else if ((ah == 0) && iconIRC) /* Active highlights all read */
     {
-        mutex.lock();
-        clearIcon(IRC, screenBuffer);
-        if (oledInitDone)
-            updateOled(screenBuffer);
-        iconIRC = false;
-        mutex.unlock();
+        updateDisplay(true, 0);
     }
 
     activeHighlights = ah;
-
 }
 
 
@@ -680,35 +635,20 @@ void Toholed::handleCall(const QDBusMessage& msg)
     if ( !(QString::localeAwareCompare( args.at(0).toString(), "ringing")) )
     {
         printf("Incoming call\n");
-        mutex.lock();
-        if (noIconsActive)
-        {
-            noIconsActive = false;
-            clearIcons(screenBuffer);
-        }
-        drawIcon(CALL, screenBuffer);
-        if (oledInitDone)
-        {
-            updateOled(screenBuffer);
-            blinkOled(2);
-        }
         iconCALL = true;
 
-        mutex.unlock();
+        updateDisplay(true, 0);
+        alarmTimer->start(); /* Use the alarmTimer to blink the screen while phone is ringing */
     }
     else if ( iconCALL && !(QString::localeAwareCompare( args.at(0).toString(), "active")) )
     {
         printf("Call answered or placing new call when missed call indicated\n");
-        mutex.lock();
-        clearIcon(CALL, screenBuffer);
-        if (oledInitDone)
-            updateOled(screenBuffer);
-
         iconCALL = false;
 
-        mutex.unlock();
+        updateDisplay(true, 0);
+        alarmTimer->stop();
     }
-
+    /* TODO - Other reasons to stop blinking */
 }
 
 void Toholed::handleDisplayStatus(const QDBusMessage& msg)
@@ -768,8 +708,8 @@ void Toholed::handleDisplayStatus(const QDBusMessage& msg)
         {
             initOled(prevBrightness);
             oledInitDone = true;
-            timeUpdateOverride = true;
-            timerTimeout();
+            updateDisplay(true);
+
             int fd = tsl2772_initComms(0x39);
             tsl2772_enableInterrupts(fd);
             tsl2772_closeComms(fd);
@@ -797,18 +737,13 @@ void Toholed::handleNotificationClosed(const QDBusMessage& msg)
         ssNotifyReplacesId = 0;
     }
 
-    mutex.lock();
-
     iconSMS = false;
     iconEMAIL = false;
     iconCALL = false;
     iconTWEET = false;
     iconIRC = false;
 
-    mutex.unlock();
-
-    timeUpdateOverride = true;
-    timerTimeout();
+    updateDisplay(true);
 }
 
 /* GPIO interrupt handler */
@@ -880,13 +815,14 @@ void Toholed::handleGpioInterrupt()
         else if ((prox < prox_limit) && (prevProx > prox_limit))
         {
             printf("Interrupt: Proximity cleared:      ALS C0 %5lu C1 %5lu prox %5lu\n", alsC0, alsC1, prox);
+
             fd = tsl2772_initComms(0x39);
             tsl2772_setProxThresholds(fd, prox_limit, 0);
             tsl2772_closeComms(fd);
             initOled(prevBrightness);
             oledInitDone = true;
-            timeUpdateOverride = true;
-            timerTimeout();
+
+            updateDisplay(true);
         }
 
         prevProx = prox;
@@ -1013,15 +949,15 @@ void Toholed::handleChargerStatus(const QDBusMessage& msg)
     {
         printf("Charger connected\n");
         chargerConnected = true;
-        timeUpdateOverride = true;
-        timerTimeout();
+
+        updateDisplay(true, 0);
     }
     else if (!(QString::localeAwareCompare( tmp, "charger_disconnected")) && chargerConnected)
     {
         printf("Charger disconnected\n");
         chargerConnected = false;
-        timeUpdateOverride = true;
-        timerTimeout();
+
+        updateDisplay(true, 0);
     }
 
 }
@@ -1036,34 +972,18 @@ void Toholed::handleMitakuuluu(const QDBusMessage& msg)
 
     if (mkUnread > mitakuuluuUnread) /* Number of total unread increased */
     {
-        mutex.lock();
-        if (noIconsActive)
-        {
-            noIconsActive = false;
-            clearIcons(screenBuffer);
-        }
-        drawIcon(MITAKUULUU, screenBuffer);
-        if (oledInitDone)
-        {
-            updateOled(screenBuffer);
-            blinkOled(2);
-        }
         iconMITAKUULUU = true;
-        mutex.unlock();
 
+        updateDisplay(true, 2);
     }
     else if ((mkUnread == 0) && iconMITAKUULUU) /* All read */
     {
-        mutex.lock();
-        clearIcon(MITAKUULUU, screenBuffer);
-        if (oledInitDone)
-            updateOled(screenBuffer);
         iconMITAKUULUU = false;
-        mutex.unlock();
+
+        updateDisplay(true, 0);
     }
 
     mitakuuluuUnread = mkUnread;
-
 }
 
 void Toholed::handleProfileChanged(const QDBusMessage& msg)
@@ -1076,14 +996,14 @@ void Toholed::handleProfileChanged(const QDBusMessage& msg)
     if (tmp == "silent")
     {
         silentProfile = true;
-        timeUpdateOverride = true;
-        timerTimeout();
+
+        updateDisplay(true);
     }
     else
     {
         silentProfile = false;
-        timeUpdateOverride = true;
-        timerTimeout();
+
+        updateDisplay(true);
     }
 }
 
@@ -1114,7 +1034,7 @@ void Toholed::handleAlarm(const QDBusMessage& msg)
     }
 }
 
-void Toholed::alarmTimerTimeout()
+void Toholed::alarmTimerTimeout( )
 {
     if (oledInitDone)
     {
@@ -1140,8 +1060,8 @@ void Toholed::handleNetworkRegistration(const QDBusMessage& msg)
     if (args.at(0).toString() == "Technology" && networkType != val.toString())
     {
         networkType = val.toString();
-        timeUpdateOverride = true;
-        timerTimeout();
+
+        updateDisplay(true);
     }
 }
 
@@ -1157,14 +1077,14 @@ void Toholed::handleBluetooth(const QDBusMessage& msg)
     if (args.at(0).toString() == "Powered" && bluetoothPowered != val.toBool())
     {
         bluetoothPowered = val.toBool();
-        timeUpdateOverride = true;
-        timerTimeout();
+
+        updateDisplay(true);
     }
     if (args.at(0).toString() == "Connected" && bluetoothConnected != val.toBool())
     {
         bluetoothConnected = val.toBool();
-        timeUpdateOverride = true;
-        timerTimeout();
+
+        updateDisplay(true);
     }
 
 }
@@ -1181,14 +1101,14 @@ void Toholed::handleWifi(const QDBusMessage& msg)
     if (args.at(0).toString() == "Powered" && wifiPowered != val.toBool())
     {
         wifiPowered = val.toBool();
-        timeUpdateOverride = true;
-        timerTimeout();
+
+        updateDisplay(true);
     }
     if (args.at(0).toString() == "Connected" && wifiConnected != val.toBool())
     {
         wifiConnected = val.toBool();
-        timeUpdateOverride = true;
-        timerTimeout();
+
+        updateDisplay(true);
     }
 
 }
@@ -1205,14 +1125,14 @@ void Toholed::handleCellular(const QDBusMessage& msg)
     if (args.at(0).toString() == "Powered" && cellularPowered != val.toBool())
     {
         cellularPowered = val.toBool();
-        timeUpdateOverride = true;
-        timerTimeout();
+
+        updateDisplay(true);
     }
     if (args.at(0).toString() == "Connected" && cellularConnected != val.toBool())
     {
         cellularConnected = val.toBool();
-        timeUpdateOverride = true;
-        timerTimeout();
+
+        updateDisplay(true);
     }
 
 }
@@ -1220,109 +1140,62 @@ void Toholed::handleCellular(const QDBusMessage& msg)
 
 void Toholed::getCurrentNetworkConnectionStates()
 {
-    QDBusInterface getProperties("org.ofono", "/ril_0", "org.ofono.NetworkRegistration", QDBusConnection::systemBus());
+    /* Network type*/
+
+    QVariantMap m = getDbusProperties("org.ofono", "/ril_0", "org.ofono.NetworkRegistration", QDBusConnection::systemBus());
+
+    networkType = m.value("Technology", "NONE").toString();
+
+    /* Bluetooth */
+
+    QVariantMap b = getDbusProperties("net.connman", "/net/connman/technology/bluetooth", "net.connman.Technology", QDBusConnection::systemBus());
+
+    bluetoothPowered = b.value("Powered", false).toBool();
+    bluetoothConnected = b.value("Connected", false).toBool();
+
+    QVariantMap w = getDbusProperties("net.connman", "/net/connman/technology/wifi", "net.connman.Technology", QDBusConnection::systemBus());
+
+    wifiPowered = w.value("Powered", false).toBool();
+    wifiConnected = w.value("Connected", false).toBool();
+
+    QVariantMap c = getDbusProperties("net.connman", "/net/connman/technology/cellular", "net.connman.Technology", QDBusConnection::systemBus());
+
+    cellularPowered = c.value("Powered", false).toBool();
+    cellularConnected = c.value("Connected", false).toBool();
+
+    printf("Current network Technology is '%s'\n", qPrintable(networkType));
+    printf("Bluetooth is %s and %s\n", bluetoothPowered ? "Powered" : "Not powered", bluetoothConnected ? "Connected" : "Not connected");
+    printf("Wifi is %s and %s\n", wifiPowered ? "Powered" : "Not powered", wifiConnected ? "Connected" : "Not connected");
+    printf("Cellular is %s and %s\n", cellularPowered ? "Powered" : "Not powered", cellularConnected ? "Connected" : "Not connected");
+}
+
+
+QVariantMap Toholed::getDbusProperties(const QString & service, const QString & path, const QString & interface, const QDBusConnection & connection)
+{
+    QDBusInterface getProperties(service, path, interface, connection);
     getProperties.setTimeout(2000);
 
     QDBusMessage getPropertiesReply = getProperties.call(QDBus::AutoDetect, "GetProperties");
 
-    const QDBusArgument myArg = getPropertiesReply.arguments().at(0).value<QDBusArgument>();
+    const QDBusArgument myArgs = getPropertiesReply.arguments().at(0).value<QDBusArgument>();
 
-    QMap<QString, QString> m;
+    QVariantMap map;
 
-    myArg.beginMap();
+    myArgs.beginMap();
 
-    while ( ! myArg.atEnd())
+    while ( ! myArgs.atEnd())
     {
         QString key;
         QDBusVariant value;
-        myArg.beginMapEntry();
-        myArg >> key >> value;
-        myArg.endMapEntry();
-        m.insert(key, value.variant().toString());
+        myArgs.beginMapEntry();
+        myArgs >> key >> value;
+        myArgs.endMapEntry();
+        map.insert(key, value.variant());
     }
-    myArg.endMap();
+    myArgs.endMap();
 
-    networkType = m.value("Technology", "NONE");
-
-    printf("Current network Technology is '%s'\n", qPrintable(networkType));
-
-    /* Bluetooth */
-
-    QDBusInterface getProperties2("net.connman", "/net/connman/technology/bluetooth", "net.connman.Technology", QDBusConnection::systemBus());
-
-    QDBusMessage getPropertiesReply2 = getProperties2.call(QDBus::AutoDetect, "GetProperties");
-
-    const QDBusArgument myArg2 = getPropertiesReply2.arguments().at(0).value<QDBusArgument>();
-
-    QMap<QString, bool> b;
-
-    myArg2.beginMap();
-
-    while ( ! myArg2.atEnd())
-    {
-        QString key;
-        QDBusVariant value;
-        myArg2.beginMapEntry();
-        myArg2 >> key >> value;
-        myArg2.endMapEntry();
-        b.insert(key, value.variant().toBool());
-    }
-    myArg2.endMap();
-
-    bluetoothPowered = b.value("Powered", false);
-    bluetoothConnected = b.value("Connected", false);
-
-    QDBusInterface getProperties3("net.connman", "/net/connman/technology/wifi", "net.connman.Technology", QDBusConnection::systemBus());
-
-    QDBusMessage getPropertiesReply3 = getProperties3.call(QDBus::AutoDetect, "GetProperties");
-
-    const QDBusArgument myArg3 = getPropertiesReply3.arguments().at(0).value<QDBusArgument>();
-
-    QMap<QString, bool> w;
-
-    myArg3.beginMap();
-
-    while ( ! myArg3.atEnd())
-    {
-        QString key;
-        QDBusVariant value;
-        myArg3.beginMapEntry();
-        myArg3 >> key >> value;
-        myArg3.endMapEntry();
-        w.insert(key, value.variant().toBool());
-    }
-    myArg3.endMap();
-
-    wifiPowered = w.value("Powered", false);
-    wifiConnected = w.value("Connected", false);
-
-    QDBusInterface getProperties4("net.connman", "/net/connman/technology/cellular", "net.connman.Technology", QDBusConnection::systemBus());
-
-    QDBusMessage getPropertiesReply4 = getProperties4.call(QDBus::AutoDetect, "GetProperties");
-
-    const QDBusArgument myArg4 = getPropertiesReply4.arguments().at(0).value<QDBusArgument>();
-
-    QMap<QString, bool> c;
-
-    myArg4.beginMap();
-
-    while ( ! myArg4.atEnd())
-    {
-        QString key;
-        QDBusVariant value;
-        myArg4.beginMapEntry();
-        myArg4 >> key >> value;
-        myArg4.endMapEntry();
-        c.insert(key, value.variant().toBool());
-    }
-    myArg4.endMap();
-
-    cellularPowered = c.value("Powered", false);
-    cellularConnected = c.value("Connected", false);
-
-
+    return map;
 }
-
 
 /* Slots for Notificationsmanager */
 
@@ -1330,41 +1203,18 @@ void Toholed::handleEmailNotify()
 {
     printf("email notification\n");
 
-    mutex.lock();
-    if (noIconsActive)
-    {
-        noIconsActive = false;
-        clearIcons(screenBuffer);
-    }
-    drawIcon(MAIL, screenBuffer);
-    if (oledInitDone)
-    {
-        updateOled(screenBuffer);
-        blinkOled(2);
-    }
     iconEMAIL = true;
-    mutex.unlock();
 
+    updateDisplay(true, 2);
 }
 
 void Toholed::handleTwitterNotify()
 {
     printf("twitter notification\n");
 
-    mutex.lock();
-    if (noIconsActive)
-    {
-        noIconsActive = false;
-        clearIcons(screenBuffer);
-    }
-    drawIcon(TWEET, screenBuffer);
-    if (oledInitDone)
-    {
-        updateOled(screenBuffer);
-        blinkOled(2);
-    }
     iconTWEET = true;
-    mutex.unlock();
+
+    updateDisplay(true, 2);
 }
 
 void Toholed::handleFacebookNotify()
@@ -1376,50 +1226,23 @@ void Toholed::handleIrssiNotify()
 {
     printf("irssi notification.\n");
 
-    mutex.lock();
-    if (noIconsActive)
-    {
-        noIconsActive = false;
-        clearIcons(screenBuffer);
-    }
-    drawIcon(IRC, screenBuffer);
-    if (oledInitDone)
-    {
-        updateOled(screenBuffer);
-        blinkOled(2);
-    }
     iconIRC = true;
-    mutex.unlock();
+
+    updateDisplay(true, 2);
 }
 
 void Toholed::handleImNotify()
 {
     printf("im notification.\n");
 
-    mutex.lock();
-    if (noIconsActive)
-    {
-        noIconsActive = false;
-        clearIcons(screenBuffer);
-    }
-    drawIcon(MESSAGE, screenBuffer);
-    if (oledInitDone)
-    {
-        updateOled(screenBuffer);
-        blinkOled(2);
-    }
     iconSMS = true;
-    mutex.unlock();
+
+    updateDisplay(true, 2);
 }
 
 void Toholed::handleOtherNotify()
 {
     printf("other notification\n");
 
-    mutex.lock();
-    if (oledInitDone)
-    {
-        blinkOled(2);
-    }
-    mutex.unlock();
+    updateDisplay(true, 2);
 }

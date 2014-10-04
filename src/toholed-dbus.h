@@ -84,8 +84,8 @@ private slots:
     void handleImNotify();
     void handleOtherNotify();
 
-    void timerTimeout();
-    void alarmTimerTimeout();
+    void updateDisplay(bool timeUpdateOverride = false, int blinks = 0);
+    void alarmTimerTimeout( );
     void notificationSend(QString summary, QString body);
 
     void heartbeatReceived(int sock);
@@ -114,7 +114,6 @@ private:
 
     static int timerCount;
     QTime prevTime;
-    bool timeUpdateOverride;
     QTimer *timer;
     QTimer *alarmTimer;
 
@@ -135,14 +134,7 @@ private:
     static bool iconIRC;
     static bool iconMITAKUULUU;
 
-    static bool noIconsActive;
-
-    static bool wifiPowered;
-    static bool bluetoothPowered;
-    static bool wifiConnected;
-    static bool bluetoothConnected;
-    static bool cellularConnected;
-    static bool cellularPowered;
+    bool blinkOnNotification;
 
     static bool chargerConnected;
     static bool silentProfile;
@@ -153,7 +145,19 @@ private:
     QString getCurrentProfile();
     void getCurrentNetworkConnectionStates();
 
+    QVariantMap getDbusProperties(const QString & service,
+                                  const QString & path,
+                                  const QString & interface,
+                                  const QDBusConnection & connection = QDBusConnection::sessionBus());
+
     QString networkType;
+    static bool wifiPowered;
+    static bool bluetoothPowered;
+    static bool wifiConnected;
+    static bool bluetoothConnected;
+    static bool cellularConnected;
+    static bool cellularPowered;
+
 };
 
 
