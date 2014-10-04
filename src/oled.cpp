@@ -401,7 +401,7 @@ void drawAnalogClock(int hours, int minutes, char *screenBuffer)
     hourHand.hand_radius = clock_radius-11;
 
     minuteHand.angle = ((2 * pi / 60) * minutes) - pi/2;
-    hourHand.angle = ((2 * pi / 12) * (hours + (minutes/60))) - pi/2;
+    hourHand.angle = ((2 * pi / 12) * (hours + ((float)minutes/60))) - pi/2;
 
     drawHand(minuteHand, 1, sb);
     drawHand(hourHand, 1, sb);
