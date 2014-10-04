@@ -158,6 +158,8 @@ private:
     bool cellularConnected;
     bool cellularPowered;
 
+    bool lockDrawingMode;
+
 };
 
 

@@ -66,6 +66,7 @@ Toholed::Toholed()
     wifiConnected = false;
     bluetoothConnected = false;
     cellularConnected = false;
+    lockDrawingMode = false;
 
     reloadSettings();
 
@@ -143,7 +144,7 @@ void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
 
     /* Update only if minute has changed and oled is powered and initialized */
 
-    if (((current.minute() != prevTime.minute()) || timeUpdateOverride) && vddEnabled && oledInitDone)
+    if (((current.minute() != prevTime.minute()) || timeUpdateOverride) && vddEnabled && oledInitDone && !lockDrawingMode)
     {
         prevTime = current;
 
@@ -365,7 +366,7 @@ QString Toholed::setSettings(const QDBusMessage &msg)
 
 QString Toholed::draw(const QDBusMessage& msg)
 {
-    int x, y, r, offset, height, width, rowsize;
+    int x, y, x1, y1, r, offset, height, width, rowsize;
     // int size;
     bool invert;
 
@@ -374,7 +375,49 @@ QString Toholed::draw(const QDBusMessage& msg)
     if (args.count() == 0)
         return QString("Draw fail; missing arguments");
 
-    if (!QString::localeAwareCompare( args.at(0).toString(), "pixel"))
+    if (!QString::localeAwareCompare( args.at(0).toString(), "clear"))
+    {
+        clearOled(screenBuffer);
+
+        if (oledInitDone)
+            updateOled(screenBuffer);
+
+        return QString("Clear done");
+    }
+    else if (!QString::localeAwareCompare( args.at(0).toString(), "lock"))
+    {
+        if (args.count() != 2)
+            return QString("Lock fail; expecting bool:(true/false)");
+
+        if (!args.at(1).canConvert(QVariant::Bool))
+            return QString("Lock fail; expecting bool:(true/false)");
+
+        lockDrawingMode = args.at(1).toBool();
+
+        return QString(args.at(1).toBool() ? "Display locked to drawing mode" : "Display normal mode");
+    }
+    else if (!QString::localeAwareCompare( args.at(0).toString(), "invert"))
+    {
+        if (args.count() != 2)
+            return QString("Invert fail; expecting bool:(true/false)");
+
+        if (!args.at(1).canConvert(QVariant::Bool))
+            return QString("Invert fail; expecting bool:(true/false)");
+
+        invertOled(args.at(1).toBool());
+
+        return QString(args.at(1).toBool() ? "Display inverted" : "Display normal");
+    }
+    else if (!QString::localeAwareCompare( args.at(0).toString(), "derp"))
+    {
+        drawDerp(screenBuffer);
+
+        if (oledInitDone)
+            updateOled(screenBuffer);
+
+        return QString("derp");
+    }
+    else if (!QString::localeAwareCompare( args.at(0).toString(), "pixel"))
     {
         if (args.count() != 3)
             return QString("Pixel fail; expecting int32:x, int32:y");
@@ -404,6 +447,42 @@ QString Toholed::draw(const QDBusMessage& msg)
             updateOled(screenBuffer);
 
         return QString("Circle x:%1 y:%2 r:%3").arg(x).arg(y).arg(r);
+    }
+    else if (!QString::localeAwareCompare( args.at(0).toString(), "line"))
+    {
+        if (args.count() != 5)
+            return QString("Line fail; expecting int32:x0, int32:y0, int32:x1, int32:y1");
+
+        x = args.at(1).toInt();
+        y = args.at(2).toInt();
+        x1 = args.at(3).toInt();
+        y1 = args.at(4).toInt();
+
+        drawLine(x, y, x1, y1, 1, screenBuffer);
+
+        if (oledInitDone)
+            updateOled(screenBuffer);
+
+        return QString("Line x0:%1 y0:%2 x1:%3 y1:%4").arg(x).arg(y).arg(x1).arg(y1);
+    }
+    else if (!QString::localeAwareCompare( args.at(0).toString(), "time"))
+    {
+        if (args.count() != 2)
+            return QString("time fail; expecting string:something");
+
+        QString t = args.at(1).toString();
+
+        if ((t.contains(':') &&  t.length() > 5) || (!t.contains(':') && t.length() > 4))
+            return QString("hah");
+
+        QByteArray baNow = t.toLocal8Bit();
+
+        drawTime(baNow.data(), screenBuffer);
+
+        if (oledInitDone)
+            updateOled(screenBuffer);
+
+        return QString("time %1").arg(t);
     }
     else if (!QString::localeAwareCompare( args.at(0).toString(), "bitmap"))
     {
