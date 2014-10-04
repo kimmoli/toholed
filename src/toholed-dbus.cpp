@@ -394,6 +394,9 @@ QString Toholed::draw(const QDBusMessage& msg)
 
         lockDrawingMode = args.at(1).toBool();
 
+        if (!lockDrawingMode)
+            updateDisplay(true);
+
         return QString(args.at(1).toBool() ? "Display locked to drawing mode" : "Display normal mode");
     }
     else if (!QString::localeAwareCompare( args.at(0).toString(), "invert"))
