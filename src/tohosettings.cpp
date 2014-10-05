@@ -28,6 +28,28 @@ QString TohoSettings::readVersion()
     return APPVERSION;
 }
 
+QString TohoSettings::readDaemonVersion()
+{
+    qDebug() << "reading daemon version";
+
+    QDBusInterface getDaemonVersionCall("com.kimmoli.toholed", "/", "com.kimmoli.toholed", QDBusConnection::systemBus());
+    getDaemonVersionCall.setTimeout(2);
+
+    QDBusMessage getDaemonVersionReply = getDaemonVersionCall.call(QDBus::AutoDetect, "getVersion");
+
+    if (getDaemonVersionReply.type() == QDBusMessage::ErrorMessage)
+    {
+        qDebug() << "Error reading daemon version:" << getDaemonVersionReply.errorMessage();
+        return QString("N/A");
+    }
+
+    QString daemonVersion = getDaemonVersionReply.arguments().at(0).toString();
+
+    qDebug() << "Daemon version is" << daemonVersion;
+
+    return daemonVersion;
+}
+
 void TohoSettings::readSettings()
 {
     qDebug() << "reading settings";

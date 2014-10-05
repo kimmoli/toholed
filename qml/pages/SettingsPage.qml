@@ -7,6 +7,8 @@ Page
 {
     id: page
 
+    property string daemonVersion : "---"
+
     SilicaFlickable
     {
         anchors.fill: parent
@@ -30,11 +32,18 @@ Page
         {
             id: column
 
-            width: page.width
+            width: page.width - Theme.paddingLarge
             spacing: Theme.paddingSmall
+            anchors.horizontalCenter: parent.horizontalCenter
+
             PageHeader
             {
                 title: "Toholed settings"
+            }
+
+            Label
+            {
+                text: "Daemon version: " + daemonVersion
             }
 
             SectionHeader
@@ -48,16 +57,24 @@ Page
                 description: "Blink screen at new notification"
                 checked: tohosettings.blink
                 automaticCheck: false
-                onClicked: tohosettings.blink = !tohosettings.blink
+                onClicked:
+                {
+                    tohosettings.blink = !tohosettings.blink
+                    tohosettings.writeSettings()
+                }
             }
 
             TextSwitch
             {
-                text: "ALS"
+                text: "Ambient Light Sensor"
                 description: "Enable automatic brightness"
                 checked: tohosettings.als
                 automaticCheck: false
-                onClicked: tohosettings.als = !tohosettings.als
+                onClicked:
+                {
+                    tohosettings.als = !tohosettings.als
+                    tohosettings.writeSettings()
+                }
             }
 
             TextSwitch
@@ -66,7 +83,11 @@ Page
                 description: "Shutdown display when proximity"
                 checked: tohosettings.prox
                 automaticCheck: false
-                onClicked: tohosettings.prox = !tohosettings.prox
+                onClicked:
+                {
+                    tohosettings.prox = !tohosettings.prox
+                    tohosettings.writeSettings()
+                }
             }
 
             TextSwitch
@@ -75,7 +96,16 @@ Page
                 description: "Toholed display off when main display active"
                 checked: tohosettings.displayOffWhenMainActive
                 automaticCheck: false
-                onClicked: tohosettings.displayOffWhenMainActive = !tohosettings.displayOffWhenMainActive
+                onClicked:
+                {
+                    tohosettings.displayOffWhenMainActive = !tohosettings.displayOffWhenMainActive
+                    tohosettings.writeSettings()
+                }
+            }
+
+            SectionHeader
+            {
+                text: "Experimental"
             }
 
             TextSwitch
@@ -84,7 +114,16 @@ Page
                 description: "Experimental analog clock face"
                 checked: tohosettings.analogClockFace
                 automaticCheck: false
-                onClicked: tohosettings.analogClockFace = !tohosettings.analogClockFace
+                onClicked:
+                {
+                    tohosettings.analogClockFace = !tohosettings.analogClockFace
+                    tohosettings.writeSettings()
+                }
+            }
+
+            SectionHeader
+            {
+                text: "Other"
             }
 
             TextSwitch
@@ -93,23 +132,20 @@ Page
                 description: "Take screenshot from front proximity"
                 checked: tohosettings.ssp
                 automaticCheck: false
-                onClicked: tohosettings.ssp = !tohosettings.ssp
+                onClicked:
+                {
+                    tohosettings.ssp = !tohosettings.ssp
+                    tohosettings.writeSettings()
+                }
             }
-
-            Button
-            {
-                text: "Apply"
-                anchors.horizontalCenter: parent.horizontalCenter
-                onClicked: tohosettings.writeSettings()
-            }
-
-
         }
     }
 
     TohoSettings
     {
         id: tohosettings
+        Component.onCompleted:
+            daemonVersion = readDaemonVersion()
     }
 }
 

@@ -10,8 +10,8 @@ Name:       harbour-toholed-settings-ui
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 
 Summary:    Toholed settings UI
-Version:    0.3.5
-Release:    8
+Version:    0.3.6
+Release:    9
 Group:      Qt/Qt
 License:    LICENSE
 URL:        https://github.com/kimmoli/toholed-settings-ui
@@ -27,7 +27,7 @@ BuildRequires:  pkgconfig(Qt5DBus)
 BuildRequires:  desktop-file-utils
 
 %description
-For changing Toholed Otherhalf daemon settings
+Toholed settings interface
 
 %prep
 %setup -q -n %{name}-%{version}

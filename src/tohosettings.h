@@ -48,6 +48,7 @@ public:
 
     Q_INVOKABLE void readSettings();
     Q_INVOKABLE void writeSettings();
+    Q_INVOKABLE QString readDaemonVersion();
 
 signals:
     void versionChanged();
