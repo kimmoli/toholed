@@ -10,13 +10,13 @@ Name: harbour-toholed
 %{!?qtc_make:%define qtc_make make}
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 
-Summary: The OtherHalf OLED daemon
-Version: 0.2.16
-Release: 16
-Group: Qt/Qt
-License: LICENSE
-URL: https://github.com/kimmoli/toholed
-Source0: %{name}-%{version}.tar.bz2
+Summary:  The OtherHalf OLED daemon
+Version:  0.2.17
+Release:  17
+Group:    Qt/Qt
+License:  LICENSE
+URL:      https://bitbucket.org/kimmoli/toholed_daemon
+Source0:  %{name}-%{version}.tar.bz2
 
 BuildRequires: pkgconfig(Qt5Core)
 BuildRequires: pkgconfig(Qt5DBus)
