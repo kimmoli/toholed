@@ -366,7 +366,7 @@ QString Toholed::setSettings(const QDBusMessage &msg)
 
 QString Toholed::draw(const QDBusMessage& msg)
 {
-    int x, y, x1, y1, r, offset, height, width, rowsize;
+    int x, y, x1, y1, r, c, offset, height, width, rowsize;
     // int size;
     bool invert;
 
@@ -422,13 +422,17 @@ QString Toholed::draw(const QDBusMessage& msg)
     }
     else if (!QString::localeAwareCompare( args.at(0).toString(), "pixel"))
     {
-        if (args.count() != 3)
-            return QString("Pixel fail; expecting int32:x, int32:y");
+        if ((args.count() != 3) && (args.count() != 4))
+            return QString("Pixel fail; expecting int32:x, int32:y {int32:color}");
 
         x = args.at(1).toInt();
         y = args.at(2).toInt();
+        c = 1;
 
-        drawPixel(x, y, 1, screenBuffer);
+        if (args.count() == 4)
+            c = args.at(3).toInt();
+
+        drawPixel(x, y, c, screenBuffer);
 
         if (oledInitDone)
             updateOled(screenBuffer);
@@ -437,14 +441,18 @@ QString Toholed::draw(const QDBusMessage& msg)
     }
     else if (!QString::localeAwareCompare( args.at(0).toString(), "circle"))
     {
-        if (args.count() != 4)
-            return QString("Circle fail; expecting int32:x, int32:y, int32:radius");
+        if ((args.count() != 4) && (args.count() != 5))
+            return QString("Circle fail; expecting int32:x, int32:y, int32:radius {int32:color}");
 
         x = args.at(1).toInt();
         y = args.at(2).toInt();
         r = args.at(3).toInt();
+        c = 1;
 
-        drawCircle(x, y, r, 1, screenBuffer);
+        if (args.count() == 5)
+            c = args.at(4).toInt();
+
+        drawCircle(x, y, r, c, screenBuffer);
 
         if (oledInitDone)
             updateOled(screenBuffer);
@@ -453,15 +461,19 @@ QString Toholed::draw(const QDBusMessage& msg)
     }
     else if (!QString::localeAwareCompare( args.at(0).toString(), "line"))
     {
-        if (args.count() != 5)
-            return QString("Line fail; expecting int32:x0, int32:y0, int32:x1, int32:y1");
+        if ((args.count() != 5) && (args.count() != 6))
+            return QString("Line fail; expecting int32:x0, int32:y0, int32:x1, int32:y1 {int32:color}");
 
         x = args.at(1).toInt();
         y = args.at(2).toInt();
         x1 = args.at(3).toInt();
         y1 = args.at(4).toInt();
+        c = 1;
 
-        drawLine(x, y, x1, y1, 1, screenBuffer);
+        if (args.count() == 6)
+            c = args.at(5).toInt();
+
+        drawLine(x, y, x1, y1, c, screenBuffer);
 
         if (oledInitDone)
             updateOled(screenBuffer);

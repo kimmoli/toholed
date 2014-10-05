@@ -11,8 +11,8 @@ Name: harbour-toholed
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 
 Summary: The OtherHalf OLED daemon
-Version: 0.2.15
-Release: 15
+Version: 0.2.16
+Release: 16
 Group: Qt/Qt
 License: LICENSE
 URL: https://github.com/kimmoli/toholed
