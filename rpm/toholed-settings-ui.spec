@@ -8,15 +8,17 @@ Name:       harbour-toholed-settings-ui
 %{!?qtc_qmake5:%define qtc_qmake5 %qmake5}
 %{!?qtc_make:%define qtc_make make}
 %{?qtc_builddir:%define _builddir %qtc_builddir}
+
 Summary:    Toholed settings UI
-Version:    0.3.4
-Release:    7
+Version:    0.3.5
+Release:    8
 Group:      Qt/Qt
 License:    LICENSE
-URL:        http://example.org/
+URL:        https://github.com/kimmoli/toholed-settings-ui
 Source0:    %{name}-%{version}.tar.bz2
+
 Requires:   sailfishsilica-qt5 >= 0.10.9
-Requires:   qt5-qtdeclarative-import-xmllistmodel
+
 BuildRequires:  pkgconfig(Qt5Quick)
 BuildRequires:  pkgconfig(Qt5Qml)
 BuildRequires:  pkgconfig(Qt5Core)
@@ -25,7 +27,7 @@ BuildRequires:  pkgconfig(Qt5DBus)
 BuildRequires:  desktop-file-utils
 
 %description
-Toholed configuration tool
+For changing Toholed Otherhalf daemon settings
 
 %prep
 %setup -q -n %{name}-%{version}
