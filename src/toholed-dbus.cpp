@@ -288,10 +288,9 @@ void Toholed::iphbStop()
 
 /* DBus Exposed call methods */
 
-QString Toholed::testSomething()
+QString Toholed::getVersion()
 {
-
-    return QString("Sorry, there is nothing to test...");
+    return QString(APPVERSION);
 }
 
 void Toholed::reloadSettings()

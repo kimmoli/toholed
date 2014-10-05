@@ -45,7 +45,7 @@ public:
     }
 
 public slots:
-    QString testSomething();
+    QString getVersion();
     QString draw(const QDBusMessage& msg);
     QString setScreenCaptureOnProximity(const QDBusMessage &msg);
     QString setSettings(const QDBusMessage& msg);
