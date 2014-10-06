@@ -82,6 +82,7 @@ private slots:
     void handleFacebookNotify();
     void handleIrssiNotify();
     void handleImNotify();
+    void handleSystemUpdateNotify();
     void handleOtherNotify();
 
     void updateDisplay(bool timeUpdateOverride = false, int blinks = 0);
@@ -133,6 +134,7 @@ private:
     bool iconTWEET;
     bool iconIRC;
     bool iconMITAKUULUU;
+    bool systemUpdate;
 
     bool blinkOnNotification;
 

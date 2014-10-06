@@ -16,6 +16,7 @@
 #include "pienifontti.h"
 #include "icons.h"
 #include "derp.h"
+#include "updateTime.h"
 
 #define DBGPRINT
 
@@ -46,9 +47,34 @@ void drawDerp(char *screenBuffer)
 
         if ( ((s+i) % 8) == 7 )
             d++;
-
     }
+}
 
+void drawUpdateTime(char *screenBuffer)
+{
+    char* sb = screenBuffer;
+
+    int i,d,off,s,n,o,h,t;
+
+    h = 0;
+    o = 0; // rivi mistä tulostus alkaa
+
+    d = 0; // byte offset
+    s = 0; // bit offset
+
+    for (i=0 ; i<128 ; i++) // merkin leveys
+    {
+        for (n=0; n<updateTimeHeightPixels ; n++) // merkin korkeus
+        {
+            off = ( n * updateTimeWidthPages ) + d;
+            t = updateTimeBitmaps[off] & ( 0x80 >> ( (s + i) % 8) );
+            if (t)
+                (*(sb+((o+n)/8)+((h+i)*8))) |= ( 0x01 << ( (o+n) % 8 ) );
+        }
+
+        if ( ((s+i) % 8) == 7 )
+            d++;
+    }
 }
 
 void drawIcon(int icon, char *screenBuffer)

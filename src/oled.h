@@ -31,6 +31,7 @@ int setContrastOled(unsigned int level); /* set contrast to BRIGHTNESS_HIGH _MED
 void blinkOled(int count); /* Blinks screen for 'count' times */
 void invertOled(bool invert); /* Select between invert and normal image */
 void drawDerp(char *screenBuffer); /* Draw derp image to screen */
+void drawUpdateTime(char *screenBuffer);
 void drawPixel(int x, int y, int color, char *screenBuffer); /* Draw single pixel to screen */
 void drawCircle(int x0, int y0, int r,  int color, char *screenBuffer); /* Draw circle to screen r=radius */
 void drawLine(int x0, int y0, int x1, int y1, int color, char *screenBuffer);

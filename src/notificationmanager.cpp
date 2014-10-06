@@ -109,6 +109,14 @@ uint NotificationManager::Notify(const QString &app_name, uint replaces_id, cons
     {
         emit this->irssiNotify();
     }
+    else if (app_name == "store-client")
+    {
+        QString category = hints.value("category", "").toString();
+        if (category.startsWith("x-nemo.system-update"))
+        {
+            emit this->systemUpdateNotify();
+        }
+    }
     else if (app_name == "commhistoryd")
     {
         QString category = hints.value("category", "").toString();

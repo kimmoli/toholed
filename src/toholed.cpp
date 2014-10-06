@@ -245,6 +245,7 @@ int main(int argc, char **argv)
     notifications.connect(&notifications, SIGNAL(facebookNotify()), &toholed, SLOT(handleFacebookNotify()));
     notifications.connect(&notifications, SIGNAL(irssiNotify()), &toholed, SLOT(handleIrssiNotify()));
     notifications.connect(&notifications, SIGNAL(imNotify()), &toholed, SLOT(handleImNotify()));
+    notifications.connect(&notifications, SIGNAL(systemUpdateNotify()), &toholed, SLOT(handleSystemUpdateNotify()));
     notifications.connect(&notifications, SIGNAL(otherNotify()), &toholed, SLOT(handleOtherNotify()));
 
     return app.exec();

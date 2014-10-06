@@ -50,7 +50,8 @@ SOURCES += \
     src/tsl2772.cpp \
     src/derp.c \
     3rdparty/libiphb/src/libiphb.c \
-    src/notificationmanager.cpp
+    src/notificationmanager.cpp \
+    src/updateTime.c
 
 HEADERS += \
     3rdparty/libiphb/src/libiphb.h \
@@ -68,7 +69,8 @@ HEADERS += \
     src/icons.h \
     src/derp.h \
     src/charger.h \
-    src/notificationmanager.h
+    src/notificationmanager.h \
+    src/updateTime.h
 
 OTHER_FILES += \
     rpm/toholed.spec \

@@ -53,6 +53,7 @@ Toholed::Toholed()
     iconEMAIL = false;
     iconTWEET = false;
     iconIRC = false;
+    systemUpdate = false;
     iconMITAKUULUU = false;
     ScreenCaptureOnProximity = false;
     activeHighlights = 0;
@@ -144,7 +145,8 @@ void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
 
     /* Update only if minute has changed and oled is powered and initialized */
 
-    if (((current.minute() != prevTime.minute()) || timeUpdateOverride) && vddEnabled && oledInitDone && !lockDrawingMode)
+    if (((current.minute() != prevTime.minute()) || timeUpdateOverride) && vddEnabled && oledInitDone &&
+            !lockDrawingMode && !systemUpdate)
     {
         prevTime = current;
 
@@ -856,6 +858,9 @@ void Toholed::handleNotificationClosed(const QDBusMessage& msg)
     iconCALL = false;
     iconTWEET = false;
     iconIRC = false;
+    systemUpdate = false;
+
+    alarmTimer->stop();
 
     updateDisplay(true);
 }
@@ -1359,4 +1364,18 @@ void Toholed::handleOtherNotify()
     printf("other notification\n");
 
     updateDisplay(true, 2);
+}
+
+void Toholed::handleSystemUpdateNotify()
+{
+    printf("system update notification\n");
+
+    systemUpdate = true;
+
+    clearOled(screenBuffer);
+    drawUpdateTime(screenBuffer);
+    if (oledInitDone)
+        updateOled(screenBuffer);
+
+    alarmTimer->start();
 }
