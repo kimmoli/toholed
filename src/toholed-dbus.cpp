@@ -733,10 +733,12 @@ void Toholed::handleCommuni(const QDBusMessage& msg)
 
     if (ah > activeHighlights) /* Number of active highlights increased */
     {
+        iconIRC = true;
         updateDisplay(true, 2);
     }
     else if ((ah == 0) && iconIRC) /* Active highlights all read */
     {
+        iconIRC = false;
         updateDisplay(true, 0);
     }
 
