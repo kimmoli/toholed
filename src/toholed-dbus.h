@@ -61,7 +61,6 @@ private slots:
     void handleProxInterrupt();
 
     /* dBus Signal handlers */
-    void handleSMS(const QDBusMessage& msg);
     void handleDisplayStatus(const QDBusMessage& msg);
     void handleNotificationClosed(const QDBusMessage& msg);
     void handleCall(const QDBusMessage& msg);
@@ -82,6 +81,7 @@ private slots:
     void handleFacebookNotify();
     void handleIrssiNotify();
     void handleImNotify();
+    void handleSmsNotify();
     void handleSystemUpdateNotify();
     void handleOtherNotify();
 

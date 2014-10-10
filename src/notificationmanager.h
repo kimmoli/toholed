@@ -27,6 +27,7 @@ Q_SIGNALS:
     void emailNotify();
     void irssiNotify();
     void imNotify();
+    void smsNotify();
     void systemUpdateNotify();
     void otherNotify();
 

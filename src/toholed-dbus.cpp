@@ -699,17 +699,6 @@ int Toholed::setInterruptEnable(bool turn)
 
 }
 
-/* New SMS */
-void Toholed:: handleSMS(const QDBusMessage& msg)
-{
-    QList<QVariant> args = msg.arguments();
-
-    printf("New SMS: %s\n", qPrintable(args.at(0).toString()));
-
-    iconSMS = true;
-    updateDisplay(true, 2);
-}
-
 /* Tweetian handler */
 
 void Toholed::handleTweetian(const QDBusMessage& msg)
@@ -1359,6 +1348,15 @@ void Toholed::handleIrssiNotify()
 void Toholed::handleImNotify()
 {
     printf("im notification.\n");
+
+    iconSMS = true;
+
+    updateDisplay(true, 2);
+}
+
+void Toholed::handleSmsNotify()
+{
+    printf("sms notification\n");
 
     iconSMS = true;
 

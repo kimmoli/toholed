@@ -124,6 +124,10 @@ uint NotificationManager::Notify(const QString &app_name, uint replaces_id, cons
         {
             emit this->imNotify();
         }
+        if (category == "x-nemo.messaging.sms" && summary != "")
+        {
+            emit this->smsNotify();
+        }
 #ifdef NOTIFICATIONDEBUG
         else
         {

@@ -66,18 +66,6 @@ int main(int argc, char **argv)
 
     QDBusConnection::systemBus().registerObject("/", &toholed, QDBusConnection::ExportAllSlots);
 
-    /* Ofono MessageManager IncomingMessage
-     * This signal is emitted when new SMS message arrives */
-
-    static QDBusConnection ofonoSMSconn = QDBusConnection::systemBus();
-    ofonoSMSconn.connect("org.ofono", "/ril_0", "org.ofono.MessageManager", "IncomingMessage",
-                      &toholed, SLOT(handleSMS(const QDBusMessage&)));
-
-    if(ofonoSMSconn.isConnected())
-        printf("Ofono.MessageManager.IncomingMessage Connected\n");
-    else
-        printf("Ofono.MessageManager.IncomingMessage Not connected\n%s\n", qPrintable(ofonoSMSconn.lastError().message()));
-
 
     /* path=/com/nokia/mce/signal; interface=com.nokia.mce.signal; member=sig_call_state_ind */
 
@@ -245,6 +233,7 @@ int main(int argc, char **argv)
     notifications.connect(&notifications, SIGNAL(facebookNotify()), &toholed, SLOT(handleFacebookNotify()));
     notifications.connect(&notifications, SIGNAL(irssiNotify()), &toholed, SLOT(handleIrssiNotify()));
     notifications.connect(&notifications, SIGNAL(imNotify()), &toholed, SLOT(handleImNotify()));
+    notifications.connect(&notifications, SIGNAL(smsNotify()), &toholed, SLOT(handleSmsNotify()));
     notifications.connect(&notifications, SIGNAL(systemUpdateNotify()), &toholed, SLOT(handleSystemUpdateNotify()));
     notifications.connect(&notifications, SIGNAL(otherNotify()), &toholed, SLOT(handleOtherNotify()));
 
