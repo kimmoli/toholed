@@ -1108,21 +1108,25 @@ void Toholed::handleMitakuuluu(const QDBusMessage& msg)
 void Toholed::handleProfileChanged(const QDBusMessage& msg)
 {
     QList<QVariant> args = msg.arguments();
-    QString tmp = args.at(2).toString();
+    bool changed = args.at(0).toBool();
 
-    printf("Profile changed to %s\n", qPrintable(tmp));
+    if (changed)
+    { 
+        QString tmp = args.at(2).toString();
+        printf("Profile changed to %s\n", qPrintable(tmp));
 
-    if (tmp == "silent")
-    {
-        silentProfile = true;
+        if (tmp == "silent")
+        {
+            silentProfile = true;
 
-        updateDisplay(true);
-    }
-    else
-    {
-        silentProfile = false;
+            updateDisplay(true);
+        }
+        else
+        {
+            silentProfile = false;
 
-        updateDisplay(true);
+            updateDisplay(true);
+        }
     }
 }
 
