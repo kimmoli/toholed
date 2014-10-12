@@ -21,7 +21,7 @@ typedef struct
 int initOled(unsigned int level); /* Initializes OLED SSD1306 chip, brightness level arg */
 int checkOled();
 int deinitOled();
-int clearOled(char *screenBuffer); /* Clears screen buffer */
+void clearOled(char *screenBuffer); /* Clears screen buffer */
 int updateOled(const char *screenBuffer); /* Draws screem buffer to OLED */
 void drawTime(const char *tNow, char *screenBuffer); /* Draws clock to screen buffer */
 void drawBatteryLevel(const char *batLevel, char *screenBuffer);

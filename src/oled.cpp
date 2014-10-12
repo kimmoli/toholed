@@ -23,6 +23,7 @@
 analogHand minuteHand;
 analogHand hourHand;
 
+/* Draws derp logo, Fullscreen bmp */
 void drawDerp(char *screenBuffer)
 {
     char* sb = screenBuffer;
@@ -50,6 +51,7 @@ void drawDerp(char *screenBuffer)
     }
 }
 
+/* Draws updateTime image, Fullscreen bmp */
 void drawUpdateTime(char *screenBuffer)
 {
     char* sb = screenBuffer;
@@ -77,6 +79,7 @@ void drawUpdateTime(char *screenBuffer)
     }
 }
 
+/* Draws a notification icon */
 void drawIcon(int icon, char *screenBuffer)
 {
     char* sb = screenBuffer;
@@ -160,7 +163,7 @@ void drawBatteryLevel(const char *batLevel, char *screenBuffer)
     }
 }
 
-/* Draw network type indicator */
+/* Draw network type indicators */
 void drawNetworkType(const char *type, char *screenBuffer)
 {
     char* sb = screenBuffer;
@@ -210,7 +213,7 @@ void drawNetworkType(const char *type, char *screenBuffer)
 
 
 
-/* Draws clock to screen buffer */
+/* Draws digital clock to screen buffer */
 void drawTime(const char *tNow, char *screenBuffer)
 {
     char* sb = screenBuffer;
@@ -257,6 +260,7 @@ void drawTime(const char *tNow, char *screenBuffer)
     }
 }
 
+/* Draws one pixel to x,y color 1=white, 0=black */
 void drawPixel(int x, int y, int color, char *screenBuffer)
 {
     char * sb = screenBuffer;
@@ -271,6 +275,7 @@ void drawPixel(int x, int y, int color, char *screenBuffer)
         (*(sb+(x*8)+(y/8))) &= ~( 1 << ( y % 8 ));
 }
 
+/* Draws circle with radius r to x0,y0 color 1=white, 0=black */
 void drawCircle(int x0, int y0, int r,  int color, char *screenBuffer)
 {
     char * sb = screenBuffer;
@@ -309,6 +314,7 @@ void drawCircle(int x0, int y0, int r,  int color, char *screenBuffer)
     }
 }
 
+/* Draws line from x0,y0 to x1,y1 color 1=white, 0=black */
 void drawLine(int x0, int y0, int x1, int y1, int color, char *screenBuffer)
 {
 
@@ -370,6 +376,7 @@ void drawLine(int x0, int y0, int x1, int y1, int color, char *screenBuffer)
     }
 }
 
+/* Draws bitmap *bitmap to x,y */
 void drawBitmap(int x, int y, int height, int width, int offset, int rowsize, bool invert, const char *bitmap, char *screenBuffer)
 {
     char* sb = screenBuffer;
@@ -402,7 +409,7 @@ void drawBitmap(int x, int y, int height, int width, int offset, int rowsize, bo
 #define clock_x (64)
 #define clock_y (32)
 
-
+/* Draws analog clock facce to center of display */
 void drawAnalogClock(int hours, int minutes, char *screenBuffer)
 {
     char* sb = screenBuffer;
@@ -433,6 +440,7 @@ void drawAnalogClock(int hours, int minutes, char *screenBuffer)
     drawHand(hourHand, 1, sb);
 }
 
+/* Draws a hand of analog clock */
 void drawHand(const analogHand hand, int color, char *screenBuffer)
 {
     char * sb = screenBuffer;
@@ -451,7 +459,7 @@ void drawHand(const analogHand hand, int color, char *screenBuffer)
 
 
 /* Clears screen buffer */
-int clearOled(char *screenBuffer)
+void clearOled(char *screenBuffer)
 {
     //memset(screenBuffer, 0x00, SCREENBUFFERSIZE);
     char * sb = screenBuffer;
@@ -462,12 +470,17 @@ int clearOled(char *screenBuffer)
         *sb = 0;
         sb++;
     }
-
-    return 0;
 }
 
 
-/* Draws screem buffer to OLED */
+/* Draws screem buffer to OLED
+ * Returns:
+ *
+ *  0  OK
+ * -1  Open i2c failed
+ * -2  ioctl failed
+ * -3  write failed
+ */
 int updateOled(const char *screenBuffer)
 {
 
@@ -496,7 +509,7 @@ int updateOled(const char *screenBuffer)
     if (write(file, buf, SCREENBUFFERSIZE+1) != SCREENBUFFERSIZE+1)
     {
         close(file);
-        return -4;
+        return -3;
     }
 
     close(file);
@@ -504,7 +517,14 @@ int updateOled(const char *screenBuffer)
     return 0;
 }
 
-/* Contrast control */
+/* Contrast control
+ * Returns:
+ *
+ *  0  OK
+ * -1  Open i2c failed
+ * -2  ioctl failed
+ * -3  write failed
+ */
 int setContrastOled(unsigned int level)
 {
 
@@ -544,9 +564,10 @@ int setContrastOled(unsigned int level)
 
     close(file);
 
-    return 1;
+    return 0;
 }
 
+/* Blinks OLED for count times. Toggles between inverted and back */
 void blinkOled(int count)
 {
     int i;
@@ -562,6 +583,7 @@ void blinkOled(int count)
     }
 }
 
+/* Uses OLED screen internal inversion control to invert screen */
 void invertOled(bool invert)
 {
     unsigned char buf[2] = {0};
@@ -591,6 +613,13 @@ void invertOled(bool invert)
     close(file);
 }
 
+/* Checks communication with OLED.
+ * Returns:
+ *
+ *  1     All OK
+ * -1     Communication error
+ * Others OLED has been reset and needs to be reinitialized
+ */
 int checkOled()
 {
     unsigned char buf[1] = {0};
@@ -609,7 +638,6 @@ int checkOled()
 
     buf[0] = 0x00;
 
-    // send invert change sequence
     if (write(file, buf, 1) != 1)
     {
         close(file);
@@ -627,7 +655,14 @@ int checkOled()
 }
 
 
-/* Initializes OLED SSD1306 chip */
+/* Initializes OLED SSD1306 chip
+ * Returns:
+ *
+ *  0  Initialisation ok
+ * -1  Open i2c failed
+ * -2  ioctl failed
+ * -3  write failed
+ */
 int initOled(unsigned int level)
 {
     unsigned char init_seq[30] = {0xae,         /* display off */
@@ -693,7 +728,14 @@ int initOled(unsigned int level)
 	return 0;
 }
 
-/* Shutdown OLED - Must be done before disabling VDD */
+/* Shutdown OLED - Must be done before disabling VDD
+ * Returns:
+ *
+ *  0  Deinitialisation ok
+ * -1  Open i2c failed
+ * -2  ioctl failed
+ * -3  write failed
+ */
 int deinitOled()
 {
     unsigned char init_seq[3] = {0xae, /* display off */
