@@ -185,21 +185,21 @@ void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
         {
             if ((iconSMS && iconMITAKUULUU && (timerCount & 1)) || (iconSMS && !iconMITAKUULUU))
             {
-                drawIcon(MESSAGE, screenBuffer);
+                drawIcon(iconPos[MESSAGE], 50, MESSAGE, screenBuffer);
             }
             else if ((iconSMS && iconMITAKUULUU && !(timerCount & 1)) || (!iconSMS && iconMITAKUULUU))
             {
-                drawIcon(MITAKUULUU, screenBuffer);
+                drawIcon(iconPos[MITAKUULUU], 50, MITAKUULUU, screenBuffer);
             }
 
             if (iconCALL)
-                drawIcon(CALL, screenBuffer);
+                drawIcon(iconPos[CALL], 50, CALL, screenBuffer);
             if (iconEMAIL)
-                drawIcon(MAIL, screenBuffer);
+                drawIcon(iconPos[MAIL], 50, MAIL, screenBuffer);
             if (iconTWEET)
-                drawIcon(TWEET, screenBuffer);
+                drawIcon(iconPos[TWEET], 50, TWEET, screenBuffer);
             if (iconIRC)
-                drawIcon(IRC, screenBuffer);
+                drawIcon(iconPos[IRC], 50, IRC, screenBuffer);
 
             if (!iconCALL && !iconEMAIL && !iconIRC && !iconMITAKUULUU && !iconSMS && !iconTWEET)
             {

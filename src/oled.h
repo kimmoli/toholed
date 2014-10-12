@@ -25,7 +25,7 @@ void clearOled(char *screenBuffer); /* Clears screen buffer */
 int updateOled(const char *screenBuffer); /* Draws screem buffer to OLED */
 void drawTime(const char *tNow, char *screenBuffer); /* Draws clock to screen buffer */
 void drawSmallText(int x0, int y0, const char *text, char *screenBuffer);
-void drawIcon(int icon, char *screenBuffer);
+void drawIcon(int x0, int y0, int icon, char *screenBuffer);
 int setContrastOled(unsigned int level); /* set contrast to BRIGHTNESS_HIGH _MED or _LOW */
 void blinkOled(int count); /* Blinks screen for 'count' times */
 void invertOled(bool invert); /* Select between invert and normal image */

@@ -79,20 +79,22 @@ void drawUpdateTime(char *screenBuffer)
     }
 }
 
-/* Draws a notification icon */
-void drawIcon(int icon, char *screenBuffer)
+/* Draws a notification icon
+ * x0,y0  top-left corner
+ */
+void drawIcon(int x0, int y0, int icon, char *screenBuffer)
 {
     char* sb = screenBuffer;
 
     int i,d,off,s,n,o,x,h,t;
 
-    o = 50; // rivi mistä tulostus alkaa
+    h = x0;
+    o = y0;
 
-    for (x=0; x < LASTICON ; x++)
+    for (x=0; x <= LASTICON ; x++)
     {
         if ( icon == iconsMap[x] )
         {
-            h = iconPos[x];
             d = iconsStart[x] / 8; // byte offset
             s = iconsStart[x] - d*8; // bit offset
 
