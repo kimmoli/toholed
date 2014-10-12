@@ -4,7 +4,6 @@ TEMPLATE = app
 CONFIG += console
 CONFIG -= app_bundle
 QT += dbus
-# QT -= gui # Removed for QImage
 
 LIBS += -lrt
 
