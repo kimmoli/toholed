@@ -500,6 +500,18 @@ QString Toholed::draw(const QDBusMessage& msg)
 
         return QString("time %1").arg(t);
     }
+    else if (!QString::localeAwareCompare( args.at(0).toString(), "smalltext"))
+    {
+        if (args.count() != 4)
+            return QString("smalltext fail; expecting int32:x int32:y string:something");
+
+        drawSmallText(args.at(1).toInt(), args.at(2).toInt(), args.at(3).toString().toLocal8Bit().data(), screenBuffer);
+
+        if (oledInitDone)
+            updateOled(screenBuffer);
+
+        return QString("smalltext done");
+    }
     else if (!QString::localeAwareCompare( args.at(0).toString(), "bitmap"))
     {
         if (args.count() != 4)
