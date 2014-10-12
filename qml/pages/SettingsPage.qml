@@ -8,6 +8,7 @@ Page
     id: page
 
     property string daemonVersion : "---"
+    property int cnt : 0
 
     SilicaFlickable
     {
@@ -43,7 +44,23 @@ Page
 
             Label
             {
+                width: parent.width
                 text: "Daemon version: " + daemonVersion
+                truncationMode: TruncationMode.Fade
+            }
+
+            SectionHeader
+            {
+                text: "Current display"
+            }
+
+            Image
+            {
+                id: screenshot
+                width: 256
+                height: 128
+                anchors.horizontalCenter: parent.horizontalCenter
+                source: "image://screenshot/screenshot"
             }
 
             SectionHeader
@@ -103,11 +120,6 @@ Page
                 }
             }
 
-            SectionHeader
-            {
-                text: "Experimental"
-            }
-
             TextSwitch
             {
                 text: "Show analog clock"
@@ -146,6 +158,12 @@ Page
         id: tohosettings
         Component.onCompleted:
             daemonVersion = readDaemonVersion()
+
+        onScreenShotChanged:
+        {
+            cnt++
+            screenshot.source = "image://screenshot/screenshot" + cnt
+        }
     }
 }
 

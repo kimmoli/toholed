@@ -14,13 +14,22 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <QDebug>
 #include <QtDBus/QtDBus>
 #include <QDBusArgument>
+#include <QImage>
 
 TohoSettings::TohoSettings(QObject *parent) :
     QObject(parent)
 {
+    QDBusConnection::systemBus().connect("com.kimmoli.toholed", "/", "com.kimmoli.toholed", "displayUpdated",
+                              this, SLOT(handleDisplayUpdated()));
+
     readSettings();
 
     emit versionChanged();
+}
+
+void TohoSettings::handleDisplayUpdated()
+{
+    emit screenShotChanged();
 }
 
 QString TohoSettings::readVersion()
@@ -33,7 +42,7 @@ QString TohoSettings::readDaemonVersion()
     qDebug() << "reading daemon version";
 
     QDBusInterface getDaemonVersionCall("com.kimmoli.toholed", "/", "com.kimmoli.toholed", QDBusConnection::systemBus());
-    getDaemonVersionCall.setTimeout(2);
+    getDaemonVersionCall.setTimeout(2000);
 
     QDBusMessage getDaemonVersionReply = getDaemonVersionCall.call(QDBus::AutoDetect, "getVersion");
 
@@ -127,6 +136,3 @@ void TohoSettings::writeSettings()
 
 
 }
-
-
-

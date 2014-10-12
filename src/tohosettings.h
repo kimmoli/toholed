@@ -50,6 +50,9 @@ public:
     Q_INVOKABLE void writeSettings();
     Q_INVOKABLE QString readDaemonVersion();
 
+public slots:
+    void handleDisplayUpdated();
+
 signals:
     void versionChanged();
 
@@ -59,6 +62,8 @@ signals:
     void sspChanged();
     void displayOffWhenMainActiveChanged();
     void analogClockFaceChanged();
+
+    void screenShotChanged();
 
 private:
     bool m_blink;

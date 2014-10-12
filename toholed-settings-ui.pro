@@ -14,7 +14,8 @@ message($${DEFINES})
 SOURCES += src/toholed-settings-ui.cpp \
 	src/tohosettings.cpp
 	
-HEADERS += src/tohosettings.h
+HEADERS += src/tohosettings.h \
+    src/imageProvider.h
 
 OTHER_FILES += qml/toholed-settings-ui.qml \
     qml/cover/CoverPage.qml \

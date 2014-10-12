@@ -22,15 +22,18 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <QQmlContext>
 #include <QCoreApplication>
 #include "tohosettings.h"
-
+#include "imageProvider.h"
 
 int main(int argc, char *argv[])
 {
-
     qmlRegisterType<TohoSettings>("harbour.toholed.settings.ui", 1, 0, "TohoSettings");
 
     QScopedPointer<QGuiApplication> app(SailfishApp::application(argc, argv));
     QScopedPointer<QQuickView> view(SailfishApp::createView());
+
+    QQmlEngine *engine = view->engine();
+    engine->addImageProvider(QLatin1String("screenshot"), new imageProvider);
+
     view->setSource(SailfishApp::pathTo("qml/toholed-settings-ui.qml"));
     view->show();
 

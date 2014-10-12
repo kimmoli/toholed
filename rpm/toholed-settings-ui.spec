@@ -10,8 +10,8 @@ Name:       harbour-toholed-settings-ui
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 
 Summary:    Toholed settings UI
-Version:    0.3.6
-Release:    9
+Version:    0.3.7
+Release:    11
 Group:      Qt/Qt
 License:    LICENSE
 URL:        https://github.com/kimmoli/toholed-settings-ui
