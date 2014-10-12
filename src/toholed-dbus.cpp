@@ -173,16 +173,42 @@ void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
         if (analogClockFace) /* Experimental */
         {
             drawAnalogClock(current.hour(), current.minute(), screenBuffer);
+
+            if ((iconSMS && iconMITAKUULUU && (timerCount & 1)) || (iconSMS && !iconMITAKUULUU))
+            {
+                drawIcon(110, 0, MESSAGE, screenBuffer);
+            }
+            else if ((iconSMS && iconMITAKUULUU && !(timerCount & 1)) || (!iconSMS && iconMITAKUULUU))
+            {
+                drawIcon(110, 0, MITAKUULUU, screenBuffer);
+            }
+
+            if (iconCALL)
+                drawIcon(95, 0, CALL, screenBuffer);
+            if (iconEMAIL)
+                drawIcon(110, 16, MAIL, screenBuffer);
+            if (iconTWEET)
+                drawIcon(110, 33, TWEET, screenBuffer);
+            if (iconIRC)
+                drawIcon(110, 50, IRC, screenBuffer);
+
+            /* Network type indicator is coded in pienifontti, g=2G, u=3G, l=4G (gms, umts, lte) */
+            /* Wifi active = w */
+            /* Bluetooth device connected = b */
+            QString tmp = QString("%1")
+                    .arg(cellularPowered ? (cellularConnected ? networkType.at(0).toUpper() : networkType.at(0).toLower()) : ' ');
+            drawSmallText(2, 0, tmp.toLocal8Bit().data(), screenBuffer);
+            tmp = QString("%1")
+                    .arg(wifiPowered ? (wifiConnected ? 'W' : 'w') : ' ');
+            drawSmallText(0, 15, tmp.toLocal8Bit().data(), screenBuffer);
+            tmp = QString("%1")
+                    .arg(bluetoothPowered ? (bluetoothConnected ? 'B' : 'b') : ' ');
+            drawSmallText(4, 31, tmp.toLocal8Bit().data(), screenBuffer);
         }
         else
         { /* Digital clock face */
             drawTime(baNow.data(), screenBuffer);
-        }
 
-        drawSmallText(0, 50, babatNow.data(), screenBuffer);
-
-        if (!analogClockFace)
-        {
             if ((iconSMS && iconMITAKUULUU && (timerCount & 1)) || (iconSMS && !iconMITAKUULUU))
             {
                 drawIcon(iconPos[MESSAGE], 50, MESSAGE, screenBuffer);
@@ -214,6 +240,8 @@ void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
                 drawSmallText(45, 50, tmp.toLocal8Bit().data(), screenBuffer);
             }
         }
+
+        drawSmallText(0, 50, babatNow.data(), screenBuffer);
 
         if (oledInitDone)
             updateOled(screenBuffer);

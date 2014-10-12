@@ -12,7 +12,7 @@ Name: harbour-toholed
 
 Summary:  The OtherHalf OLED daemon
 Version:  0.2.21
-Release:  31
+Release:  33
 Group:    Qt/Qt
 License:  LICENSE
 URL:      https://bitbucket.org/kimmoli/toholed_daemon
