@@ -31,6 +31,9 @@
 #include "icons.h"
 #include "tsl2772.h"
 
+#include <QImage>
+#include <QPainter>
+
 extern "C"
 {
     #include "iphbd/libiphb.h"
@@ -255,6 +258,8 @@ void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
             blinkOled(blinks);
             mutex.unlock();
         }
+
+        emit displayUpdated();
     }
 
 }
@@ -1442,4 +1447,35 @@ void Toholed::handleSystemUpdateNotify()
         updateOled(screenBuffer);
 
     alarmTimer->start();
+}
+
+QByteArray Toholed::captureOled()
+{
+    char * sb = screenBuffer;
+
+    QImage pm(OLEDWIDTH, OLEDHEIGHT, QImage::Format_RGB32);
+    pm.fill(Qt::black);
+    QPainter p;
+    p.begin(&pm);
+    p.setPen(Qt::white);
+
+    int i, n;
+
+    for (n=0; n<OLEDHEIGHT ; n++)
+    {
+        for (i=0 ; i<OLEDWIDTH ; i++)
+        {
+            if (((*(sb+(n/8)+(i*8))) & ( 0x01 << (n%8) )) == ( 0x01 << (n%8) ) )
+                p.drawPoint(i, n);
+        }
+    }
+
+    p.end();
+
+    QByteArray ba;
+    QBuffer buffer(&ba);
+    buffer.open(QIODevice::WriteOnly);
+    pm.save(&buffer, "PNG"); // writes image into ba in PNG format
+
+    return ba;
 }

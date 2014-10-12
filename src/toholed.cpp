@@ -64,7 +64,7 @@ int main(int argc, char **argv)
 
     Toholed toholed;
 
-    QDBusConnection::systemBus().registerObject("/", &toholed, QDBusConnection::ExportAllSlots);
+    QDBusConnection::systemBus().registerObject("/", &toholed, QDBusConnection::ExportAllSlots | QDBusConnection::ExportAllSignals);
 
 
     /* path=/com/nokia/mce/signal; interface=com.nokia.mce.signal; member=sig_call_state_ind */
