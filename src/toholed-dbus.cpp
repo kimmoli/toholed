@@ -179,7 +179,7 @@ void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
             drawTime(baNow.data(), screenBuffer);
         }
 
-        drawBatteryLevel(babatNow.data(), screenBuffer);
+        drawSmallText(0, 50, babatNow.data(), screenBuffer);
 
         if (!analogClockFace)
         {
@@ -211,7 +211,7 @@ void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
                         .arg(cellularPowered ? (cellularConnected ? networkType.at(0).toUpper() : networkType.at(0).toLower()) : ' ')
                         .arg(wifiPowered ? (wifiConnected ? 'W' : 'w') : ' ')
                         .arg(bluetoothPowered ? (bluetoothConnected ? 'B' : 'b') : ' ');
-                drawNetworkType(tmp.toLocal8Bit().data(), screenBuffer);
+                drawSmallText(45, 50, tmp.toLocal8Bit().data(), screenBuffer);
             }
         }
 

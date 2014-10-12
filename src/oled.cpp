@@ -115,20 +115,24 @@ void drawIcon(int icon, char *screenBuffer)
     }
 }
 
-/* Draw Battery percentage level */
-void drawBatteryLevel(const char *batLevel, char *screenBuffer)
+/* Draw small text to OLED
+ * x0,y0  top-left corner
+ *
+ * Used for Battery percentage level and network type
+ */
+void drawSmallText(int x0, int y0, const char *text, char *screenBuffer)
 {
     char* sb = screenBuffer;
 
     int i,d,off,s,n,o,x,h,t;
     unsigned m;
 
-    h = 0;
-    o = 50; // rivi mistä tulostus alkaa
+    h = x0;
+    o = y0;
 
-    for (m = 0; m<strlen(batLevel) ; m++)
+    for (m = 0; m<strlen(text) ; m++)
     {
-        if ( batLevel[m] == ' ') // space. just proceed cursor
+        if ( text[m] == ' ') // space. just proceed cursor
         {
             h = h + 4;
         }
@@ -136,7 +140,7 @@ void drawBatteryLevel(const char *batLevel, char *screenBuffer)
         {
             for (x=0; x < pieniFonttiNumOfChars ; x++)
             {
-                if ( batLevel[m] == pieniFonttiMap[x] )
+                if ( text[m] == pieniFonttiMap[x] )
                 {
                     d = pieniFonttiStart[x] / 8; // byte offset
                     s = pieniFonttiStart[x] - d*8; // bit offset
@@ -162,56 +166,6 @@ void drawBatteryLevel(const char *batLevel, char *screenBuffer)
         }
     }
 }
-
-/* Draw network type indicators */
-void drawNetworkType(const char *type, char *screenBuffer)
-{
-    char* sb = screenBuffer;
-
-    int i,d,off,s,n,o,x,h,t;
-    unsigned m;
-
-    h = 45;
-    o = 50; // rivi mistä tulostus alkaa
-
-    for (m = 0; m<strlen(type) ; m++)
-    {
-        if ( type[m] == ' ') // space. just proceed cursor
-        {
-            h = h + 4;
-        }
-        else
-        {
-            for (x=0; x < pieniFonttiNumOfChars ; x++)
-            {
-                if ( type[m] == pieniFonttiMap[x] )
-                {
-                    d = pieniFonttiStart[x] / 8; // byte offset
-                    s = pieniFonttiStart[x] - d*8; // bit offset
-
-                    for (i=0 ; i<pieniFonttiWidth[x] ; i++) // merkin leveys
-                    {
-                        for (n=0; n<pieniFonttiHeightPixels ; n++) // merkin korkeus
-                        {
-                            off = ( n * pieniFonttiWidthPages ) + d;
-                            t = pieniFonttiBitmaps[off] & ( 0x80 >> ( (s + i) % 8) );
-                            if (t)
-                                (*(sb+((o+n)/8)+((h+i)*8))) |= ( 0x01 << ( (o+n) % 8 ) );
-                        }
-
-                        if ( ((s+i) % 8) == 7 )
-                            d++;
-
-                    }
-                    h = h + pieniFonttiWidth[x] +0; // vaakakoordinaatti johon seuraava merkkitulee
-                    break;
-                }
-            }
-        }
-    }
-}
-
-
 
 /* Draws digital clock to screen buffer */
 void drawTime(const char *tNow, char *screenBuffer)
