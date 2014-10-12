@@ -528,6 +528,26 @@ QString Toholed::draw(const QDBusMessage& msg)
 
         return QString("time %1").arg(t);
     }
+    else if (!QString::localeAwareCompare( args.at(0).toString(), "clock"))
+    {
+        if ((args.count() != 3) && (args.count() != 4))
+            return QString("clock fail; expecting int32:hours(0..23) int32:minutes(0..59) {bool:clear}");
+
+        if (args.at(1).toInt() >= 0 && args.at(1).toInt() < 24 && args.at(2).toInt() >= 0 && args.at(2).toInt() < 60)
+        {
+            if (args.at(3).toBool())
+                clearOled(screenBuffer);
+
+            drawAnalogClock(args.at(1).toInt(), args.at(2).toInt(), screenBuffer);
+
+            if (oledInitDone)
+                updateOled(screenBuffer);
+        }
+        else
+            return QString("clock fail; expecting int32:hours(0..23) int32:minutes(0..59)");
+
+        return QString("clock %1:%2").arg(args.at(1).toInt()).arg(args.at(2).toInt());
+    }
     else if (!QString::localeAwareCompare( args.at(0).toString(), "smalltext"))
     {
         if (args.count() != 4)
