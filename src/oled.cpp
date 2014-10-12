@@ -384,33 +384,42 @@ void drawAnalogClock(int hours, int minutes, char *screenBuffer)
         drawLine(tick_x_in, tick_y_in, tick_x_out, tick_y_out, 1, sb);
     }
 
-    minuteHand.base_radius = 2;
+    minuteHand.base_radius = 3;
     minuteHand.hand_radius = clock_radius-3;
-    hourHand.base_radius = 2;
-    hourHand.hand_radius = clock_radius-11;
+    hourHand.base_radius = 3;
+    hourHand.hand_radius = clock_radius-12;
 
     minuteHand.angle = ((2 * pi / 60) * minutes) - pi/2;
     hourHand.angle = ((2 * pi / 12) * (hours + ((float)minutes/60))) - pi/2;
 
     drawHand(minuteHand, 1, sb);
     drawHand(hourHand, 1, sb);
+
+    drawCircle(clock_x, clock_y, 3, 1 ,sb);
+    drawCircle(clock_x, clock_y, 2, 1 ,sb);
 }
 
 /* Draws a hand of analog clock */
 void drawHand(const analogHand hand, int color, char *screenBuffer)
 {
     char * sb = screenBuffer;
+    int hand_base_x, hand_base_y;
+    int hand_end_x, hand_end_y;
 
-    int hand_base_x = hand.base_radius * cos (hand.angle - pi / 2) + clock_x;
-    int hand_base_y = hand.base_radius * sin (hand.angle - pi / 2) + clock_y;
-    int hand_base_x1 = hand.base_radius * cos (hand.angle + pi / 2) + clock_x;
-    int hand_base_y1 = hand.base_radius * sin (hand.angle + pi / 2) + clock_y;
-    int hand_end_x = hand.hand_radius * cos (hand.angle) + clock_x;
-    int hand_end_y = hand.hand_radius * sin (hand.angle) + clock_y;
+    hand_end_x = hand.hand_radius * cos (hand.angle) + clock_x;
+    hand_end_y = hand.hand_radius * sin (hand.angle) + clock_y;
 
-    drawLine(hand_base_x, hand_base_y, hand_base_x1, hand_base_y1, color, sb);
-    drawLine(hand_base_x, hand_base_y, hand_end_x, hand_end_y, color, sb);
-    drawLine(hand_base_x1, hand_base_y1, hand_end_x, hand_end_y, color, sb);
+    for (int i = -hand.base_radius; i < hand.base_radius; i++)
+    {
+        if (i != 0)
+        {
+            hand_base_x = i * cos (hand.angle + pi / 2) + clock_x;
+            hand_base_y = i * sin (hand.angle + pi / 2) + clock_y;
+            drawLine(hand_base_x, hand_base_y, hand_end_x, hand_end_y, color, sb);
+        }
+        else
+            drawLine(clock_x, clock_y, hand_end_x, hand_end_y, color, sb);
+    }
 }
 
 
