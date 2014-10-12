@@ -202,7 +202,7 @@ void drawTime(int x0, int y0, const char *tNow, char *screenBuffer)
                             off = ( n * jollaFonttiWidthPages ) + d;
                             t = jollaFonttiBitmaps[off] & ( 0x80 >> ( (s + i) % 8) );
                             if (t)
-                                (*(sb+(o+n/8)+((h+i)*8))) |= ( 0x01 << ( (o+n) % 8 ) );
+                                (*(sb+((o+n)/8)+((h+i)*8))) |= ( 0x01 << ( (o+n) % 8 ) );
                         }
 
                         if ( ((s+i) % 8) == 7 )
