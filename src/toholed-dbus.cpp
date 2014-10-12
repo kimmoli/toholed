@@ -210,7 +210,7 @@ void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
         }
         else
         { /* Digital clock face */
-            drawTime(baNow.data(), screenBuffer);
+            drawTime(0, 0, baNow.data(), screenBuffer);
 
             if ((iconSMS && iconMITAKUULUU && (timerCount & 1)) || (iconSMS && !iconMITAKUULUU))
             {
@@ -516,17 +516,17 @@ QString Toholed::draw(const QDBusMessage& msg)
     }
     else if (!QString::localeAwareCompare( args.at(0).toString(), "time"))
     {
-        if (args.count() != 2)
-            return QString("time fail; expecting string:something");
+        if (args.count() != 4)
+            return QString("time fail; expecting int32:x int32:y string:something");
 
-        QString t = args.at(1).toString();
+        QString t = args.at(3).toString();
 
         if ((t.contains(':') &&  t.length() > 5) || (!t.contains(':') && t.length() > 4))
             return QString("hah");
 
         QByteArray baNow = t.toLocal8Bit();
 
-        drawTime(baNow.data(), screenBuffer);
+        drawTime(args.at(1).toInt(), args.at(2).toInt(), baNow.data(), screenBuffer);
 
         if (oledInitDone)
             updateOled(screenBuffer);
