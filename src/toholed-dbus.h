@@ -50,6 +50,7 @@ public slots:
     QString setScreenCaptureOnProximity(const QDBusMessage &msg);
     QString setSettings(const QDBusMessage& msg);
     QByteArray captureOled();
+    QString drawPicture(const QDBusMessage& msg);
 
 signals:
     void displayUpdated();

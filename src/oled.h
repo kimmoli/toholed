@@ -34,7 +34,6 @@ void drawUpdateTime(char *screenBuffer);
 void drawPixel(int x, int y, int color, char *screenBuffer); /* Draw single pixel to screen */
 void drawCircle(int x0, int y0, int r,  int color, char *screenBuffer); /* Draw circle to screen r=radius */
 void drawLine(int x0, int y0, int x1, int y1, int color, char *screenBuffer);
-void drawBitmap(int x, int y, int height, int width, int offset, int rowsize, bool invert, const char *bitmap, char *screenBuffer);
 
 void drawAnalogClock(int hours, int minutes, char *screenBuffer);
 void drawHand(const analogHand hand, int color, char *screenBuffer);

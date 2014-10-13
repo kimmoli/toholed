@@ -333,34 +333,6 @@ void drawLine(int x0, int y0, int x1, int y1, int color, char *screenBuffer)
     }
 }
 
-/* Draws bitmap *bitmap to x,y */
-void drawBitmap(int x, int y, int height, int width, int offset, int rowsize, bool invert, const char *bitmap, char *screenBuffer)
-{
-    char* sb = screenBuffer;
-
-    int i,d,n;
-
-    d = 0;
-
-    for (i=0 ; i<width ; i++) //  leveys
-    {
-        for (n=0 ; n<height ; n++) //  korkeus
-        {
-            if (invert != (((*(bitmap+offset+((n*rowsize)+d))) & ( 0x80 >> (i%8) )) == ( 0x80 >> (i%8) )))
-            {
-                (*(sb+((y+n)/8)+((x+i)*8))) |= ( 0x01 << ( (y+n) % 8 ) );
-            }
-            else
-            {
-                (*(sb+((y+n)/8)+((x+i)*8))) &= ~( 0x01 << ( (y+n) % 8 ) );
-            }
-        }
-
-        if ( (i%8) == 7 ) // byte vaihtuu
-            d++;
-
-    }
-}
 
 #define clock_radius (32)
 #define clock_x (64)

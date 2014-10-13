@@ -33,6 +33,7 @@
 
 #include <QImage>
 #include <QPainter>
+#include <QColor>
 
 extern "C"
 {
@@ -400,9 +401,7 @@ QString Toholed::setSettings(const QDBusMessage &msg)
 
 QString Toholed::draw(const QDBusMessage& msg)
 {
-    int x, y, x1, y1, r, c, offset, height, width, rowsize;
-    // int size;
-    bool invert;
+    int x, y, x1, y1, r, c;
 
     QList<QVariant> args = msg.arguments();
 
@@ -567,39 +566,7 @@ QString Toholed::draw(const QDBusMessage& msg)
     }
     else if (!QString::localeAwareCompare( args.at(0).toString(), "bitmap"))
     {
-        if (args.count() != 4)
-            return QString("Bitmap fail; expecting int32:x, int32:y, array of bytes:data");
-
-        x = args.at(1).toInt();
-        y = args.at(2).toInt();
-
-        QByteArray byteArray = args.at(3).toByteArray();
-        const char* bitmapData = byteArray.constData();
-
-        if (byteArray.count() < 50)
-            return QString("Invalid bitmap - too few bytes");
-        /* Checks BM, header size 40, 1 bit/pixel */
-        if ( (bitmapData[0] == 0x42) && (bitmapData[1] == 0x4d) && (bitmapData[14] == 0x28) && (bitmapData[28] == 0x01))
-        {
-            //size   = bitmapData[2]  + (bitmapData[3]<<8)  + (bitmapData[4]<<16)  + (bitmapData[5]<<24);
-            offset = bitmapData[10] + (bitmapData[11]<<8) + (bitmapData[12]<<16) + (bitmapData[13]<<24);
-            width  = bitmapData[18] + (bitmapData[19]<<8) + (bitmapData[20]<<16) + (bitmapData[21]<<24);
-            height = bitmapData[22] + (bitmapData[23]<<8) + (bitmapData[24]<<16) + (bitmapData[25]<<24);
-            invert = (bitmapData[54] == 0xff);
-            rowsize = 4*((width+31)/32);
-            /* printf("Bitmap size %d == %d, offset %d, w:%d h:%d, rowsize %d\n", size, byteArray.count(), offset, width, height, rowsize); */
-            if ((height > 64) || (width > 128))
-                return QString("Invalid bitmap - too large");
-        }
-        else
-            return QString("Invalid bitmap - Wrong format");
-
-        drawBitmap(x, y, height, width, offset, rowsize, invert, bitmapData, screenBuffer);
-
-        if (oledInitDone)
-            updateOled(screenBuffer);
-
-        return QString("Bitmap x:%1 y:%2 len:%3").arg(x).arg(y).arg(byteArray.count());
+        return QString("draw \"bitmap\" is obsolete. Use drawPicture method.");
     }
 
     return QString("Draw fail; Unsupported function");
@@ -1478,4 +1445,52 @@ QByteArray Toholed::captureOled()
     pm.save(&buffer, "PNG"); // writes image into ba in PNG format
 
     return ba;
+}
+
+
+QString Toholed::drawPicture(const QDBusMessage &msg)
+{
+    char * sb = screenBuffer;
+    int x0, y0, x, y;
+
+    QList<QVariant> args = msg.arguments();
+
+    if (args.count() != 3)
+        return QString("drawPicture failed. Expecting; int32:x int32:y bytearray:data");
+
+    x0 = args.at(0).toInt();
+    y0 = args.at(1).toInt();
+
+    if ((x0 > OLEDWIDTH) || (y0 > OLEDHEIGHT))
+        return QString("drawPicture failed. x or y exceeds display area.");
+
+    QImage image;
+
+    if (!image.loadFromData(args.at(2).toByteArray()))
+        return QString("drawPicture failed. Unable to decode input data.");
+
+    for (y = 0; y<image.size().height(); y++)
+    {
+        for (x = 0; x<image.size().width(); x++)
+        {
+            int x1 = x0 + x;
+            int y1 = y0 + y;
+
+            if ((x1 < OLEDWIDTH) && (y1 < OLEDHEIGHT))
+            {
+                if ( qAlpha(image.pixel(x, y)) > 127) /* Pixel is opaque, draw it */
+                {
+                    if ( qGray(image.pixel(x, y)) > 127) /* > Gray 50% */
+                        *(sb+(y1/8)+(x1*8)) |= (0x01 << (y1%8));
+                    else
+                        *(sb+(y1/8)+(x1*8)) &= ~(0x01 << (y1%8));
+                }
+            }
+        }
+    }
+
+    if (oledInitDone)
+        updateOled(screenBuffer);
+
+    return QString("ok");
 }
