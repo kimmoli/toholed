@@ -61,6 +61,15 @@ Page
                 height: 128
                 anchors.horizontalCenter: parent.horizontalCenter
                 source: "image://screenshot/screenshot"
+                BackgroundItem
+                {
+                    anchors.fill: parent
+                    onClicked:
+                    {
+                        cnt++
+                        screenshot.source = "image://screenshot/screenshot" + cnt
+                    }
+                }
             }
 
             SectionHeader
