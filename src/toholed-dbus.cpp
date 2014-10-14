@@ -1488,13 +1488,16 @@ QString Toholed::drawPicture(const QDBusMessage &msg)
     x0 = args.at(0).toInt();
     y0 = args.at(1).toInt();
 
-    if (x0 < 0 || y0 < 0 || (x0 >= OLEDWIDTH) || (y0 >= OLEDHEIGHT))
+    if ((x0 >= OLEDWIDTH) || (y0 >= OLEDHEIGHT))
         return QString("drawPicture failed. x or y exceeds display area.");
 
     QImage image;
 
     if (!image.loadFromData(args.at(2).toByteArray()))
         return QString("drawPicture failed. Unable to decode input data.");
+
+    if (x0 < -image.size().width() || y0 < -image.size().height())
+        return QString("drawPicture failed. Image negative offset too large");
 
     for (y = 0; y<image.size().height(); y++)
     {
@@ -1503,7 +1506,7 @@ QString Toholed::drawPicture(const QDBusMessage &msg)
             int x1 = x0 + x;
             int y1 = y0 + y;
 
-            if ((x1 < OLEDWIDTH) && (y1 < OLEDHEIGHT))
+            if ((x1 >= 0) && (y1 >= 0) && (x1 < OLEDWIDTH) && (y1 < OLEDHEIGHT))
             {
                 if ( qAlpha(image.pixel(x, y)) > 127) /* Pixel is opaque, draw it */
                 {
