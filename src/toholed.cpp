@@ -200,7 +200,7 @@ int main(int argc, char **argv)
     if (bluetoothConn.isConnected())
         printf("net.connman.Technology bluetooth PropertyChanged Connected\n");
     else
-        printf("net.connman.Technology bluetooth PropertyChanged PropertyChanged Not connected\n%s\n", qPrintable(bluetoothConn.lastError().message()));
+        printf("net.connman.Technology bluetooth PropertyChanged Not connected\n%s\n", qPrintable(bluetoothConn.lastError().message()));
 
     /* wifi */
 
@@ -211,7 +211,7 @@ int main(int argc, char **argv)
     if (wifiConn.isConnected())
         printf("net.connman.Technology wifi PropertyChanged Connected\n");
     else
-        printf("net.connman.Technology wifi PropertyChanged PropertyChanged Not connected\n%s\n", qPrintable(wifiConn.lastError().message()));
+        printf("net.connman.Technology wifi PropertyChanged Not connected\n%s\n", qPrintable(wifiConn.lastError().message()));
 
 
     /* cellular */
@@ -223,7 +223,23 @@ int main(int argc, char **argv)
     if (cellularConn.isConnected())
         printf("net.connman.Technology cellular PropertyChanged Connected\n");
     else
-        printf("net.connman.Technology cellular PropertyChanged PropertyChanged Not connected\n%s\n", qPrintable(cellularConn.lastError().message()));
+        printf("net.connman.Technology cellular PropertyChanged Not connected\n%s\n", qPrintable(cellularConn.lastError().message()));
+
+    /* Flight mode */
+
+    /* signal sender=:1.11 -> dest=(null destination) serial=48916 path=/; interface=net.connman.Manager; member=PropertyChanged
+   string "OfflineMode"
+   variant       boolean true
+*/
+
+    static QDBusConnection connmanManagerConn = QDBusConnection::systemBus();
+    connmanManagerConn.connect("net.connman", "/", "net.connman.Manager", "PropertyChanged",
+                           &toholed, SLOT(handleConnmanManager(const QDBusMessage&)));
+
+    if (connmanManagerConn.isConnected())
+        printf("net.connman.Manager PropertyChanged Connected\n");
+    else
+        printf("net.connman.Manager PropertyChanged Not connected\n%s\n", qPrintable(connmanManagerConn.lastError().message()));
 
 
     NotificationManager notifications;

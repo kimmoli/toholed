@@ -80,6 +80,7 @@ private slots:
     void handleBluetooth(const QDBusMessage& msg);
     void handleWifi(const QDBusMessage& msg);
     void handleCellular(const QDBusMessage& msg);
+    void handleConnmanManager(const QDBusMessage& msg);
 
     void handleEmailNotify();
     void handleTwitterNotify();
@@ -164,6 +165,7 @@ private:
     bool bluetoothConnected;
     bool cellularConnected;
     bool cellularPowered;
+    bool offlineModeActive;
 
     bool lockDrawingMode;
 

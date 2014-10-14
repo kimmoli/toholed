@@ -71,6 +71,7 @@ Toholed::Toholed()
     wifiConnected = false;
     bluetoothConnected = false;
     cellularConnected = false;
+    offlineModeActive = false;
     lockDrawingMode = false;
 
     reloadSettings();
@@ -238,7 +239,7 @@ void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
                 /* Wifi active = w */
                 /* Bluetooth device connected = b */
                 QString tmp = QString("%1 %2 %3")
-                        .arg(cellularPowered ? (cellularConnected ? networkType.at(0).toUpper() : networkType.at(0).toLower()) : ' ')
+                        .arg(offlineModeActive ? 'F' : (cellularPowered ? (cellularConnected ? networkType.at(0).toUpper() : networkType.at(0).toLower()) : ' '))
                         .arg(wifiPowered ? (wifiConnected ? 'W' : 'w') : ' ')
                         .arg(bluetoothPowered ? (bluetoothConnected ? 'B' : 'b') : ' ');
                 drawSmallText(45, 50, tmp.toLocal8Bit().data(), screenBuffer);
@@ -1307,7 +1308,19 @@ void Toholed::handleCellular(const QDBusMessage& msg)
 
         updateDisplay(true);
     }
+}
 
+void Toholed::handleConnmanManager(const QDBusMessage& msg)
+{
+    QList<QVariant> args = msg.arguments();
+    QVariant val = args.at(1).value<QDBusVariant>().variant();
+
+    if (args.at(0).toString() == "OfflineMode" && offlineModeActive != val.toBool())
+    {
+        offlineModeActive = val.toBool();
+
+        updateDisplay(true);
+    }
 }
 
 
