@@ -70,7 +70,7 @@ void drawUpdateTime(char *screenBuffer)
         {
             off = ( n * updateTimeWidthPages ) + d;
             t = updateTimeBitmaps[off] & ( 0x80 >> ( (s + i) % 8) );
-            if (t)
+            if (t && (o+n)<OLEDHEIGHT && (h+i)<OLEDWIDTH)
                 (*(sb+((o+n)/8)+((h+i)*8))) |= ( 0x01 << ( (o+n) % 8 ) );
         }
 
@@ -104,7 +104,7 @@ void drawIcon(int x0, int y0, int icon, char *screenBuffer)
                 {
                     off = ( n * iconsWidthPages ) + d;
                     t = iconsBitmaps[off] & ( 0x80 >> ( (s + i) % 8) );
-                    if (t)
+                    if (t && (o+n)<OLEDHEIGHT && (h+i)<OLEDWIDTH)
                         (*(sb+((o+n)/8)+((h+i)*8))) |= ( 0x01 << ( (o+n) % 8 ) );
                 }
 
@@ -153,7 +153,7 @@ void drawSmallText(int x0, int y0, const char *text, char *screenBuffer)
                         {
                             off = ( n * pieniFonttiWidthPages ) + d;
                             t = pieniFonttiBitmaps[off] & ( 0x80 >> ( (s + i) % 8) );
-                            if (t)
+                            if (t && (o+n)<OLEDHEIGHT && (h+i)<OLEDWIDTH)
                                 (*(sb+((o+n)/8)+((h+i)*8))) |= ( 0x01 << ( (o+n) % 8 ) );
                         }
 
@@ -201,7 +201,7 @@ void drawTime(int x0, int y0, const char *tNow, char *screenBuffer)
                         {
                             off = ( n * jollaFonttiWidthPages ) + d;
                             t = jollaFonttiBitmaps[off] & ( 0x80 >> ( (s + i) % 8) );
-                            if (t)
+                            if (t && (o+n)<OLEDHEIGHT && (h+i)<OLEDWIDTH)
                                 (*(sb+((o+n)/8)+((h+i)*8))) |= ( 0x01 << ( (o+n) % 8 ) );
                         }
 
@@ -226,7 +226,7 @@ void drawPixel(int x, int y, int color, char *screenBuffer)
         return;
 
     // x is which column
-    if (color == 1)
+    if (color != 0)
         (*(sb+(x*8)+(y/8))) |= 1 << ( y % 8 );
     else
         (*(sb+(x*8)+(y/8))) &= ~( 1 << ( y % 8 ));

@@ -462,6 +462,9 @@ QString Toholed::draw(const QDBusMessage& msg)
         y = args.at(2).toInt();
         c = 1;
 
+        if ( x < 0 || x >= OLEDWIDTH || y < 0 || y >=  OLEDHEIGHT )
+            return QString("Pixel fail; x or y exceeds display area.");
+
         if (args.count() == 4)
             c = args.at(3).toInt();
 
@@ -481,6 +484,9 @@ QString Toholed::draw(const QDBusMessage& msg)
         y = args.at(2).toInt();
         r = args.at(3).toInt();
         c = 1;
+
+        if ( x < 0 || x >= OLEDWIDTH || y < 0 || y >=  OLEDHEIGHT || r < 0 || r > OLEDWIDTH )
+            return QString("Circle fail; x, y or r exceeds display area.");
 
         if (args.count() == 5)
             c = args.at(4).toInt();
@@ -503,6 +509,9 @@ QString Toholed::draw(const QDBusMessage& msg)
         y1 = args.at(4).toInt();
         c = 1;
 
+        if ( x < 0 || x >= OLEDWIDTH || y < 0 || y >=  OLEDHEIGHT ||  x1 < 0 || x1 >= OLEDWIDTH || y1 < 0 || y1 >=  OLEDHEIGHT )
+            return QString("Line fail; x, x1, y or y1 exceeds display area.");
+
         if (args.count() == 6)
             c = args.at(5).toInt();
 
@@ -518,14 +527,23 @@ QString Toholed::draw(const QDBusMessage& msg)
         if (args.count() != 4)
             return QString("time fail; expecting int32:x int32:y string:something");
 
+        x = args.at(1).toInt();
+        y = args.at(2).toInt();
+
+        if ( x < 0 || x >= OLEDWIDTH || y < 0 || y >=  OLEDHEIGHT )
+            return QString("time fail; x or y exceeds display area.");
+
+        if (!args.at(3).canConvert(QVariant::String))
+            return QString("time fail: string conversion failed");
+
         QString t = args.at(3).toString();
 
         if ((t.contains(':') &&  t.length() > 5) || (!t.contains(':') && t.length() > 4))
-            return QString("hah");
+            return QString("time fail: too long");
 
         QByteArray baNow = t.toLocal8Bit();
 
-        drawTime(args.at(1).toInt(), args.at(2).toInt(), baNow.data(), screenBuffer);
+        drawTime(x ,y , baNow.data(), screenBuffer);
 
         if (oledInitDone)
             updateOled(screenBuffer);
@@ -557,7 +575,16 @@ QString Toholed::draw(const QDBusMessage& msg)
         if (args.count() != 4)
             return QString("smalltext fail; expecting int32:x int32:y string:something");
 
-        drawSmallText(args.at(1).toInt(), args.at(2).toInt(), args.at(3).toString().toLocal8Bit().data(), screenBuffer);
+        x = args.at(1).toInt();
+        y = args.at(2).toInt();
+
+        if ( x < 0 || x >= OLEDWIDTH || y < 0 || y >=  OLEDHEIGHT )
+            return QString("small fail; x or y exceeds display area.");
+
+        if (!args.at(3).canConvert(QVariant::String))
+            return QString("smalltext fail: string conversion failed");
+
+        drawSmallText(x, y, args.at(3).toString().toLocal8Bit().data(), screenBuffer);
 
         if (oledInitDone)
             updateOled(screenBuffer);
@@ -1461,7 +1488,7 @@ QString Toholed::drawPicture(const QDBusMessage &msg)
     x0 = args.at(0).toInt();
     y0 = args.at(1).toInt();
 
-    if ((x0 > OLEDWIDTH) || (y0 > OLEDHEIGHT))
+    if (x0 < 0 || y0 < 0 || (x0 >= OLEDWIDTH) || (y0 >= OLEDHEIGHT))
         return QString("drawPicture failed. x or y exceeds display area.");
 
     QImage image;
