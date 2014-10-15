@@ -168,6 +168,8 @@ private:
     bool offlineModeActive;
 
     bool lockDrawingMode;
+    QString lockDrawingModeAppName;
+    int lockDrawingModeTimeout;
 
 };
 

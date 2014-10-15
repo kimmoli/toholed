@@ -73,6 +73,8 @@ Toholed::Toholed()
     cellularConnected = false;
     offlineModeActive = false;
     lockDrawingMode = false;
+    lockDrawingModeAppName = QString();
+    lockDrawingModeTimeout = 2;
 
     reloadSettings();
 
@@ -147,6 +149,21 @@ void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
 {
 
     QTime current = QTime::currentTime();
+
+    if (!timeUpdateOverride && lockDrawingMode)
+    {
+        /* Display is locked in drawing mode, and we arrived here due timer */
+        lockDrawingModeTimeout--;
+
+        if (lockDrawingModeTimeout == 0)
+        {
+            printf("Drawing mode released due timeout. Was locked by %s\n", qPrintable(lockDrawingModeAppName));
+
+            lockDrawingMode = false;
+            lockDrawingModeAppName = QString();
+            timeUpdateOverride = true;
+        }
+    }
 
     /* Update only if minute has changed and oled is powered and initialized */
 
@@ -420,18 +437,52 @@ QString Toholed::draw(const QDBusMessage& msg)
     }
     else if (!QString::localeAwareCompare( args.at(0).toString(), "lock"))
     {
-        if (args.count() != 2)
-            return QString("Lock fail; expecting bool:(true/false)");
+        if (args.count() != 3)
+            return QString("Lock fail; expecting bool:(true/false) string:appname");
 
-        if (!args.at(1).canConvert(QVariant::Bool))
-            return QString("Lock fail; expecting bool:(true/false)");
+        if (!args.at(1).canConvert(QVariant::Bool) || !args.at(2).canConvert(QVariant::String))
+            return QString("Lock fail; expecting bool:(true/false) string:appname");
 
-        lockDrawingMode = args.at(1).toBool();
+        if (!lockDrawingMode && args.at(1).toBool())
+        {
+            /* Lock request, can be locked for this appname */
+            lockDrawingMode = true;
+            lockDrawingModeAppName = args.at(2).toString();
+            lockDrawingModeTimeout = 2;
+            printf("Drawing mode locked by %s\n", qPrintable(lockDrawingModeAppName));
 
-        if (!lockDrawingMode)
+            return QString("ok");
+        }
+        if (!lockDrawingMode && !args.at(1).toBool())
+        {
+            printf("Drawing mode lock already released\n");
+
+            return QString("ok");
+        }
+        else if (lockDrawingMode && args.at(1).toBool() && lockDrawingModeAppName == args.at(2).toString())
+        {
+            /* Refresh lock request */
+            lockDrawingModeTimeout = 2;
+            printf("Drawing mode lock refresh by %s\n", qPrintable(lockDrawingModeAppName));
+
+            return QString("ok");
+        }
+        else if (lockDrawingMode && !args.at(1).toBool() && lockDrawingModeAppName == args.at(2).toString())
+        {
+            /* Release request */
+            lockDrawingMode = false;
+            lockDrawingModeAppName = QString();
+            lockDrawingModeTimeout = 2;
             updateDisplay(true);
+            printf("Drawing mode lock released\n");
 
-        return QString(args.at(1).toBool() ? "Display locked to drawing mode" : "Display normal mode");
+            return QString("ok");
+        }
+
+        printf("Drawing mode is already locked by %s -- ", qPrintable(lockDrawingModeAppName));
+        printf("Attempt to lock/release by %s\n", qPrintable(args.at(2).toString()));
+
+        return QString("Lock failed. Drawing mode is already locked by %1").arg(lockDrawingModeAppName);
     }
     else if (!QString::localeAwareCompare( args.at(0).toString(), "invert"))
     {
