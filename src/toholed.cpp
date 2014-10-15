@@ -274,6 +274,7 @@ void daemonize()
 	signal(SIGTTIN,SIG_IGN);
 	signal(SIGHUP,signalHandler); /* catch hangup signal */
 	signal(SIGTERM,signalHandler); /* catch kill signal */
+    signal(SIGINT,signalHandler);
 
     qInstallMessageHandler(myMessageOutput);
 }
@@ -284,17 +285,21 @@ void signalHandler(int sig) /* signal handler function */
 	switch(sig)
 	{
 		case SIGHUP:
-			/* rehash the server */
             printf("Received signal SIGHUP\n");
 			break;		
 		case SIGTERM:
-			/* finalize the server */
             printf("Received signal SIGTERM\n");
             deinitOled();
             controlVdd(0);
 			exit(0);
 			break;		
-	}	
+        case SIGINT:
+            printf("Received signal SIGINT\n");
+            deinitOled();
+            controlVdd(0);
+            exit(0);
+            break;
+    }
 }
 
 
