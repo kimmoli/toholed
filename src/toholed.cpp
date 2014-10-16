@@ -227,11 +227,6 @@ int main(int argc, char **argv)
 
     /* Flight mode */
 
-    /* signal sender=:1.11 -> dest=(null destination) serial=48916 path=/; interface=net.connman.Manager; member=PropertyChanged
-   string "OfflineMode"
-   variant       boolean true
-*/
-
     static QDBusConnection connmanManagerConn = QDBusConnection::systemBus();
     connmanManagerConn.connect("net.connman", "/", "net.connman.Manager", "PropertyChanged",
                            &toholed, SLOT(handleConnmanManager(const QDBusMessage&)));
@@ -240,6 +235,19 @@ int main(int argc, char **argv)
         printf("net.connman.Manager PropertyChanged Connected\n");
     else
         printf("net.connman.Manager PropertyChanged Not connected\n%s\n", qPrintable(connmanManagerConn.lastError().message()));
+
+    /*
+     * path=/com/nokia/time; interface=com.nokia.time; member=alarm_triggers_changed
+     */
+
+    static QDBusConnection alarmTriggerConn = QDBusConnection::systemBus();
+    alarmTriggerConn.connect("com.nokia.time", "/com/nokia/time", "com.nokia.time", "alarm_triggers_changed",
+                           &toholed, SLOT(handleAlarmTrigger(const QDBusMessage&)));
+
+    if (alarmTriggerConn.isConnected())
+        printf("com.nokia.time alarm_triggers_changed Connected\n");
+    else
+        printf("com.nokia.time alarm_triggers_changed Not connected\n%s\n", qPrintable(alarmTriggerConn.lastError().message()));
 
 
     NotificationManager notifications;

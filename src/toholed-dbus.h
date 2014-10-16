@@ -81,6 +81,7 @@ private slots:
     void handleWifi(const QDBusMessage& msg);
     void handleCellular(const QDBusMessage& msg);
     void handleConnmanManager(const QDBusMessage& msg);
+    void handleAlarmTrigger(const QDBusMessage& msg);
 
     void handleEmailNotify();
     void handleTwitterNotify();
@@ -148,6 +149,7 @@ private:
 
     bool chargerConnected;
     bool silentProfile;
+    bool alarmsPresent;
 
     bool displayOffWhenMainActive;
     bool analogClockFace;

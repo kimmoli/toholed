@@ -75,6 +75,7 @@ Toholed::Toholed()
     lockDrawingMode = false;
     lockDrawingModeAppName = QString();
     lockDrawingModeTimeout = 2;
+    alarmsPresent = false;
 
     reloadSettings();
 
@@ -215,8 +216,9 @@ void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
             /* Wifi active = w */
             /* Bluetooth device connected = b */
             /* Flightmode = F */
-            QString tmp = QString("%1")
-                    .arg(offlineModeActive ? 'F' : (cellularPowered ? (cellularConnected ? networkType.at(0).toUpper() : networkType.at(0).toLower()) : ' '));
+            QString tmp = QString("%1 %2")
+                    .arg(offlineModeActive ? 'F' : (cellularPowered ? (cellularConnected ? networkType.at(0).toUpper() : networkType.at(0).toLower()) : ' '))
+                    .arg(alarmsPresent ? "A" : "");
             drawSmallText(2, 0, tmp.toLocal8Bit().data(), screenBuffer);
             tmp = QString("%1")
                     .arg(wifiPowered ? (wifiConnected ? 'W' : 'w') : ' ');
@@ -254,10 +256,11 @@ void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
                 /* Wifi active = w */
                 /* Bluetooth device connected = b */
                 /* Flightmode = F */
-                QString tmp = QString("%1 %2 %3")
+                QString tmp = QString("%1 %2 %3 %4")
                         .arg(offlineModeActive ? 'F' : (cellularPowered ? (cellularConnected ? networkType.at(0).toUpper() : networkType.at(0).toLower()) : ' '))
                         .arg(wifiPowered ? (wifiConnected ? 'W' : 'w') : ' ')
-                        .arg(bluetoothPowered ? (bluetoothConnected ? 'B' : 'b') : ' ');
+                        .arg(bluetoothPowered ? (bluetoothConnected ? 'B' : 'b') : ' ')
+                        .arg(alarmsPresent ? "A" : "");
                 drawSmallText(45, 50, tmp.toLocal8Bit().data(), screenBuffer);
             }
         }
@@ -1605,4 +1608,24 @@ QString Toholed::drawPicture(const QDBusMessage &msg)
         updateOled(screenBuffer);
 
     return QString("ok");
+}
+
+void Toholed::handleAlarmTrigger(const QDBusMessage &msg)
+{
+    QList<QVariant> args = msg.arguments();
+
+    const QDBusArgument a = args.at(0).value<QDBusArgument>();
+
+    a.beginArray();
+
+    /* There are no alarms present if the array is empty. */
+
+    if (alarmsPresent == a.atEnd())
+    {
+        alarmsPresent = !a.atEnd();
+        printf("Alarms %s\n", alarmsPresent ? "present" : "not present");
+        updateDisplay(true);
+    }
+
+    a.endArray();
 }
