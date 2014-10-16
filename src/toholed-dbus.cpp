@@ -78,11 +78,6 @@ Toholed::Toholed()
 
     reloadSettings();
 
-    timer = new QTimer(this);
-    timer->setInterval(30000);
-    connect(timer, SIGNAL(timeout()), this, SLOT(updateDisplay()));
-    timer->start();
-
     alarmTimer = new QTimer(this);
     alarmTimer->setInterval(500);
     connect(alarmTimer, SIGNAL(timeout()), this, SLOT(alarmTimerTimeout( )));
@@ -888,8 +883,6 @@ void Toholed::handleDisplayStatus(const QDBusMessage& msg)
 
     if (!(QString::localeAwareCompare( args.at(0).toString(), "on")))
     {
-        iphbStop();
-
         tmp = checkOled();
 
         if (tmp == -1)
@@ -917,10 +910,6 @@ void Toholed::handleDisplayStatus(const QDBusMessage& msg)
             tsl2772_disableInterrupts(fd);
             tsl2772_closeComms(fd);
         }
-        else
-        {
-            timer->start(); /* Change to timer-mode when display is active */
-        }
     }
     else if (!(QString::localeAwareCompare( args.at(0).toString(), "off")))
     {
@@ -934,8 +923,6 @@ void Toholed::handleDisplayStatus(const QDBusMessage& msg)
             tsl2772_enableInterrupts(fd);
             tsl2772_closeComms(fd);
         }
-        iphbStart();
-        timer->stop(); /* Change to iphb-mode when display is off */
     }
 }
 

@@ -121,7 +121,6 @@ private:
 
     int timerCount;
     QTime prevTime;
-    QTimer *timer;
     QTimer *alarmTimer;
 
     QMutex mutex;
