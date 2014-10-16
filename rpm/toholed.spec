@@ -22,6 +22,7 @@ BuildRequires: pkgconfig(Qt5Gui)
 BuildRequires: pkgconfig(Qt5Core)
 BuildRequires: pkgconfig(Qt5DBus)
 BuildRequires: pkgconfig(libiphb)
+BuildRequires: pkgconfig(contextkit-statefs)
 
 Requires:   ambienced
 Requires:   harbour-toholed-settings-ui >= 0.3.7
