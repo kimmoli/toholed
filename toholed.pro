@@ -69,8 +69,7 @@ HEADERS += \
     src/derp.h \
     src/charger.h \
     src/notificationmanager.h \
-    src/updateTime.h \
-    src/contextkit.h
+    src/updateTime.h
 
 OTHER_FILES += \
     rpm/toholed.spec \

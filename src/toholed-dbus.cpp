@@ -1240,7 +1240,6 @@ void Toholed::handleAlarm(const QDBusMessage& msg)
 
     if (tmp == 0) /* Alarm dialog on screen */
     {
-        updateDisplay(true);
         blinkTimerCount = 1000;
         blinkTimer->start();
         printf("Alarm activated.\n");
@@ -1264,18 +1263,14 @@ void Toholed::blinkTimerTimeout( )
 
     if (blinkNow)
     {
-        mutex.lock();
         invertOled(true);
         setContrastOled(BRIGHTNESS_HIGH);
-        mutex.unlock();
     }
     else
     {
-        mutex.lock();
         blinkTimerCount--;
         invertOled(false);
         setContrastOled(prevBrightness);
-        mutex.unlock();
     }
 
     if (blinkTimerCount <= 0 && !blinkNow)
@@ -1610,10 +1605,4 @@ QString Toholed::drawPicture(const QDBusMessage &msg)
         updateOled(screenBuffer);
 
     return QString("ok");
-}
-
-
-void Toholed::handleAlarmPresentChanged()
-{
-    printf("hoplaa\n");
 }

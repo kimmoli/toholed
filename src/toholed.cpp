@@ -13,7 +13,6 @@
 #include "toholed.h"
 #include "toh.h"
 #include "oled.h"
-#include "contextkit.h"
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QStringList>
@@ -253,9 +252,6 @@ int main(int argc, char **argv)
     notifications.connect(&notifications, SIGNAL(smsNotify()), &toholed, SLOT(handleSmsNotify()));
     notifications.connect(&notifications, SIGNAL(systemUpdateNotify()), &toholed, SLOT(handleSystemUpdateNotify()));
     notifications.connect(&notifications, SIGNAL(otherNotify()), &toholed, SLOT(handleOtherNotify()));
-
-    Test *t = new Test(&app);
-    t->run();
 
     return app.exec();
 

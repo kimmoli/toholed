@@ -91,8 +91,6 @@ private slots:
     void handleSystemUpdateNotify();
     void handleOtherNotify();
 
-    void handleAlarmPresentChanged();
-
     void updateDisplay(bool timeUpdateOverride = false, int blinks = 0);
     void blinkTimerTimeout( );
     void notificationSend(QString summary, QString body);
