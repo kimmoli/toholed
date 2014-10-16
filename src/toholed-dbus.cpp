@@ -1412,10 +1412,15 @@ void Toholed::getCurrentNetworkConnectionStates()
     cellularPowered = c.value("Powered", false).toBool();
     cellularConnected = c.value("Connected", false).toBool();
 
+    QVariantMap f = getDbusProperties("net.connman", "/", "net.connman.Manager", QDBusConnection::systemBus());
+
+    offlineModeActive = f.value("OfflineMode", false).toBool();
+
     printf("Current network Technology is '%s'\n", qPrintable(networkType));
     printf("Bluetooth is %s and %s\n", bluetoothPowered ? "Powered" : "Not powered", bluetoothConnected ? "Connected" : "Not connected");
     printf("Wifi is %s and %s\n", wifiPowered ? "Powered" : "Not powered", wifiConnected ? "Connected" : "Not connected");
     printf("Cellular is %s and %s\n", cellularPowered ? "Powered" : "Not powered", cellularConnected ? "Connected" : "Not connected");
+    printf("Flightmode is %s\n", offlineModeActive ? "Active" : "Not active");
 }
 
 
