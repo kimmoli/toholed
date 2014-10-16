@@ -217,8 +217,9 @@ void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
             /* Network type indicator is coded in pienifontti, g=2G, u=3G, l=4G (gms, umts, lte) */
             /* Wifi active = w */
             /* Bluetooth device connected = b */
+            /* Flightmode = F */
             QString tmp = QString("%1")
-                    .arg(cellularPowered ? (cellularConnected ? networkType.at(0).toUpper() : networkType.at(0).toLower()) : ' ');
+                    .arg(offlineModeActive ? 'F' : (cellularPowered ? (cellularConnected ? networkType.at(0).toUpper() : networkType.at(0).toLower()) : ' '));
             drawSmallText(2, 0, tmp.toLocal8Bit().data(), screenBuffer);
             tmp = QString("%1")
                     .arg(wifiPowered ? (wifiConnected ? 'W' : 'w') : ' ');
@@ -255,6 +256,7 @@ void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
                 /* Network type indicator is coded in pienifontti, g=2G, u=3G, l=4G (gms, umts, lte) */
                 /* Wifi active = w */
                 /* Bluetooth device connected = b */
+                /* Flightmode = F */
                 QString tmp = QString("%1 %2 %3")
                         .arg(offlineModeActive ? 'F' : (cellularPowered ? (cellularConnected ? networkType.at(0).toUpper() : networkType.at(0).toLower()) : ' '))
                         .arg(wifiPowered ? (wifiConnected ? 'W' : 'w') : ' ')
