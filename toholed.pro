@@ -3,9 +3,10 @@ TARGET = harbour-toholed
 TEMPLATE = app
 CONFIG += console
 CONFIG -= app_bundle
+
 QT += dbus
 
-LIBS += -lrt
+LIBS += -lrt -lcontextkit-statefs-qt5
 
 target.path = /usr/bin/
 
