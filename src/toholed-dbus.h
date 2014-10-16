@@ -92,7 +92,7 @@ private slots:
     void handleOtherNotify();
 
     void updateDisplay(bool timeUpdateOverride = false, int blinks = 0);
-    void alarmTimerTimeout( );
+    void blinkTimerTimeout( );
     void notificationSend(QString summary, QString body);
 
     void heartbeatReceived(int sock);
@@ -121,7 +121,10 @@ private:
 
     int timerCount;
     QTime prevTime;
-    QTimer *alarmTimer;
+
+    int blinkTimerCount;
+    QTimer *blinkTimer;
+    bool blinkNow;
 
     QMutex mutex;
 

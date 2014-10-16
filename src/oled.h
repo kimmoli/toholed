@@ -27,7 +27,6 @@ void drawTime(int x0, int y0, const char *tNow, char *screenBuffer); /* Draws cl
 void drawSmallText(int x0, int y0, const char *text, char *screenBuffer);
 void drawIcon(int x0, int y0, int icon, char *screenBuffer);
 int setContrastOled(unsigned int level); /* set contrast to BRIGHTNESS_HIGH _MED or _LOW */
-void blinkOled(int count); /* Blinks screen for 'count' times */
 void invertOled(bool invert); /* Select between invert and normal image */
 void drawDerp(char *screenBuffer); /* Draw derp image to screen */
 void drawUpdateTime(char *screenBuffer);

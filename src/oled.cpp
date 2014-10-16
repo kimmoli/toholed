@@ -505,22 +505,6 @@ int setContrastOled(unsigned int level)
     return 0;
 }
 
-/* Blinks OLED for count times. Toggles between inverted and back */
-void blinkOled(int count)
-{
-    int i;
-
-    for (i=0; i<count; i++)
-    {
-        invertOled(true);
-        setContrastOled(BRIGHTNESS_HIGH);
-        usleep(150000);
-        invertOled(false);
-        setContrastOled(BRIGHTNESS_LOW);
-        usleep(150000);
-    }
-}
-
 /* Uses OLED screen internal inversion control to invert screen */
 void invertOled(bool invert)
 {

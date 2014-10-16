@@ -78,9 +78,11 @@ Toholed::Toholed()
 
     reloadSettings();
 
-    alarmTimer = new QTimer(this);
-    alarmTimer->setInterval(500);
-    connect(alarmTimer, SIGNAL(timeout()), this, SLOT(alarmTimerTimeout( )));
+    blinkTimer = new QTimer(this);
+    blinkTimer->setInterval(200);
+    connect(blinkTimer, SIGNAL(timeout()), this, SLOT(blinkTimerTimeout( )));
+    blinkTimerCount = 0;
+    blinkNow = false;
 
     iphbRunning = false;
     iphbdHandler = iphb_open(0);
@@ -270,9 +272,8 @@ void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
 
         if ((blinks > 0) && blinkOnNotification)
         {
-            mutex.lock();
-            blinkOled(blinks);
-            mutex.unlock();
+            blinkTimerCount = blinks;
+            blinkTimer->start();
         }
 
         emit displayUpdated();
@@ -857,7 +858,8 @@ void Toholed::handleCall(const QDBusMessage& msg)
         iconCALL = true;
 
         updateDisplay(true, 0);
-        alarmTimer->start(); /* Use the alarmTimer to blink the screen while phone is ringing */
+        blinkTimerCount = 1000;
+        blinkTimer->start(); /* Use the blinkTimer to blink the screen while phone is ringing */
     }
     else if ( iconCALL && !(QString::localeAwareCompare( args.at(0).toString(), "active")) )
     {
@@ -865,12 +867,12 @@ void Toholed::handleCall(const QDBusMessage& msg)
         iconCALL = false;
 
         updateDisplay(true, 0);
-        alarmTimer->stop();
+        blinkTimerCount = 0;
     }
     else if (!(QString::localeAwareCompare( args.at(0).toString(), "none")) )
     {
         /* Just stop blinking */
-        alarmTimer->stop();
+        blinkTimerCount = 0;
     }
 }
 
@@ -951,7 +953,7 @@ void Toholed::handleNotificationClosed(const QDBusMessage& msg)
     iconIRC = false;
     systemUpdate = false;
 
-    alarmTimer->stop();
+    blinkTimerCount = 0;
 
     updateDisplay(true);
 }
@@ -1238,21 +1240,42 @@ void Toholed::handleAlarm(const QDBusMessage& msg)
 
     if (tmp == 0) /* Alarm dialog on screen */
     {
-        alarmTimer->start();
+        blinkTimerCount = 1000;
+        blinkTimer->start();
         printf("Alarm activated.\n");
     }
     else if (tmp == 1) /* Alarm dialog not on screen */
     {
-        alarmTimer->stop();
+        blinkTimerCount = 0;
         printf("Alarm cleared.\n");
     }
 }
 
-void Toholed::alarmTimerTimeout( )
+void Toholed::blinkTimerTimeout( )
 {
-    if (oledInitDone)
+    if (!oledInitDone || !blinkOnNotification)
     {
-        blinkOled(1);
+        blinkTimer->stop();
+        return;
+    }
+
+    blinkNow = !blinkNow;
+
+    if (blinkNow)
+    {
+        invertOled(true);
+        setContrastOled(BRIGHTNESS_HIGH);
+    }
+    else
+    {
+        blinkTimerCount--;
+        invertOled(false);
+        setContrastOled(prevBrightness);
+    }
+
+    if (blinkTimerCount <= 0 && !blinkNow)
+    {
+        blinkTimer->stop();
     }
 }
 
@@ -1493,7 +1516,8 @@ void Toholed::handleSystemUpdateNotify()
     if (oledInitDone)
         updateOled(screenBuffer);
 
-    alarmTimer->start();
+    blinkTimerCount = 1000;
+    blinkTimer->start();
 }
 
 QByteArray Toholed::captureOled()
