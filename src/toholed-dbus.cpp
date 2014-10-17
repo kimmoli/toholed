@@ -882,36 +882,29 @@ void Toholed::handleCall(const QDBusMessage& msg)
 void Toholed::handleDisplayStatus(const QDBusMessage& msg)
 {
     QList<QVariant> args = msg.arguments();
-    int tmp;
+    bool toholedOk;
+    int fd;
 
     printf("Display status changed to %s\n", qPrintable(args.at(0).toString()));
 
     if (!(QString::localeAwareCompare( args.at(0).toString(), "on")))
     {
-        tmp = checkOled();
+        fd = tsl2772_initComms(0x39);
+        toholedOk = tsl2772_isOk(fd);
+        tsl2772_closeComms(fd);
 
-        if (tmp == -1)
+        if (!toholedOk)
         {
-            printf("Failed to check OLED status\n");
-        }
-        else if (tmp != 1)
-        {
-            printf("Display is off (%02x) - Reinitializing.\n", tmp);
+            printf("Seems that toholed has been reset - Respawn.\n");
 
-            initOled(prevBrightness);
-            oledInitDone = true;
-            updateDisplay(true);
-
-            int fd = tsl2772_initComms(0x39);
-            tsl2772_initialize(fd);
-            tsl2772_closeComms(fd);
+            emit iDontWantToLiveOnThisPlanet();
         }
 
         if (displayOffWhenMainActive)
         {
             deinitOled();
             oledInitDone = false;
-            int fd = tsl2772_initComms(0x39);
+            fd = tsl2772_initComms(0x39);
             tsl2772_disableInterrupts(fd);
             tsl2772_closeComms(fd);
         }
@@ -924,7 +917,7 @@ void Toholed::handleDisplayStatus(const QDBusMessage& msg)
             oledInitDone = true;
             updateDisplay(true);
 
-            int fd = tsl2772_initComms(0x39);
+            fd = tsl2772_initComms(0x39);
             tsl2772_enableInterrupts(fd);
             tsl2772_closeComms(fd);
         }

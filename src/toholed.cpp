@@ -261,6 +261,8 @@ int main(int argc, char **argv)
     notifications.connect(&notifications, SIGNAL(systemUpdateNotify()), &toholed, SLOT(handleSystemUpdateNotify()));
     notifications.connect(&notifications, SIGNAL(otherNotify()), &toholed, SLOT(handleOtherNotify()));
 
+    toholed.connect(&toholed, SIGNAL(iDontWantToLiveOnThisPlanet()), &app, SLOT(quit()));
+
     return app.exec();
 
 }

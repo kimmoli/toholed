@@ -227,3 +227,30 @@ unsigned long tsl2772_getReg(int file, unsigned char reg)
     return buf[0];
 }
 
+bool tsl2772_isOk(int file)
+{
+    char buf[1] = {0};
+
+    buf[0] = 0xa0;
+
+    if (write(file, buf, 1) != 1)
+    {
+       close(file);
+       return false;
+    }
+
+    if (read( file, buf, 1 ) != 1)
+    {
+        close(file);
+        return false;
+    }
+
+    /* Read control register;
+     * 0x00 is reset value
+     * During initialisation this register is written with 0x0f + interrupt enable bits which may change
+     * so we compare it to & 0x0f
+     */
+
+    return ((buf[0] & 0x0f) == 0x0f);
+}
+

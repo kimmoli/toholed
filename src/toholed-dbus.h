@@ -54,6 +54,7 @@ public slots:
 
 signals:
     void displayUpdated();
+    void iDontWantToLiveOnThisPlanet();
 
 private slots:
     void setVddState(bool turn);

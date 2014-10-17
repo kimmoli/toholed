@@ -19,7 +19,6 @@ typedef struct
 } analogHand;
 
 int initOled(unsigned int level); /* Initializes OLED SSD1306 chip, brightness level arg */
-int checkOled();
 int deinitOled();
 void clearOled(char *screenBuffer); /* Clears screen buffer */
 int updateOled(const char *screenBuffer); /* Draws screem buffer to OLED */
