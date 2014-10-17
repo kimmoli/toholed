@@ -1,8 +1,6 @@
 TARGET = harbour-toholed
 
-TEMPLATE = app
 CONFIG += console
-CONFIG -= app_bundle
 QT += dbus
 
 LIBS += -lrt
