@@ -132,7 +132,7 @@ Page
             TextSwitch
             {
                 text: "Show analog clock"
-                description: "Experimental analog clock face"
+                description: "Analog clock face"
                 checked: tohosettings.analogClockFace
                 automaticCheck: false
                 onClicked:
@@ -141,6 +141,20 @@ Page
                     tohosettings.writeSettings()
                 }
             }
+
+            TextSwitch
+            {
+                text: "Show alarms present"
+                description: "Bell icon shown if any alarm is active"
+                checked: tohosettings.showAlarmsPresent
+                automaticCheck: false
+                onClicked:
+                {
+                    tohosettings.showAlarmsPresent = !tohosettings.showAlarmsPresent
+                    tohosettings.writeSettings()
+                }
+            }
+
 
             SectionHeader
             {
