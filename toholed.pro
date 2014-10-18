@@ -1,6 +1,8 @@
 TARGET = harbour-toholed
 
-CONFIG += console
+CONFIG += console link_pkgconfig
+PKGCONFIG += contextkit-statefs
+
 QT += dbus
 
 LIBS += -lrt
@@ -48,7 +50,8 @@ SOURCES += \
     src/derp.c \
     3rdparty/libiphb/src/libiphb.c \
     src/notificationmanager.cpp \
-    src/updateTime.c
+    src/updateTime.c \
+    src/statefsproperty.cpp
 
 HEADERS += \
     3rdparty/libiphb/src/libiphb.h \
@@ -67,7 +70,8 @@ HEADERS += \
     src/derp.h \
     src/charger.h \
     src/notificationmanager.h \
-    src/updateTime.h
+    src/updateTime.h \
+    src/statefsproperty.h
 
 OTHER_FILES += \
     rpm/toholed.spec \

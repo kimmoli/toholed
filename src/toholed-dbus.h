@@ -82,7 +82,8 @@ private slots:
     void handleWifi(const QDBusMessage& msg);
     void handleCellular(const QDBusMessage& msg);
     void handleConnmanManager(const QDBusMessage& msg);
-    void handleAlarmTrigger(const QDBusMessage& msg);
+
+    void handleAlarmPresent(QVariant value);
 
     void handleEmailNotify();
     void handleTwitterNotify();

@@ -1606,22 +1606,10 @@ QString Toholed::drawPicture(const QDBusMessage &msg)
     return QString("ok");
 }
 
-void Toholed::handleAlarmTrigger(const QDBusMessage &msg)
+
+void Toholed::handleAlarmPresent(QVariant value)
 {
-    QList<QVariant> args = msg.arguments();
-
-    const QDBusArgument a = args.at(0).value<QDBusArgument>();
-
-    a.beginArray();
-
-    /* There are no alarms present if the array is empty. */
-
-    if (alarmsPresent == a.atEnd())
-    {
-        alarmsPresent = !a.atEnd();
-        printf("Alarms %s\n", alarmsPresent ? "present" : "not present");
-        updateDisplay(true);
-    }
-
-    a.endArray();
+    alarmsPresent = (value.toInt() == 1);
+    printf("Statefs property \"Alarm.Present\" changed; %s\n", alarmsPresent ? "Present" : "Not present");
+    updateDisplay(true);
 }

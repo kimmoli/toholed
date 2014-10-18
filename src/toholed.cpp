@@ -23,6 +23,7 @@
 #include "toholed-dbus.h"
 
 #include "notificationmanager.h"
+#include "statefsproperty.h"
 
 #include <QtGlobal>
 
@@ -236,19 +237,6 @@ int main(int argc, char **argv)
     else
         printf("net.connman.Manager PropertyChanged Not connected\n%s\n", qPrintable(connmanManagerConn.lastError().message()));
 
-    /*
-     * path=/com/nokia/time; interface=com.nokia.time; member=alarm_triggers_changed
-     */
-
-    static QDBusConnection alarmTriggerConn = QDBusConnection::systemBus();
-    alarmTriggerConn.connect("com.nokia.time", "/com/nokia/time", "com.nokia.time", "alarm_triggers_changed",
-                           &toholed, SLOT(handleAlarmTrigger(const QDBusMessage&)));
-
-    if (alarmTriggerConn.isConnected())
-        printf("com.nokia.time alarm_triggers_changed Connected\n");
-    else
-        printf("com.nokia.time alarm_triggers_changed Not connected\n%s\n", qPrintable(alarmTriggerConn.lastError().message()));
-
 
     NotificationManager notifications;
 
@@ -260,6 +248,12 @@ int main(int argc, char **argv)
     notifications.connect(&notifications, SIGNAL(smsNotify()), &toholed, SLOT(handleSmsNotify()));
     notifications.connect(&notifications, SIGNAL(systemUpdateNotify()), &toholed, SLOT(handleSystemUpdateNotify()));
     notifications.connect(&notifications, SIGNAL(otherNotify()), &toholed, SLOT(handleOtherNotify()));
+
+    /* contextkit statefs Alarm.Present */
+
+    StatefsProperty *statefsPropertyAlarmPresent = new StatefsProperty();
+    statefsPropertyAlarmPresent->setKey("Alarm.Present");
+    QObject::connect(statefsPropertyAlarmPresent, SIGNAL(valueChanged(QVariant)), &toholed, SLOT(handleAlarmPresent(QVariant)));
 
     toholed.connect(&toholed, SIGNAL(iDontWantToLiveOnThisPlanet()), &app, SLOT(quit()));
 
