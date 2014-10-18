@@ -141,7 +141,6 @@ Toholed::Toholed()
     getCurrentNetworkConnectionStates();
 
     propertyAlarmPresent.reset(new ContextProperty("Alarm.Present", this));
-    propertyAlarmPresent->subscribe();
     QObject::connect(propertyAlarmPresent.data(), SIGNAL(valueChanged()), this, SLOT(propertyAlarmPresentChanged()));
 
     updateDisplay(true);
