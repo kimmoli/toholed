@@ -23,7 +23,6 @@
 #include "toholed-dbus.h"
 
 #include "notificationmanager.h"
-#include "statefsproperty.h"
 
 #include <QtGlobal>
 
@@ -248,12 +247,6 @@ int main(int argc, char **argv)
     notifications.connect(&notifications, SIGNAL(smsNotify()), &toholed, SLOT(handleSmsNotify()));
     notifications.connect(&notifications, SIGNAL(systemUpdateNotify()), &toholed, SLOT(handleSystemUpdateNotify()));
     notifications.connect(&notifications, SIGNAL(otherNotify()), &toholed, SLOT(handleOtherNotify()));
-
-    /* contextkit statefs Alarm.Present */
-
-    StatefsProperty *statefsPropertyAlarmPresent = new StatefsProperty();
-    statefsPropertyAlarmPresent->setKey("Alarm.Present");
-    QObject::connect(statefsPropertyAlarmPresent, SIGNAL(valueChanged(QVariant)), &toholed, SLOT(handleAlarmPresent(QVariant)));
 
     toholed.connect(&toholed, SIGNAL(iDontWantToLiveOnThisPlanet()), &app, SLOT(quit()));
 

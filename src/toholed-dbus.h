@@ -10,6 +10,8 @@
 #include "oled.h"
 #include "worker.h"
 
+#include <contextproperty.h>
+
 #define SERVICE_NAME "com.kimmoli.toholed"
 
 extern "C"
@@ -83,7 +85,7 @@ private slots:
     void handleCellular(const QDBusMessage& msg);
     void handleConnmanManager(const QDBusMessage& msg);
 
-    void handleAlarmPresent(QVariant value);
+    void propertyAlarmPresentChanged();
 
     void handleEmailNotify();
     void handleTwitterNotify();
@@ -177,6 +179,8 @@ private:
     bool lockDrawingMode;
     QString lockDrawingModeAppName;
     int lockDrawingModeTimeout;
+
+    QScopedPointer<ContextProperty> propertyAlarmPresent;
 
 };
 

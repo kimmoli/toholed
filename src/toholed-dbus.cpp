@@ -34,6 +34,7 @@
 #include <QImage>
 #include <QPainter>
 #include <QColor>
+#include <contextproperty.h>
 
 extern "C"
 {
@@ -138,6 +139,10 @@ Toholed::Toholed()
     printf("initialisation complete\n");
 
     getCurrentNetworkConnectionStates();
+
+    propertyAlarmPresent.reset(new ContextProperty("Alarm.Present", this));
+    propertyAlarmPresent->subscribe();
+    QObject::connect(propertyAlarmPresent.data(), SIGNAL(valueChanged()), this, SLOT(propertyAlarmPresentChanged()));
 
     updateDisplay(true);
 }
@@ -1607,9 +1612,10 @@ QString Toholed::drawPicture(const QDBusMessage &msg)
 }
 
 
-void Toholed::handleAlarmPresent(QVariant value)
+void Toholed::propertyAlarmPresentChanged()
 {
-    alarmsPresent = (value.toInt() == 1);
-    printf("Statefs property \"Alarm.Present\" changed; %s\n", alarmsPresent ? "Present" : "Not present");
+    alarmsPresent = (propertyAlarmPresent->value().toInt() == 1);
+    printf("Property \"Alarm.Present\" changed; %s\n", alarmsPresent ? "Present" : "Not present");
     updateDisplay(true);
+
 }

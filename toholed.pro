@@ -50,8 +50,7 @@ SOURCES += \
     src/derp.c \
     3rdparty/libiphb/src/libiphb.c \
     src/notificationmanager.cpp \
-    src/updateTime.c \
-    src/statefsproperty.cpp
+    src/updateTime.c
 
 HEADERS += \
     3rdparty/libiphb/src/libiphb.h \
@@ -70,8 +69,7 @@ HEADERS += \
     src/derp.h \
     src/charger.h \
     src/notificationmanager.h \
-    src/updateTime.h \
-    src/statefsproperty.h
+    src/updateTime.h
 
 OTHER_FILES += \
     rpm/toholed.spec \
