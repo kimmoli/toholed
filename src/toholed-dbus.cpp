@@ -218,7 +218,7 @@ void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
             /* Flightmode = F */
             QString tmp = QString("%1 %2")
                     .arg(offlineModeActive ? 'F' : (cellularPowered ? (cellularConnected ? networkType.at(0).toUpper() : networkType.at(0).toLower()) : ' '))
-                    .arg(alarmsPresent ? "A" : "");
+                    .arg((alarmsPresent && showAlarmsPresent) ? "A" : "");
             drawSmallText(2, 0, tmp.toLocal8Bit().data(), screenBuffer);
             tmp = QString("%1")
                     .arg(wifiPowered ? (wifiConnected ? 'W' : 'w') : ' ');
@@ -260,7 +260,7 @@ void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
                         .arg(offlineModeActive ? 'F' : (cellularPowered ? (cellularConnected ? networkType.at(0).toUpper() : networkType.at(0).toLower()) : ' '))
                         .arg(wifiPowered ? (wifiConnected ? 'W' : 'w') : ' ')
                         .arg(bluetoothPowered ? (bluetoothConnected ? 'B' : 'b') : ' ')
-                        .arg(alarmsPresent ? "A" : "");
+                        .arg((alarmsPresent && showAlarmsPresent) ? "A" : "");
                 drawSmallText(45, 50, tmp.toLocal8Bit().data(), screenBuffer);
             }
         }
@@ -358,6 +358,7 @@ void Toholed::reloadSettings()
     alsEnabled = settings.value("als", true).toBool();
     displayOffWhenMainActive = settings.value("displayOffWhenMainActive", false).toBool();
     analogClockFace = settings.value("analogClockFace", false).toBool();
+    showAlarmsPresent = settings.value("showAlarmsPresent", true).toBool();
     settings.endGroup();
 }
 
@@ -365,7 +366,7 @@ QString Toholed::setSettings(const QDBusMessage &msg)
 {
     QList<QVariant> args = msg.arguments();
 
-    if (args.size() != 5)
+    if (args.size() != 6)
         return QString("Failed");
 
     /* This must match with message sent from settings-ui */
@@ -376,6 +377,7 @@ QString Toholed::setSettings(const QDBusMessage &msg)
     proximityEnabled = QString::localeAwareCompare( args.at(2).toString(), "on") ? false : true;
     displayOffWhenMainActive = QString::localeAwareCompare( args.at(3).toString(), "on") ? false : true;
     analogClockFace = QString::localeAwareCompare( args.at(4).toString(), "on") ? false : true;
+    showAlarmsPresent = QString::localeAwareCompare( args.at(5).toString(), "on") ? false : true;
 
     QSettings settings(QSettings::SystemScope, "harbour-toholed", "toholed");
 
@@ -385,6 +387,7 @@ QString Toholed::setSettings(const QDBusMessage &msg)
     settings.setValue("als", alsEnabled);
     settings.setValue("displayOffWhenMainActive", displayOffWhenMainActive);
     settings.setValue("analogClockFace", analogClockFace);
+    settings.setValue("showAlarmsPresent", showAlarmsPresent);
     settings.endGroup();
 
     if (proximityEnabled || alsEnabled)

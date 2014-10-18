@@ -24,7 +24,7 @@ BuildRequires: pkgconfig(Qt5DBus)
 BuildRequires: pkgconfig(libiphb)
 
 Requires:   ambienced
-Requires:   harbour-toholed-settings-ui >= 0.3.7
+Requires:   harbour-toholed-settings-ui >= 0.3.9
 
 %description
 The OtherHalf OLED daemon
