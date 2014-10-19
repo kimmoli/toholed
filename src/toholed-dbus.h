@@ -7,12 +7,14 @@
 
 #include <QTime>
 #include <QThread>
+#include <QElapsedTimer>
 #include "oled.h"
 #include "worker.h"
 
 #include <contextproperty.h>
 
 #define SERVICE_NAME "com.kimmoli.toholed"
+#define DRAWINGMODELOCKTIMEOUT (30000)
 
 extern "C"
 {
@@ -179,7 +181,7 @@ private:
 
     bool lockDrawingMode;
     QString lockDrawingModeAppName;
-    int lockDrawingModeTimeout;
+    QElapsedTimer lockDrawingModeTimer;
 
     QScopedPointer<ContextProperty> propertyAlarmPresent;
 

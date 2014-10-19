@@ -16,6 +16,7 @@
 #include <QtCore/QTimer>
 #include <QTime>
 #include <QThread>
+#include <QElapsedTimer>
 
 #include <sys/time.h>
 #include <time.h>
@@ -76,7 +77,6 @@ Toholed::Toholed()
     offlineModeActive = false;
     lockDrawingMode = false;
     lockDrawingModeAppName = QString();
-    lockDrawingModeTimeout = 2;
     alarmsPresent = false;
 
     reloadSettings();
@@ -157,14 +157,14 @@ void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
     if (!timeUpdateOverride && lockDrawingMode)
     {
         /* Display is locked in drawing mode, and we arrived here due timer */
-        lockDrawingModeTimeout--;
 
-        if (lockDrawingModeTimeout == 0)
+        if (lockDrawingModeTimer.hasExpired(DRAWINGMODELOCKTIMEOUT))
         {
             printf("Drawing mode released due timeout. Was locked by %s\n", qPrintable(lockDrawingModeAppName));
 
             lockDrawingMode = false;
             lockDrawingModeAppName = QString();
+            lockDrawingModeTimer.invalidate();
             timeUpdateOverride = true;
         }
     }
@@ -489,7 +489,7 @@ QString Toholed::draw(const QDBusMessage& msg)
             /* Lock request, can be locked for this appname */
             lockDrawingMode = true;
             lockDrawingModeAppName = args.at(2).toString();
-            lockDrawingModeTimeout = 2;
+            lockDrawingModeTimer.start();
             printf("Drawing mode locked by %s\n", qPrintable(lockDrawingModeAppName));
 
             return QString("ok");
@@ -503,7 +503,7 @@ QString Toholed::draw(const QDBusMessage& msg)
         else if (lockDrawingMode && args.at(1).toBool() && lockDrawingModeAppName == args.at(2).toString())
         {
             /* Refresh lock request */
-            lockDrawingModeTimeout = 2;
+            lockDrawingModeTimer.start();
             printf("Drawing mode lock refresh by %s\n", qPrintable(lockDrawingModeAppName));
 
             return QString("ok");
@@ -513,7 +513,7 @@ QString Toholed::draw(const QDBusMessage& msg)
             /* Release request */
             lockDrawingMode = false;
             lockDrawingModeAppName = QString();
-            lockDrawingModeTimeout = 2;
+            lockDrawingModeTimer.invalidate();
             updateDisplay(true);
             printf("Drawing mode lock released\n");
 
