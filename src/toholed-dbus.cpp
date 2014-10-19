@@ -526,6 +526,23 @@ QString Toholed::draw(const QDBusMessage& msg)
 
         return QString(args.at(1).toBool() ? "Display inverted" : "Display normal");
     }
+    else if (!QString::localeAwareCompare( args.at(0).toString(), "blink"))
+    {
+        if (args.count() != 2)
+            return QString("Blink fail; expecting int32:count(1..20)");
+
+        if (!args.at(1).canConvert(QVariant::Int))
+            return QString("Blink fail; expecting int32:count(1..20)");
+
+        int t = args.at(1).toInt();
+        if (t < 1 && t > 20)
+            t = 1;
+
+        blinkTimerCount = t;
+        blinkTimer->start(); /* Use the blinkTimer to blink the screen while phone is ringing */
+
+        return QString("ok");
+    }
     else if (!QString::localeAwareCompare( args.at(0).toString(), "derp"))
     {
         drawDerp(screenBuffer);
