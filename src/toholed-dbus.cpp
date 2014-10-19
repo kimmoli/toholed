@@ -535,7 +535,7 @@ QString Toholed::draw(const QDBusMessage& msg)
             return QString("Blink fail; expecting int32:count(1..20)");
 
         int t = args.at(1).toInt();
-        if (t < 1 && t > 20)
+        if (t < 1 || t > 20)
             t = 1;
 
         blinkTimerCount = t;
