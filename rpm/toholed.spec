@@ -25,7 +25,7 @@ BuildRequires: pkgconfig(libiphb)
 BuildRequires: pkgconfig(contextkit-statefs)
 
 Requires:   ambienced
-Requires:   harbour-toholed-settings-ui >= 0.3.9
+Requires:   harbour-toholed-settings-ui >= 0.3.10
 
 %description
 The OtherHalf OLED daemon

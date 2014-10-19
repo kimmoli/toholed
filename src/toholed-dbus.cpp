@@ -61,6 +61,7 @@ Toholed::Toholed()
     systemUpdate = false;
     iconMITAKUULUU = false;
     ScreenCaptureOnProximity = false;
+    ScreenCaptureOnProximityStorePath = QString();
     activeHighlights = 0;
     ssNotifyReplacesId = 0;
     chargerConnected = false;
@@ -370,18 +371,39 @@ QString Toholed::setSettings(const QDBusMessage &msg)
 {
     QList<QVariant> args = msg.arguments();
 
-    if (args.size() != 6)
+    if (args.size() != 1)
         return QString("Failed");
+
+    const QDBusArgument myArgs = msg.arguments().at(0).value<QDBusArgument>();
+
+    QVariantMap map;
+
+    myArgs.beginMap();
+
+    while ( ! myArgs.atEnd())
+    {
+        QString key;
+        QDBusVariant value;
+        myArgs.beginMapEntry();
+        myArgs >> key >> value;
+        myArgs.endMapEntry();
+        map.insert(key, value.variant());
+        printf("Settings key \"%s\" set to %s\n", qPrintable(key), qPrintable(value.variant().toString()));
+    }
+    myArgs.endMap();
 
     /* This must match with message sent from settings-ui */
     /* https://github.com/kimmoli/toholed-settings-ui.git */
 
-    blinkOnNotification = QString::localeAwareCompare( args.at(0).toString(), "on") ? false : true;
-    alsEnabled = QString::localeAwareCompare( args.at(1).toString(), "on") ? false : true;
-    proximityEnabled = QString::localeAwareCompare( args.at(2).toString(), "on") ? false : true;
-    displayOffWhenMainActive = QString::localeAwareCompare( args.at(3).toString(), "on") ? false : true;
-    analogClockFace = QString::localeAwareCompare( args.at(4).toString(), "on") ? false : true;
-    showAlarmsPresent = QString::localeAwareCompare( args.at(5).toString(), "on") ? false : true;
+    blinkOnNotification = map.value("blink", blinkOnNotification).toBool();
+    alsEnabled = map.value("als", alsEnabled).toBool();
+    proximityEnabled = map.value("proximity", proximityEnabled).toBool();
+    displayOffWhenMainActive = map.value("displayOffWhenMainActive", displayOffWhenMainActive).toBool();
+    analogClockFace = map.value("analogClockFace", analogClockFace ).toBool();
+    showAlarmsPresent = map.value("showAlarmsPresent", showAlarmsPresent ).toBool();
+
+    ScreenCaptureOnProximity = map.value("ssp", ScreenCaptureOnProximity).toBool();
+    ScreenCaptureOnProximityStorePath = map.value("sspPath", ScreenCaptureOnProximityStorePath).toString();
 
     QSettings settings(QSettings::SystemScope, "harbour-toholed", "toholed");
 
@@ -422,7 +444,7 @@ QString Toholed::setSettings(const QDBusMessage &msg)
 
     updateDisplay(true);
 
-    return QString("Yep");
+    return QString("ok");
 }
 
 QString Toholed::draw(const QDBusMessage& msg)
@@ -658,33 +680,6 @@ QString Toholed::draw(const QDBusMessage& msg)
 
     return QString("Draw fail; Unsupported function");
 }
-
-
-QString Toholed::setScreenCaptureOnProximity(const QDBusMessage& msg)
-{
-    QList<QVariant> args = msg.arguments();
-
-    if (args.count() != 2)
-        return QString("SSP Failed, requires on|off path");
-
-
-    QString turn = args.at(0).toString();
-    ScreenCaptureOnProximityStorePath = args.at(1).toString();
-
-    ScreenCaptureOnProximity =  QString::localeAwareCompare( turn, "on") ? false : true;
-
-    if (ScreenCaptureOnProximity)
-    {
-        printf("Screen capture on proximity interrupt enabled\n");
-        return QString("Screen capture on proximity interrupt enabled");
-    }
-    else
-    {
-        printf("Screen capture on proximity interrupt disabled\n");
-        return QString("Screen capture on proximity interrupt disabled");
-    }
-}
-
 
 /* Function to set VDD (3.3V for OH) */
 void Toholed::setVddState(bool turn)

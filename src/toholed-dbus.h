@@ -49,7 +49,6 @@ public:
 public slots:
     QString getVersion();
     QString draw(const QDBusMessage& msg);
-    QString setScreenCaptureOnProximity(const QDBusMessage &msg);
     QString setSettings(const QDBusMessage& msg);
     QByteArray captureOled();
     QString drawPicture(const QDBusMessage& msg);
