@@ -102,6 +102,7 @@ private slots:
     void heartbeatReceived(int sock);
     void iphbStop();
     void iphbStart();
+    void iphbChangeMode(bool keepAlive = false);
 
 private:
     QThread *thread;
@@ -136,6 +137,7 @@ private:
     int iphb_fd;
     QSocketNotifier *iphbNotifier;
     bool iphbRunning;
+    bool iphbModeKeepAlive;
 
     int gpio_fd;
     int proximity_fd;

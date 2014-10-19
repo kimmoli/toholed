@@ -88,6 +88,7 @@ Toholed::Toholed()
     blinkNow = false;
 
     iphbRunning = false;
+    iphbModeKeepAlive = false;
     iphbdHandler = iphb_open(0);
 
     if (!iphbdHandler)
@@ -312,7 +313,12 @@ void Toholed::iphbStart()
         return;
     }
 
-    time_t unixTime = iphb_wait(iphbdHandler, 25, 35 , 0);
+    time_t unixTime;
+
+    if (iphbModeKeepAlive)
+        unixTime = iphb_wait(iphbdHandler, 0, 1 , 0); /* This should keep the device ~alive */
+    else
+        unixTime = iphb_wait(iphbdHandler, 25, 35 , 0); /* ~30 SEC window for normal operation */
 
     if (unixTime == (time_t)-1)
     {
@@ -344,7 +350,12 @@ void Toholed::iphbStop()
 
 }
 
-
+void Toholed::iphbChangeMode(bool keepAlive)
+{
+    iphbStop();
+    iphbModeKeepAlive = keepAlive;
+    iphbStart();
+}
 
 /* DBus Exposed call methods */
 
@@ -1271,6 +1282,7 @@ void Toholed::blinkTimerTimeout( )
     if (!oledInitDone || !blinkOnNotification)
     {
         blinkTimer->stop();
+        iphbChangeMode(false);
         return;
     }
 
@@ -1291,7 +1303,12 @@ void Toholed::blinkTimerTimeout( )
     if (blinkTimerCount <= 0 && !blinkNow)
     {
         blinkTimer->stop();
+        iphbChangeMode(false);
+        return;
     }
+
+    if (!iphbModeKeepAlive)
+        iphbChangeMode(true);
 }
 
 void Toholed::handleNetworkRegistration(const QDBusMessage& msg)
