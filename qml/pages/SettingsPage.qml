@@ -86,7 +86,7 @@ Page
                 onClicked:
                 {
                     tohosettings.blink = !tohosettings.blink
-                    tohosettings.writeSettings()
+                    tohosettings.writeSettings("blink", tohosettings.blink)
                 }
             }
 
@@ -99,7 +99,7 @@ Page
                 onClicked:
                 {
                     tohosettings.als = !tohosettings.als
-                    tohosettings.writeSettings()
+                    tohosettings.writeSettings("als", tohosettings.als)
                 }
             }
 
@@ -112,7 +112,7 @@ Page
                 onClicked:
                 {
                     tohosettings.prox = !tohosettings.prox
-                    tohosettings.writeSettings()
+                    tohosettings.writeSettings("proximity", tohosettings.prox)
                 }
             }
 
@@ -125,7 +125,7 @@ Page
                 onClicked:
                 {
                     tohosettings.displayOffWhenMainActive = !tohosettings.displayOffWhenMainActive
-                    tohosettings.writeSettings()
+                    tohosettings.writeSettings("displayOffWhenMainActive", tohosettings.displayOffWhenMainActive)
                 }
             }
 
@@ -138,7 +138,7 @@ Page
                 onClicked:
                 {
                     tohosettings.analogClockFace = !tohosettings.analogClockFace
-                    tohosettings.writeSettings()
+                    tohosettings.writeSettings("analogClockFace", tohosettings.analogClockFace)
                 }
             }
 
@@ -151,7 +151,7 @@ Page
                 onClicked:
                 {
                     tohosettings.showAlarmsPresent = !tohosettings.showAlarmsPresent
-                    tohosettings.writeSettings()
+                    tohosettings.writeSettings("showAlarmsPresent", tohosettings.showAlarmsPresent)
                 }
             }
 
@@ -170,7 +170,7 @@ Page
                 onClicked:
                 {
                     tohosettings.ssp = !tohosettings.ssp
-                    tohosettings.writeSettings()
+                    tohosettings.writeScreenCapture()
                 }
             }
         }

@@ -89,53 +89,51 @@ TohoSettings::~TohoSettings()
 }
 
 
-void TohoSettings::writeSettings()
+void TohoSettings::writeSettings(QString key, bool value)
 {
 
     /**/
-    qDebug() << "write settings";
+    qDebug() << "write settings" << key << value;
 
     QDBusMessage m = QDBusMessage::createMethodCall("com.kimmoli.toholed",
                                                     "/",
                                                     "com.kimmoli.toholed",
                                                     "setSettings" );
 
+    QVariantMap map;
+    map.insert(key, value);
+
     QList<QVariant> args;
-    args.append(QString(m_blink ? "on" : "off"));
-    args.append(QString(m_als ? "on" : "off"));
-    args.append(QString(m_prox ? "on" : "off"));
-    args.append(QString(m_displayOffWhenMainActive ? "on" : "off"));
-    args.append(QString(m_analogClockFace ? "on" : "off"));
-    args.append(QString(m_showAlarmsPresent ? "on" : "off"));
+    args.append(map);
+
     m.setArguments(args);
 
     if (QDBusConnection::systemBus().send(m))
-    {
-        qDebug() << "success" << args;
-    }
+        qDebug() << "success" << map;
     else
-    {
         qDebug() << "failed" << QDBusConnection::systemBus().lastError().message();
-    }
+}
 
-    m = QDBusMessage::createMethodCall("com.kimmoli.toholed",
+void TohoSettings::writeScreenCapture()
+{
+
+    QDBusMessage m = QDBusMessage::createMethodCall("com.kimmoli.toholed",
                                                     "/",
                                                     "com.kimmoli.toholed",
-                                                    "setScreenCaptureOnProximity" );
+                                                    "setSettings" );
 
-    args.clear();
-    args.append(QString(m_ssp ? "on" : "off"));
-    args.append(QStandardPaths::writableLocation(QStandardPaths::PicturesLocation));
+    QVariantMap map;
+    map.insert("ssp", m_ssp);
+    map.insert("sspPath", QStandardPaths::writableLocation(QStandardPaths::PicturesLocation));
+
+    QList<QVariant> args;
+    args.append(map);
+
     m.setArguments(args);
 
     if (QDBusConnection::systemBus().send(m))
-    {
         qDebug() << "success" << args;
-    }
     else
-    {
         qDebug() << "failed" << QDBusConnection::systemBus().lastError().message();
-    }
-
 
 }

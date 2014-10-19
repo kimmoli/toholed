@@ -50,7 +50,8 @@ public:
     bool readShowAlarmsPresent() { return m_showAlarmsPresent; }
 
     Q_INVOKABLE void readSettings();
-    Q_INVOKABLE void writeSettings();
+    Q_INVOKABLE void writeSettings(QString key, bool value);
+    Q_INVOKABLE void writeScreenCapture();
     Q_INVOKABLE QString readDaemonVersion();
 
 public slots:
