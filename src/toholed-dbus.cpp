@@ -1660,8 +1660,9 @@ void Toholed::handleLoginManager(const QDBusMessage& msg)
 
 void Toholed::startProcess()
 {
-    process.startDetached("/usr/bin/who -q");
     process.connect(&process, SIGNAL(readyRead()), this, SLOT(handleProcessStdout()));
+    process.startDetached("/usr/bin/who -q");
+    printf("who started\n");
 }
 
 void Toholed::handleProcessStdout()
