@@ -1668,6 +1668,7 @@ void Toholed::startProcess()
 
 void Toholed::handleProcessStdout()
 {
+    printf("readAll()\n");
     QList<QByteArray> n = process.readAll().split('=');
     printf("Number of users logged in: %d\n", n.last().toInt());
 }
