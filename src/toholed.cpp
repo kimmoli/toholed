@@ -237,6 +237,18 @@ int main(int argc, char **argv)
         printf("net.connman.Manager PropertyChanged Not connected\n%s\n", qPrintable(connmanManagerConn.lastError().message()));
 
 
+    /* SSH */
+
+    static QDBusConnection loginManagerConn = QDBusConnection::systemBus();
+    loginManagerConn.connect("", "/org/freedesktop/login1/user/_100000", "org.freedesktop.DBus.Properties", "PropertiesChanged",
+                           &toholed, SLOT(handleLoginManager(const QDBusMessage&)));
+
+    if (loginManagerConn.isConnected())
+        printf("login manager Connected\n");
+    else
+        printf("login manager Not connected\n%s\n", qPrintable(loginManagerConn.lastError().message()));
+
+
     NotificationManager notifications;
 
     notifications.connect(&notifications, SIGNAL(emailNotify()), &toholed, SLOT(handleEmailNotify()));

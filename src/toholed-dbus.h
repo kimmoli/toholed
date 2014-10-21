@@ -85,6 +85,10 @@ private slots:
     void handleWifi(const QDBusMessage& msg);
     void handleCellular(const QDBusMessage& msg);
     void handleConnmanManager(const QDBusMessage& msg);
+    void handleLoginManager(const QDBusMessage& msg);
+    void handleProcessStdout();
+
+    void startProcess();
 
     void propertyAlarmPresentChanged();
 
@@ -184,7 +188,8 @@ private:
     QElapsedTimer lockDrawingModeTimer;
 
     QScopedPointer<ContextProperty> propertyAlarmPresent;
-
+    QProcess process;
+    QTimer *processStartTimer;
 };
 
 

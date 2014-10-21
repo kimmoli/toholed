@@ -1647,3 +1647,26 @@ void Toholed::propertyAlarmPresentChanged()
     updateDisplay(true);
 
 }
+
+void Toholed::handleLoginManager(const QDBusMessage& msg)
+{
+    Q_UNUSED(msg);
+    printf("User login activity detected.\n");
+
+    processStartTimer = new QTimer(this);
+    processStartTimer->singleShot(1000, this, SLOT(startProcess()));
+}
+
+
+void Toholed::startProcess()
+{
+    process.startDetached("/usr/bin/who -q");
+    process.connect(&process, SIGNAL(readyRead()), this, SLOT(handleProcessStdout()));
+}
+
+void Toholed::handleProcessStdout()
+{
+    QList<QByteArray> n = process.readAll().split(' ');
+    printf("Number of users logged in: %d\n", n.last().toInt());
+}
+
