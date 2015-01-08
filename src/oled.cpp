@@ -349,7 +349,7 @@ void drawAnalogClock(int hours, int minutes, char *screenBuffer)
 
     for (r=0; r < 12; r++)
     {
-        float angle = (2 * pi / 12)*r;
+        float angle = (2 * PII / 12)*r;
         int tick_x_out = (clock_radius - 4) * cos (angle) + clock_x;
         int tick_y_out = (clock_radius - 4) * sin (angle) + clock_y;
         int tick_x_in = (clock_radius - 7) * cos (angle) + clock_x;
@@ -362,8 +362,8 @@ void drawAnalogClock(int hours, int minutes, char *screenBuffer)
     hourHand.base_radius = 3;
     hourHand.hand_radius = clock_radius-12;
 
-    minuteHand.angle = ((2 * pi / 60) * minutes) - pi/2;
-    hourHand.angle = ((2 * pi / 12) * (hours + ((float)minutes/60))) - pi/2;
+    minuteHand.angle = ((2 * PII / 60) * minutes) - PII/2;
+    hourHand.angle = ((2 * PII / 12) * (hours + ((float)minutes/60))) - PII/2;
 
     drawHand(minuteHand, 1, sb);
     drawHand(hourHand, 1, sb);
@@ -386,8 +386,8 @@ void drawHand(const analogHand hand, int color, char *screenBuffer)
     {
         if (i != 0)
         {
-            hand_base_x = i * cos (hand.angle + pi / 2) + clock_x;
-            hand_base_y = i * sin (hand.angle + pi / 2) + clock_y;
+            hand_base_x = i * cos (hand.angle + PII / 2) + clock_x;
+            hand_base_y = i * sin (hand.angle + PII / 2) + clock_y;
             drawLine(hand_base_x, hand_base_y, hand_end_x, hand_end_y, color, sb);
         }
         else
