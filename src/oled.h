@@ -9,8 +9,6 @@
 #define BRIGHTNESS_MED 0x4071
 #define BRIGHTNESS_LOW 0x1011
 
-#define PII (3.14159)
-
 typedef struct
 {
     float angle;
