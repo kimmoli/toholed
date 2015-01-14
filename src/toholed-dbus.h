@@ -76,7 +76,6 @@ private slots:
     void handleTweetian(const QDBusMessage& msg);
     void handleCommuni(const QDBusMessage& msg);
     void handleNotificationActionInvoked(const QDBusMessage& msg);
-    void handleChargerStatus(const QDBusMessage& msg);
     void handleMitakuuluu(const QDBusMessage& msg);
     void handleProfileChanged(const QDBusMessage& msg);
     void handleAlarm(const QDBusMessage& msg);
@@ -87,6 +86,7 @@ private slots:
     void handleConnmanManager(const QDBusMessage& msg);
 
     void propertyAlarmPresentChanged();
+    void propertyBatteryIsChargingChanged();
 
     void handleEmailNotify();
     void handleTwitterNotify();
@@ -184,6 +184,7 @@ private:
     QElapsedTimer lockDrawingModeTimer;
 
     QScopedPointer<ContextProperty> propertyAlarmPresent;
+    QScopedPointer<ContextProperty> propertyBatteryIsCharging;
 
 };
 

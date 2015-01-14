@@ -145,6 +145,9 @@ Toholed::Toholed()
     propertyAlarmPresent.reset(new ContextProperty("Alarm.Present", this));
     QObject::connect(propertyAlarmPresent.data(), SIGNAL(valueChanged()), this, SLOT(propertyAlarmPresentChanged()));
 
+    propertyBatteryIsCharging.reset(new ContextProperty("Battery.IsCharging", this));
+    QObject::connect(propertyBatteryIsCharging.data(), SIGNAL(valueChanged()), this, SLOT(propertyBatteryIsChargingChanged()));
+
     updateDisplay(true);
 }
 
@@ -1176,31 +1179,6 @@ void Toholed::handleNotificationActionInvoked(const QDBusMessage& msg)
 }
 
 
-/* Charger */
-
-void Toholed::handleChargerStatus(const QDBusMessage& msg)
-{
-    QList<QVariant> args = msg.arguments();
-    QString tmp = args.at(0).toString();
-
-    if (!(QString::localeAwareCompare( tmp, "charger_connected")) && !chargerConnected)
-    {
-        printf("Charger connected\n");
-        chargerConnected = true;
-
-        updateDisplay(true, 0);
-    }
-    else if (!(QString::localeAwareCompare( tmp, "charger_disconnected")) && chargerConnected)
-    {
-        printf("Charger disconnected\n");
-        chargerConnected = false;
-
-        updateDisplay(true, 0);
-    }
-
-}
-
-
 void Toholed::handleMitakuuluu(const QDBusMessage& msg)
 {
     QList<QVariant> args = msg.arguments();
@@ -1645,5 +1623,11 @@ void Toholed::propertyAlarmPresentChanged()
     alarmsPresent = (propertyAlarmPresent->value().toInt() == 1);
     printf("Property \"Alarm.Present\" changed; %s\n", alarmsPresent ? "Present" : "Not present");
     updateDisplay(true);
+}
 
+void Toholed::propertyBatteryIsChargingChanged()
+{
+    chargerConnected = (propertyBatteryIsCharging->value().toInt() == 1);
+    printf("Property \"Battery.IsCharging\" changed; %s\n", chargerConnected ? "Charging" : "Not charging");
+    updateDisplay(true);
 }

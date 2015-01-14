@@ -132,17 +132,6 @@ int main(int argc, char **argv)
         printf("com.communi.irc.highlightedSimple Connected\n%s\n", qPrintable(communiConn.lastError().message()));
 
 
-    /* Charger connected/disconnected */
-
-    static QDBusConnection chargerConnectionconn = QDBusConnection::systemBus();
-    chargerConnectionconn.connect("com.meego.usb_moded", "/com/meego/usb_moded", "com.meego.usb_moded", "sig_usb_state_ind",
-                          &toholed, SLOT(handleChargerStatus(const QDBusMessage&)));
-
-    if(chargerConnectionconn.isConnected())
-        printf("com.meego.usb_moded.sig_usb_state_ind Connected\n");
-    else
-        printf("com.meego.usb_moded.sig_usb_state_ind Not connected\n%s\n", qPrintable(chargerConnectionconn.lastError().message()));
-
 
     /* Mitäkuuluu unread */
 
