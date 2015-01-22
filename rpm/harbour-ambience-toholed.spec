@@ -30,6 +30,9 @@ BuildRequires:  desktop-file-utils
 
 Requires:   ambienced
 
+Obsoletes:  harbour-toholed
+Obsoletes:  harbour-toholed-settings-ui
+
 %description
 The OtherHalf OLED daemon and Settings application
 
