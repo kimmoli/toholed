@@ -61,7 +61,7 @@ desktop-file-install --delete-original       \
 %{_datadir}/ambience/%{name}
 %{_datadir}/ambience/%{name}/%{name}.ambience
 %{_datadir}/ambience/%{name}/images/*
-%{_datadir}/harbour-toholed-settings-ui/qml
+%{_datadir}/harbour-toholed-settings-ui
 %{_datadir}/applications/harbour-toholed-settings-ui.desktop
 %{_datadir}/icons/hicolor/86x86/apps/harbour-toholed-settings-ui.png
 
@@ -72,7 +72,7 @@ udevadm control --reload
 if [ -e /sys/devices/platform/toh-core.0/vendor ]; then
  if grep -q 19276 /sys/devices/platform/toh-core.0/vendor ; then
   if grep -q 2 /sys/devices/platform/toh-core.0/product ; then
-   systemctl start %{name}.service
+   systemctl start harbour-toholed.service
   fi
  fi
 fi
@@ -81,15 +81,15 @@ fi
 %pre
 # In case of update, stop and disable first
 if [ "$1" = "2" ]; then
-  systemctl stop %{name}.service
-  systemctl disable %{name}.service
+  systemctl stop harbour-toholed.service
+  systemctl disable harbour-toholed.service
   udevadm control --reload
 fi
 
 %preun
 # in case of complete removal, stop and disable
 if [ "$1" = "0" ]; then
-  systemctl stop %{name}.service
-  systemctl disable %{name}.service
+  systemctl stop harbour-toholed.service
+  systemctl disable harbour-toholed.service
   udevadm control --reload
 fi

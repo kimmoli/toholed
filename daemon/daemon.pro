@@ -18,8 +18,8 @@ udevrule.files = config/95-$${TARGET}.rules
 dbusconf.path = /etc/dbus-1/system.d/
 dbusconf.files = config/$${TARGET}.conf
 
-ambience.path = /usr/share/ambience/$${TARGET}
-ambience.files = ambience/$${TARGET}.ambience
+ambience.path = /usr/share/ambience/harbour-ambience-toholed
+ambience.files = ambience/harbour-ambience-toholed.ambience
 
 images.path = $${ambience.path}/images
 images.files = ambience/images/*
@@ -76,6 +76,6 @@ OTHER_FILES += \
     config/$${TARGET}.conf \
     config/$${TARGET}.service \
     config/95-$${TARGET}.rules \
-    ambience/$${TARGET}.ambience \
-    ambience/images/toholed.jpg
+    ambience/harbour-ambience-toholed.ambience \
+    ambience/images/harbour-ambience-toholed.jpg
 
