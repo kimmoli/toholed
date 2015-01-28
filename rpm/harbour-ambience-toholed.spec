@@ -12,7 +12,7 @@ Name: harbour-ambience-toholed
 
 Summary:  The OtherHalf OLED
 Version:  0.4.0
-Release:  1
+Release:  devel
 Group:    Qt/Qt
 License:  LICENSE
 URL:      https://github.com/kimmoli/toholed
