@@ -7,6 +7,9 @@
 #include <QDBusInterface>
 #include <QDBusPendingReply>
 
+/* For testing purposes, uncomment following */
+// #define NOTIFICATIONDEBUG
+
 class NotificationManagerPrivate
 {
     Q_DECLARE_PUBLIC(NotificationManager)
@@ -124,14 +127,18 @@ uint NotificationManager::Notify(const QString &app_name, uint replaces_id, cons
         {
             emit this->imNotify();
         }
-        if (category == "x-nemo.messaging.sms" && summary != "")
+        else if (category == "x-nemo.messaging.sms" && summary != "")
         {
             emit this->smsNotify();
+        }
+        else if (category == "x-nemo.call.missed" && summary != "")
+        {
+            emit this->callMissedNotify();
         }
 #ifdef NOTIFICATIONDEBUG
         else
         {
-            printf("Other commhistoryd notification: category=%s\n", qPrintable(category));
+            printf("Other commhistoryd notification: category=%s summary=%s\n", qPrintable(category), qPrintable(summary));
         }
 #endif
     }

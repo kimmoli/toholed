@@ -897,17 +897,12 @@ void Toholed::handleCall(const QDBusMessage& msg)
         blinkTimerCount = 1000;
         blinkTimer->start(); /* Use the blinkTimer to blink the screen while phone is ringing */
     }
-    else if ( iconCALL && !(QString::localeAwareCompare( args.at(0).toString(), "active")) )
+    else if ( iconCALL )
     {
-        printf("Call answered or placing new call when missed call indicated\n");
+        printf("Call answered, rejected or placing new call when missed call indicated\n");
         iconCALL = false;
 
         updateDisplay(true, 0);
-        blinkTimerCount = 0;
-    }
-    else if (!(QString::localeAwareCompare( args.at(0).toString(), "none")) )
-    {
-        /* Just stop blinking */
         blinkTimerCount = 0;
     }
 }
@@ -1518,6 +1513,15 @@ void Toholed::handleOtherNotify()
     printf("other notification\n");
 
     updateDisplay(true, 2);
+}
+
+void Toholed::handleCallMissedNotify()
+{
+    printf("call missed notification\n");
+
+    iconCALL = true;
+
+    updateDisplay(true, 0);
 }
 
 void Toholed::handleSystemUpdateNotify()

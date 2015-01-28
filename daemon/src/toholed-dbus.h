@@ -96,6 +96,7 @@ private slots:
     void handleSmsNotify();
     void handleSystemUpdateNotify();
     void handleOtherNotify();
+    void handleCallMissedNotify();
 
     void updateDisplay(bool timeUpdateOverride = false, int blinks = 0);
     void blinkTimerTimeout( );

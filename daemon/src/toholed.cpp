@@ -236,6 +236,7 @@ int main(int argc, char **argv)
     notifications.connect(&notifications, SIGNAL(smsNotify()), &toholed, SLOT(handleSmsNotify()));
     notifications.connect(&notifications, SIGNAL(systemUpdateNotify()), &toholed, SLOT(handleSystemUpdateNotify()));
     notifications.connect(&notifications, SIGNAL(otherNotify()), &toholed, SLOT(handleOtherNotify()));
+    notifications.connect(&notifications, SIGNAL(callMissedNotify()), &toholed, SLOT(handleCallMissedNotify()));
 
     toholed.connect(&toholed, SIGNAL(iDontWantToLiveOnThisPlanet()), &app, SLOT(quit()));
 
