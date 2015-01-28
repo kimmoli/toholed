@@ -384,6 +384,7 @@ void Toholed::reloadSettings()
 QString Toholed::setSettings(const QDBusMessage &msg)
 {
     QList<QVariant> args = msg.arguments();
+    bool prevDisplayOffWhenMainActive = displayOffWhenMainActive;
 
     if (args.size() != 1)
         return QString("Failed");
@@ -446,14 +447,37 @@ QString Toholed::setSettings(const QDBusMessage &msg)
 
     if (!alsEnabled)
     {
-        setContrastOled(BRIGHTNESS_MED);
+        if (oledInitDone)
+            setContrastOled(BRIGHTNESS_MED);
         prevBrightness = BRIGHTNESS_MED;
     }
+    else
+    {
+        handleGpioInterrupt();
+    }
 
-    if (!proximityEnabled && !oledInitDone)
+    if (!proximityEnabled && !oledInitDone && !displayOffWhenMainActive)
     {
         initOled(prevBrightness);
         oledInitDone = true;
+    }
+
+    /* We assume main display is active when user changes these settings */
+    if (displayOffWhenMainActive && !prevDisplayOffWhenMainActive)
+    {
+        deinitOled();
+        oledInitDone = false;
+        int fd = tsl2772_initComms(0x39);
+        tsl2772_disableInterrupts(fd);
+        tsl2772_closeComms(fd);
+    }
+    else if (!displayOffWhenMainActive && prevDisplayOffWhenMainActive)
+    {
+        initOled(prevBrightness);
+        oledInitDone = true;
+        int fd = tsl2772_initComms(0x39);
+        tsl2772_enableInterrupts(fd);
+        tsl2772_closeComms(fd);
     }
 
     updateDisplay(true);
