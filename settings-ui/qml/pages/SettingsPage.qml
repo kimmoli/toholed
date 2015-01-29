@@ -21,7 +21,7 @@ Page
                 text: "About..."
                 onClicked: pageStack.push(Qt.resolvedUrl("AboutPage.qml"),
                                           { "version": tohosettings.version,
-                                              "year": "2014",
+                                              "year": "2014-2015",
                                               "name": "Toholed settings UI",
                                               "imagelocation": "/usr/share/icons/hicolor/86x86/apps/harbour-toholed-settings-ui.png"} )
             }

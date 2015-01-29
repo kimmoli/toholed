@@ -1,5 +1,5 @@
 /*
- * (C) 2014 Kimmo Lindholm <kimmo.lindholm@gmail.com> Kimmoli
+ * (C) 2014-2015 Kimmo Lindholm <kimmo.lindholm@gmail.com> Kimmoli
  *
  * toholed daemon, TOH Low level control funtions
  *

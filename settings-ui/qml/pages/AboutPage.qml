@@ -1,5 +1,5 @@
 /*
-    Generic about page (C) 2014 Kimmo Lindholm
+    Generic about page (C) 2014-2015 Kimmo Lindholm
 */
 
 import QtQuick 2.0
