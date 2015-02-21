@@ -26,6 +26,9 @@ images.files = ambience/images/*
 
 DEFINES += "APPVERSION=\\\"$${SPECVERSION}\\\""
 
+# For testing purposes, uncomment following
+#DEFINES += NOTIFICATIONDEBUG
+
 message($${DEFINES})
 
 INSTALLS += target systemd udevrule dbusconf ambience images

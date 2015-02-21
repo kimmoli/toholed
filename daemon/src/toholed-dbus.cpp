@@ -1180,6 +1180,15 @@ void Toholed::handleNotificationActionInvoked(const QDBusMessage& msg)
 
     unsigned int notificationId = outArgs.at(0).toInt();
 
+    /* systemupdate notification is sticky. this removes it from oled when clicked */
+    if (systemUpdate)
+    {
+        systemUpdate = false;
+        blinkTimerCount = 0;
+
+        updateDisplay(true);
+    }
+
     /* Manage the screenshot notification id action. */
     if (notificationId == ssNotifyReplacesId)
     {
@@ -1197,8 +1206,6 @@ void Toholed::handleNotificationActionInvoked(const QDBusMessage& msg)
         if (!QDBusConnection::sessionBus().send(m))
             printf("Failed to invoke gallery to show %s\n", qPrintable(ssFilename));
     }
-
-
 }
 
 

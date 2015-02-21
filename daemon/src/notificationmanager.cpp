@@ -7,9 +7,6 @@
 #include <QDBusInterface>
 #include <QDBusPendingReply>
 
-/* For testing purposes, uncomment following */
-// #define NOTIFICATIONDEBUG
-
 class NotificationManagerPrivate
 {
     Q_DECLARE_PUBLIC(NotificationManager)
@@ -78,11 +75,13 @@ uint NotificationManager::Notify(const QString &app_name, uint replaces_id, cons
                                  const QString &summary, const QString &body, const QStringList &actions,
                                  const QVariantHash &hints, int expire_timeout)
 {
+#ifndef NOTIFICATIONDEBUG
     Q_UNUSED(replaces_id);
     Q_UNUSED(app_icon);
+    Q_UNUSED(body);
+#endif
     Q_UNUSED(actions);
     Q_UNUSED(expire_timeout);
-    Q_UNUSED(body);
 
     // Ignore notifcations from myself
     if (app_name == "toholed")
@@ -91,7 +90,14 @@ uint NotificationManager::Notify(const QString &app_name, uint replaces_id, cons
     }
 
 #ifdef NOTIFICATIONDEBUG
-    printf("Got notification via dbus from %s\n", qPrintable(app_name));
+    printf("Got notification via dbus from %s, replaces id %d\n", qPrintable(app_name), replaces_id);
+
+    QString subject = hints.value("x-nemo-preview-summary", "").toString();
+    QString data = hints.value("x-nemo-preview-body", "").toString();
+    QString category = hints.value("category", "").toString();
+
+    printf("summary=%s app_icon=%s body=%s\n", qPrintable(summary), qPrintable(app_icon), qPrintable(body));
+    printf("subject=%s data=%s category=%s\n", qPrintable(subject), qPrintable(data), qPrintable(category));
 #endif
 
     // Avoid sending a reply for this method call, since we've received it because we're eavesdropping.
