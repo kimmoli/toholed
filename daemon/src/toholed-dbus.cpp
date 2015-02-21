@@ -290,7 +290,7 @@ void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
 
         emit displayUpdated();
     }
-    else if (lockDrawingMode && oledInitDone)
+    else if ((systemUpdate || lockDrawingMode) && oledInitDone)
     {
         updateOled(screenBuffer);
     }
