@@ -334,7 +334,7 @@ void drawLine(int x0, int y0, int x1, int y1, int color, char *screenBuffer)
 }
 
 
-#define clock_radius (32)
+#define clock_radius (31)
 #define clock_x (64)
 #define clock_y (32)
 
