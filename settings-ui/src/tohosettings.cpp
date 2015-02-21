@@ -137,3 +137,42 @@ void TohoSettings::writeScreenCapture()
         qDebug() << "failed" << QDBusConnection::systemBus().lastError().message();
 
 }
+
+void TohoSettings::saveOledScreen()
+{
+    QDBusInterface getScreenShotCall("com.kimmoli.toholed", "/", "com.kimmoli.toholed", QDBusConnection::systemBus());
+    getScreenShotCall.setTimeout(2000);
+
+    QDBusMessage getScreenShotReply = getScreenShotCall.call(QDBus::AutoDetect, "captureOled");
+
+    QImage screenShot(64, 32, QImage::Format_RGB32);
+    screenShot.fill(Qt::white);
+
+    if (getScreenShotReply.type() == QDBusMessage::ErrorMessage)
+    {
+        qDebug() << "Error getting screenshot:" << getScreenShotReply.errorMessage();
+    }
+    else
+    {
+        QByteArray screenShot_ba = getScreenShotReply.arguments().at(0).toByteArray();
+
+        screenShot.loadFromData(screenShot_ba, "PNG");
+
+        QDate ssDate = QDate::currentDate();
+        QTime ssTime = QTime::currentTime();
+
+        QString ssFilename = QString("%8/oled%1%2%3-%4%5%6-%7.png")
+                        .arg((int) ssDate.day(),    2, 10, QLatin1Char('0'))
+                        .arg((int) ssDate.month(),  2, 10, QLatin1Char('0'))
+                        .arg((int) ssDate.year(),   2, 10, QLatin1Char('0'))
+                        .arg((int) ssTime.hour(),   2, 10, QLatin1Char('0'))
+                        .arg((int) ssTime.minute(), 2, 10, QLatin1Char('0'))
+                        .arg((int) ssTime.second(), 2, 10, QLatin1Char('0'))
+                        .arg((int) ssTime.msec(),   3, 10, QLatin1Char('0'))
+                        .arg(QStandardPaths::writableLocation(QStandardPaths::PicturesLocation));
+
+        screenShot.save(ssFilename);
+
+        qDebug() << "Oled screenshot saved:" << ssFilename;
+    }
+}

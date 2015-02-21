@@ -29,6 +29,11 @@ Page
 
         contentHeight: column.height
 
+        Messagebox
+        {
+            id: messagebox
+        }
+
         Column
         {
             id: column
@@ -68,6 +73,11 @@ Page
                     {
                         cnt++
                         screenshot.source = "image://screenshot/screenshot" + cnt
+                    }
+                    onPressAndHold:
+                    {
+                        tohosettings.saveOledScreen()
+                        messagebox.showMessage("OLED Screenshot saved", 2500)
                     }
                 }
             }

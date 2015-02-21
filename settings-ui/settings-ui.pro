@@ -23,5 +23,6 @@ OTHER_FILES += qml/toholed-settings-ui.qml \
     qml/pages/AboutPage.qml \
     rpm/toholed-settings-ui.spec \
     harbour-toholed-settings-ui.png \
-    harbour-toholed-settings-ui.desktop
+    harbour-toholed-settings-ui.desktop \
+    qml/pages/Messagebox.qml
 

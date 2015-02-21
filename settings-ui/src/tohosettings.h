@@ -53,6 +53,7 @@ public:
     Q_INVOKABLE void writeSettings(QString key, bool value);
     Q_INVOKABLE void writeScreenCapture();
     Q_INVOKABLE QString readDaemonVersion();
+    Q_INVOKABLE void saveOledScreen();
 
 public slots:
     void handleDisplayUpdated();
@@ -67,7 +68,6 @@ signals:
     void displayOffWhenMainActiveChanged();
     void analogClockFaceChanged();
     void showAlarmsPresentChanged();
-
     void screenShotChanged();
 
 private:
