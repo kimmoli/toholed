@@ -11,7 +11,7 @@ Name: harbour-ambience-toholed
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 
 Summary:  The OtherHalf OLED
-Version:  0.4.3
+Version:  0.4.4
 Release:  devel
 Group:    Qt/Qt
 License:  LICENSE

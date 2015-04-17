@@ -89,12 +89,13 @@ uint NotificationManager::Notify(const QString &app_name, uint replaces_id, cons
         return 0;
     }
 
+    QString category = hints.value("category", "").toString();
+
 #ifdef NOTIFICATIONDEBUG
     printf("Got notification via dbus from %s, replaces id %d\n", qPrintable(app_name), replaces_id);
 
     QString subject = hints.value("x-nemo-preview-summary", "").toString();
     QString data = hints.value("x-nemo-preview-body", "").toString();
-    QString category = hints.value("category", "").toString();
 
     printf("summary=%s app_icon=%s body=%s\n", qPrintable(summary), qPrintable(app_icon), qPrintable(body));
     printf("subject=%s data=%s category=%s\n", qPrintable(subject), qPrintable(data), qPrintable(category));
@@ -106,47 +107,35 @@ uint NotificationManager::Notify(const QString &app_name, uint replaces_id, cons
     Q_ASSERT(calledFromDBus());
     setDelayedReply(true);
 
-    if (app_name == "messageserver5") /* emails */
+    if (category == "x-nemo.email") /* emails */
     {
         emit this->emailNotify();
     }
-    else if (app_name == "twitter-notifications-client")  /* Build-in twitter */
+    else if (category.startsWith("x-nemo.social.twitter"))  /* Build-in twitter */
     {
         emit this->twitterNotify();
     }
-    else if (app_name == "irssi") /* This is irssi mqtt notification */
+    else if (category == "x-nemo.messaging.irssi") /* This is irssi mqtt notification */
     {
         emit this->irssiNotify();
     }
-    else if (app_name == "store-client")
+    else if (category.startsWith("x-nemo.system-update"))
     {
-        QString category = hints.value("category", "").toString();
-        if (category.startsWith("x-nemo.system-update"))
-        {
-            emit this->systemUpdateNotify();
-        }
+        emit this->systemUpdateNotify();
     }
-    else if (app_name == "commhistoryd")
+    else if (category == "x-nemo.messaging.im" && summary != "")
     {
-        QString category = hints.value("category", "").toString();
-        if (category == "x-nemo.messaging.im" && summary != "")
-        {
-            emit this->imNotify();
-        }
-        else if (category == "x-nemo.messaging.sms" && summary != "")
-        {
-            emit this->smsNotify();
-        }
-        else if (category == "x-nemo.call.missed" && summary != "")
-        {
-            emit this->callMissedNotify();
-        }
-#ifdef NOTIFICATIONDEBUG
-        else
-        {
-            printf("Other commhistoryd notification: category=%s summary=%s\n", qPrintable(category), qPrintable(summary));
-        }
-#endif
+        emit this->imNotify();
+    }
+    else if ((category == "x-nemo.messaging.sms" ||
+              category == "x-nemo.messaging.mms" ||
+              category.startsWith("x-nemo.voicemail")) && summary != "")
+    {
+        emit this->smsNotify();
+    }
+    else if (category == "x-nemo.call.missed" && summary != "")
+    {
+        emit this->callMissedNotify();
     }
 #ifdef NOTIFICATIONDEBUG
     else /* Other notification */
