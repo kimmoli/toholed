@@ -776,6 +776,7 @@ void Toholed::enableOled()
         updateOled(screenBuffer);
         initOled(0);
         drawDerp(screenBuffer);
+        drawSmallText(0, 0, QString(APPVERSION).toLocal8Bit().data(), screenBuffer);
         updateOled(screenBuffer);
         sleep(2);
 
