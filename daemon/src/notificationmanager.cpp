@@ -125,7 +125,9 @@ uint NotificationManager::Notify(const QString &app_name, uint replaces_id, cons
     }
     else if (category == "x-nemo.messaging.im" && summary != "")
     {
-        emit this->imNotify();
+        /* IRC for Sailfish uses this same category, and we already handle it directly over dbus */
+        if (hints.value("x-nemo-owner", "").toString() != "IRC for Sailfish")
+            emit this->imNotify();
     }
     else if ((category == "x-nemo.messaging.sms" ||
               category == "x-nemo.messaging.mms" ||
