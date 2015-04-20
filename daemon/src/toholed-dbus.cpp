@@ -66,7 +66,6 @@ Toholed::Toholed()
     activeHighlights = 0;
     ssNotifyReplacesId = 0;
     chargerConnected = false;
-    mitakuuluuUnread = 0;
     silentProfile = false;
     wifiPowered = false;
     bluetoothPowered = false;
@@ -1004,6 +1003,7 @@ void Toholed::handleNotificationClosed(const QDBusMessage& msg)
     iconCALL = false;
     iconTWEET = false;
     iconIRC = false;
+    iconMITAKUULUU = false;
     systemUpdate = false;
 
     blinkTimerCount = 0;
@@ -1207,30 +1207,6 @@ void Toholed::handleNotificationActionInvoked(const QDBusMessage& msg)
         if (!QDBusConnection::sessionBus().send(m))
             printf("Failed to invoke gallery to show %s\n", qPrintable(ssFilename));
     }
-}
-
-
-void Toholed::handleMitakuuluu(const QDBusMessage& msg)
-{
-    QList<QVariant> args = msg.arguments();
-
-    int mkUnread = args.at(0).toInt();
-    printf("Mitakuuluu: total unread %d\n", mkUnread);
-
-    if (mkUnread > mitakuuluuUnread) /* Number of total unread increased */
-    {
-        iconMITAKUULUU = true;
-
-        updateDisplay(true, 2);
-    }
-    else if ((mkUnread == 0) && iconMITAKUULUU) /* All read */
-    {
-        iconMITAKUULUU = false;
-
-        updateDisplay(true, 0);
-    }
-
-    mitakuuluuUnread = mkUnread;
 }
 
 void Toholed::handleProfileChanged(const QDBusMessage& msg)
@@ -1574,6 +1550,15 @@ void Toholed::handleSystemUpdateNotify()
     blinkTimerCount = 1000;
     blinkTimer->start();
 }
+
+
+void Toholed::handleMitakuuluu()
+{
+    iconMITAKUULUU = true;
+
+    updateDisplay(true, 2);
+}
+
 
 QByteArray Toholed::captureOled()
 {

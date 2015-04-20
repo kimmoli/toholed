@@ -31,6 +31,7 @@ Q_SIGNALS:
     void systemUpdateNotify();
     void otherNotify();
     void callMissedNotify();
+    void mitakuuluuNotify();
 
 public Q_SLOTS:
     uint Notify(const QString &app_name, uint replaces_id, const QString &app_icon, const QString &summary, const QString &body, const QStringList &actions, const QVariantHash &hints, int expire_timeout);

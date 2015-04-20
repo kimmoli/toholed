@@ -137,6 +137,11 @@ uint NotificationManager::Notify(const QString &app_name, uint replaces_id, cons
     {
         emit this->callMissedNotify();
     }
+    else if (category.startsWith("notifications.whatsup") ||
+             category.startsWith("coderus.mitakuuluu"))
+    {
+        emit this->mitakuuluuNotify();
+    }
 #ifdef NOTIFICATIONDEBUG
     else /* Other notification */
     {

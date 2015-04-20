@@ -76,7 +76,6 @@ private slots:
     void handleTweetian(const QDBusMessage& msg);
     void handleCommuni(const QDBusMessage& msg);
     void handleNotificationActionInvoked(const QDBusMessage& msg);
-    void handleMitakuuluu(const QDBusMessage& msg);
     void handleProfileChanged(const QDBusMessage& msg);
     void handleAlarm(const QDBusMessage& msg);
     void handleNetworkRegistration(const QDBusMessage& msg);
@@ -97,6 +96,7 @@ private slots:
     void handleSystemUpdateNotify();
     void handleOtherNotify();
     void handleCallMissedNotify();
+    void handleMitakuuluu();
 
     void updateDisplay(bool timeUpdateOverride = false, int blinks = 0);
     void blinkTimerTimeout( );
@@ -125,7 +125,6 @@ private:
     QString ScreenCaptureOnProximityStorePath;
 
     int activeHighlights;
-    int mitakuuluuUnread;
 
     int timerCount;
     QTime prevTime;

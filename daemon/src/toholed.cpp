@@ -132,19 +132,6 @@ int main(int argc, char **argv)
         printf("com.communi.irc.highlightedSimple Connected\n%s\n", qPrintable(communiConn.lastError().message()));
 
 
-
-    /* Mitäkuuluu unread */
-
-    static QDBusConnection mitakuuluuConn = QDBusConnection::sessionBus();
-    mitakuuluuConn.connect("harbour.mitakuuluu2.client", "/", "harbour.mitakuuluu2.client", "totalUnreadValue",
-                           &toholed, SLOT(handleMitakuuluu(const QDBusMessage&)));
-
-    if (mitakuuluuConn.isConnected())
-        printf("harbour.mitakuuluu2.client totalUnreadValue Connected\n");
-    else
-        printf("harbour.mitakuuluu2.client totalUnreadValue Not connected\n%s\n", qPrintable(mitakuuluuConn.lastError().message()));
-
-
     /* Silent profile */
 
     static QDBusConnection profileChangedConn = QDBusConnection::sessionBus();
@@ -237,6 +224,7 @@ int main(int argc, char **argv)
     notifications.connect(&notifications, SIGNAL(systemUpdateNotify()), &toholed, SLOT(handleSystemUpdateNotify()));
     notifications.connect(&notifications, SIGNAL(otherNotify()), &toholed, SLOT(handleOtherNotify()));
     notifications.connect(&notifications, SIGNAL(callMissedNotify()), &toholed, SLOT(handleCallMissedNotify()));
+    notifications.connect(&notifications, SIGNAL(mitakuuluuNotify()), &toholed, SLOT(handleMitakuuluu()));
 
     toholed.connect(&toholed, SIGNAL(iDontWantToLiveOnThisPlanet()), &app, SLOT(quit()));
 
