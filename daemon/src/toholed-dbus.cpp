@@ -183,6 +183,15 @@ void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
                         .arg((int) current.minute(), 2, 10, QLatin1Char('0'));
         QByteArray baNow = tNow.toLocal8Bit();
 
+        QVariantMap weather = getCurrentWeather();
+        QString temperature;
+        if (!weather.isEmpty())
+        {
+            temperature = QString("%1").arg(weather["temperature"].toInt());
+            printf("Temperature in %s is %s degrees\n", qPrintable(weather["city"].toString()), qPrintable(temperature));
+            temperature.append("d"); /* to avoid hassle with uniced etc, use 'd' for degree sign as dirty hack */
+        }
+
         int chargeLevel = chargerGetCapacity();
         QString firstCharIndicator;
         if ((chargerConnected && silentProfile && (timerCount & 1)) || (chargerConnected && !silentProfile))
@@ -264,11 +273,12 @@ void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
                 /* Wifi active = w */
                 /* Bluetooth device connected = b */
                 /* Flightmode = F */
-                QString tmp = QString("%1 %2 %3 %4")
+                QString tmp = QString("%1 %2 %3 %4%5")
                         .arg(offlineModeActive ? 'F' : (cellularPowered ? (cellularConnected ? networkType.at(0).toUpper() : networkType.at(0).toLower()) : ' '))
                         .arg(wifiPowered ? (wifiConnected ? 'W' : 'w') : ' ')
                         .arg(bluetoothPowered ? (bluetoothConnected ? 'B' : 'b') : ' ')
-                        .arg((alarmsPresent && showAlarmsPresent) ? "A" : "");
+                        .arg((alarmsPresent && showAlarmsPresent) ? "A" : "")
+                        .arg(temperature);
                 drawSmallText(45, 50, tmp.toLocal8Bit().data(), screenBuffer);
             }
         }
@@ -1655,4 +1665,32 @@ void Toholed::propertyBatteryIsChargingChanged()
     chargerConnected = (propertyBatteryIsCharging->value().toInt() == 1);
     printf("Property \"Battery.IsCharging\" changed; %s\n", chargerConnected ? "Charging" : "Not charging");
     updateDisplay(true);
+}
+
+QVariantMap Toholed::getCurrentWeather()
+{
+    QVariantMap tmp;
+
+    QFile weather("/home/nemo/.local/share/sailfish-weather/weather.json");
+
+    /* If weather file does not exists, return empty variantmap */
+    if (!weather.exists())
+        return tmp;
+
+    /* If the file is not readable, return empty variantmap */
+    if (!weather.open(QFile::ReadOnly | QFile::Text))
+        return tmp;
+
+    QTextStream in(&weather);
+    QString weatherString = in.readAll();
+
+    QJsonDocument weatherJson = QJsonDocument::fromJson(weatherString.toUtf8());
+
+    QJsonObject weatherObject = weatherJson.object();
+    QJsonObject currentLocation = weatherObject["currentLocation"].toObject();
+    tmp.insert("city", currentLocation["city"].toString());
+    QJsonObject currentWeather = currentLocation["weather"].toObject();
+    tmp.insert("temperature", currentWeather["temperature"].toInt());
+
+    return tmp;
 }
