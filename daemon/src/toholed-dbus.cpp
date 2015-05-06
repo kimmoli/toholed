@@ -147,6 +147,8 @@ Toholed::Toholed()
     propertyBatteryIsCharging.reset(new ContextProperty("Battery.IsCharging", this));
     QObject::connect(propertyBatteryIsCharging.data(), SIGNAL(valueChanged()), this, SLOT(propertyBatteryIsChargingChanged()));
 
+    lastTemperature = getCurrentTemperature();
+
     updateDisplay(true);
 }
 
@@ -182,15 +184,6 @@ void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
                         .arg((int) current.hour(), 2, 10, QLatin1Char(' '))
                         .arg((int) current.minute(), 2, 10, QLatin1Char('0'));
         QByteArray baNow = tNow.toLocal8Bit();
-
-        QVariantMap weather = getCurrentWeather();
-        QString temperature;
-        if (!weather.isEmpty())
-        {
-            temperature = QString("%1").arg(weather["temperature"].toInt());
-            printf("Temperature in %s is %s degrees\n", qPrintable(weather["city"].toString()), qPrintable(temperature));
-            temperature.append("d"); /* to avoid hassle with uniced etc, use 'd' for degree sign as dirty hack */
-        }
 
         int chargeLevel = chargerGetCapacity();
         QString firstCharIndicator;
@@ -273,13 +266,13 @@ void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
                 /* Wifi active = w */
                 /* Bluetooth device connected = b */
                 /* Flightmode = F */
-                QString tmp = QString("%1 %2 %3 %4%5")
+                QString tmp = QString("%1 %2 %3 %4 %5")
                         .arg(offlineModeActive ? 'F' : (cellularPowered ? (cellularConnected ? networkType.at(0).toUpper() : networkType.at(0).toLower()) : ' '))
                         .arg(wifiPowered ? (wifiConnected ? 'W' : 'w') : ' ')
                         .arg(bluetoothPowered ? (bluetoothConnected ? 'B' : 'b') : ' ')
                         .arg((alarmsPresent && showAlarmsPresent) ? "A" : "")
-                        .arg(temperature);
-                drawSmallText(45, 50, tmp.toLocal8Bit().data(), screenBuffer);
+                        .arg(lastTemperature);
+                drawSmallText(40, 50, tmp.toLocal8Bit().data(), screenBuffer);
             }
         }
 
@@ -289,7 +282,13 @@ void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
             updateOled(screenBuffer);
 
         if (!timeUpdateOverride)
+        {
             printf("Time now: %s Battery: %s (%d)\n", baNow.data(), babatNow.data(), timerCount );
+
+            /* If we did not get temperature at start, don't retry ever */
+            if (!lastTemperature.isEmpty())
+                lastTemperature = getCurrentTemperature();
+        }
 
         if ((blinks > 0) && blinkOnNotification)
         {
@@ -1667,19 +1666,17 @@ void Toholed::propertyBatteryIsChargingChanged()
     updateDisplay(true);
 }
 
-QVariantMap Toholed::getCurrentWeather()
+QString Toholed::getCurrentTemperature()
 {
-    QVariantMap tmp;
-
     QFile weather("/home/nemo/.local/share/sailfish-weather/weather.json");
 
-    /* If weather file does not exists, return empty variantmap */
+    /* If weather file does not exists, return string */
     if (!weather.exists())
-        return tmp;
+        return QString();
 
-    /* If the file is not readable, return empty variantmap */
+    /* If the file is not readable, return empty string */
     if (!weather.open(QFile::ReadOnly | QFile::Text))
-        return tmp;
+        return QString();
 
     QTextStream in(&weather);
     QString weatherString = in.readAll();
@@ -1688,9 +1685,11 @@ QVariantMap Toholed::getCurrentWeather()
 
     QJsonObject weatherObject = weatherJson.object();
     QJsonObject currentLocation = weatherObject["currentLocation"].toObject();
-    tmp.insert("city", currentLocation["city"].toString());
     QJsonObject currentWeather = currentLocation["weather"].toObject();
-    tmp.insert("temperature", currentWeather["temperature"].toInt());
 
-    return tmp;
+    printf("Temperature in %s is %d degrees (updated %s)\n", qPrintable(currentLocation["city"].toString()),
+            currentWeather["temperature"].toInt(),
+            qPrintable(currentWeather["timestamp"].toString()));
+
+    return QString("%1d").arg(currentWeather["temperature"].toInt());
 }

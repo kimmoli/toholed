@@ -186,7 +186,8 @@ private:
     QScopedPointer<ContextProperty> propertyAlarmPresent;
     QScopedPointer<ContextProperty> propertyBatteryIsCharging;
 
-    QVariantMap getCurrentWeather();
+    QString getCurrentTemperature();
+    QString lastTemperature;
 };
 
 
