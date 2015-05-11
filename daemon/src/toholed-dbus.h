@@ -16,11 +16,7 @@
 #define SERVICE_NAME "com.kimmoli.toholed"
 #define DRAWINGMODELOCKTIMEOUT (30000)
 
-extern "C"
-{
-    #include "iphbd/libiphb.h"
-}
-
+#include "backgroundactivity.h"
 
 /* main class */
 
@@ -35,12 +31,7 @@ public:
     ~Toholed()
     {
         /* Disable everything */
-
-        if(iphbdHandler)
-            (void)iphb_close(iphbdHandler);
-
-        if(iphbNotifier)
-            delete iphbNotifier;
+        delete(activity);
 
         setInterruptEnable(false);
         deinitOled();
@@ -102,10 +93,7 @@ private slots:
     void blinkTimerTimeout( );
     void notificationSend(QString summary, QString body);
 
-    void heartbeatReceived(int sock);
-    void iphbStop();
-    void iphbStart();
-    void iphbChangeMode(bool keepAlive = false);
+    void heartbeatReceived();
 
 private:
     QThread *thread;
@@ -134,12 +122,6 @@ private:
     bool blinkNow;
 
     QMutex mutex;
-
-    iphb_t iphbdHandler;
-    int iphb_fd;
-    QSocketNotifier *iphbNotifier;
-    bool iphbRunning;
-    bool iphbModeKeepAlive;
 
     int gpio_fd;
     int proximity_fd;
@@ -188,6 +170,8 @@ private:
 
     QString getCurrentTemperature();
     QString lastTemperature;
+
+    BackgroundActivity *activity;
 };
 
 
