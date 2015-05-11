@@ -7,6 +7,6 @@
 [submodule "daemon/3rdparty/libdsme"]
 	path = daemon/3rdparty/libdsme
 	url = https://github.com/nemomobile/libdsme.git
-[submodule "daemon\\3rdparty\\nemo-keepalive"]
-	path = daemon\\3rdparty\\nemo-keepalive
+[submodule "daemon/3rdparty/nemo-keepalive"]
+	path = daemon/3rdparty/nemo-keepalive
 	url = https://github.com/nemomobile/nemo-keepalive.git
