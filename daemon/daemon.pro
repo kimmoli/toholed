@@ -7,6 +7,8 @@ QT += dbus
 
 LIBS += -lrt
 
+system(qdbusxml2cpp -p src/mceiface.h:src/mceiface.cpp 3rdparty/nemo-keepalive/lib/mceiface.xml)
+
 target.path = /usr/bin/
 
 systemd.path = /etc/systemd/system/
@@ -34,9 +36,11 @@ message($${DEFINES})
 INSTALLS += target systemd udevrule dbusconf ambience images
 
 INCLUDEPATH += \
+    ./src/ \
     ./3rdparty/libdsme/include/ \
     ./3rdparty/mce-dev/include/ \
-    ./3rdparty/libiphb/src/
+    ./3rdparty/libiphb/src/ \
+    ./3rdparty/nemo-keepalive/lib/
 
 
 SOURCES += \
@@ -53,7 +57,11 @@ SOURCES += \
     src/derp.c \
     3rdparty/libiphb/src/libiphb.c \
     src/notificationmanager.cpp \
-    src/updateTime.c
+    src/updateTime.c \
+    src/mceiface.cpp \
+    3rdparty/nemo-keepalive/lib/backgroundactivity.cpp \
+    3rdparty/nemo-keepalive/lib/backgroundactivity_p.cpp \
+    3rdparty/nemo-keepalive/lib/heartbeat.cpp
 
 HEADERS += \
     3rdparty/libiphb/src/libiphb.h \
@@ -72,7 +80,11 @@ HEADERS += \
     src/derp.h \
     src/charger.h \
     src/notificationmanager.h \
-    src/updateTime.h
+    src/updateTime.h \
+    src/mceiface.h \
+    3rdparty/nemo-keepalive/lib/backgroundactivity.h \
+    3rdparty/nemo-keepalive/lib/backgroundactivity_p.h \
+    3rdparty/nemo-keepalive/lib/heartbeat.h
 
 OTHER_FILES += \
     rpm/toholed.spec \
@@ -80,5 +92,6 @@ OTHER_FILES += \
     config/$${TARGET}.service \
     config/95-$${TARGET}.rules \
     ambience/harbour-ambience-toholed.ambience \
-    ambience/images/harbour-ambience-toholed.jpg
+    ambience/images/harbour-ambience-toholed.jpg \
+    3rdparty/nemo-keepalive/lib/mceiface.xml
 

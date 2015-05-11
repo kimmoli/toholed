@@ -37,11 +37,6 @@
 #include <QColor>
 #include <contextproperty.h>
 
-extern "C"
-{
-    #include "iphbd/libiphb.h"
-}
-
 
 static char screenBuffer[SCREENBUFFERSIZE] = { 0 };
 
@@ -86,29 +81,9 @@ Toholed::Toholed()
     blinkTimerCount = 0;
     blinkNow = false;
 
-    iphbRunning = false;
-    iphbModeKeepAlive = false;
-    iphbdHandler = iphb_open(0);
-
-    if (!iphbdHandler)
-        printf("Error opening iphb\n");
-
-    iphb_fd = iphb_get_fd(iphbdHandler);
-
-    iphbNotifier = new QSocketNotifier(iphb_fd, QSocketNotifier::Read);
-
-    if (!QObject::connect(iphbNotifier, SIGNAL(activated(int)), this, SLOT(heartbeatReceived(int))))
-    {
-        delete iphbNotifier, iphbNotifier = 0;
-        printf("failed to connect iphbNotifier\n");
-    }
-    else
-    {
-        iphbNotifier->setEnabled(false);
-    }
-
-    if (iphbNotifier)
-        printf("iphb initialized succesfully\n");
+    activity = new BackgroundActivity(this);
+    connect(activity, SIGNAL(running()), this, SLOT(heartbeatReceived()));
+    activity->wait(BackgroundActivity::ThirtySeconds);
 
     prevTime = QTime::currentTime();
 
@@ -133,9 +108,6 @@ Toholed::Toholed()
     setVddState(true);
     enableOled();
     setInterruptEnable(true);
-
-    /* Update screen and start iphb */
-    heartbeatReceived(0);
 
     printf("initialisation complete\n");
 
@@ -305,71 +277,15 @@ void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
 
 }
 
-/* iphb wakeup stuff */
+/* nemo-keepalive wakeup stuff */
 
-void Toholed::heartbeatReceived(int sock)
+void Toholed::heartbeatReceived()
 {
-    Q_UNUSED(sock);
-
-    iphbStop();
     timerCount++;
     updateDisplay();
-    iphbStart();
-}
 
-void Toholed::iphbStart()
-{
-    if (iphbRunning)
-        return;
-
-    if (!(iphbdHandler && iphbNotifier))
-    {
-        printf("iphbStart iphbHandler not ok\n");
-        return;
-    }
-
-    time_t unixTime;
-
-    if (iphbModeKeepAlive)
-        unixTime = iphb_wait(iphbdHandler, 0, 1 , 0); /* This should keep the device ~alive */
-    else
-        unixTime = iphb_wait(iphbdHandler, 25, 35 , 0); /* ~30 SEC window for normal operation */
-
-    if (unixTime == (time_t)-1)
-    {
-        printf("iphbStart timer failed\n");
-        return;
-    }
-
-    iphbNotifier->setEnabled(true);
-    iphbRunning = true;
-
-}
-
-void Toholed::iphbStop()
-{
-    if (!iphbRunning)
-        return;
-
-    if (!(iphbdHandler && iphbNotifier))
-    {
-        printf("iphbStop iphbHandler not ok\n");
-        return;
-    }
-
-    iphbNotifier->setEnabled(false);
-
-    (void)iphb_discard_wakeups(iphbdHandler);
-
-    iphbRunning = false;
-
-}
-
-void Toholed::iphbChangeMode(bool keepAlive)
-{
-    iphbStop();
-    iphbModeKeepAlive = keepAlive;
-    iphbStart();
+    /* Wait for next 30 sec */
+    activity->wait();
 }
 
 /* DBus Exposed call methods */
@@ -1276,10 +1192,12 @@ void Toholed::handleAlarm(const QDBusMessage& msg)
 
 void Toholed::blinkTimerTimeout( )
 {
+    activity->setState(BackgroundActivity::Running);
+
     if (!oledInitDone || !blinkOnNotification)
     {
         blinkTimer->stop();
-        iphbChangeMode(false);
+        activity->wait();
         return;
     }
 
@@ -1300,12 +1218,9 @@ void Toholed::blinkTimerTimeout( )
     if (blinkTimerCount <= 0 && !blinkNow)
     {
         blinkTimer->stop();
-        iphbChangeMode(false);
+        activity->wait();
         return;
     }
-
-    if (!iphbModeKeepAlive)
-        iphbChangeMode(true);
 }
 
 void Toholed::handleNetworkRegistration(const QDBusMessage& msg)
