@@ -73,6 +73,7 @@ void TohoSettings::readSettings()
     m_displayOffWhenMainActive = settings.value("displayOffWhenMainActive", false).toBool();
     m_analogClockFace = settings.value("analogClockFace", false).toBool();
     m_showAlarmsPresent = settings.value("showAlarmsPresent", true).toBool();
+    m_showCurrentTemperature = settings.value("showCurrentTemperature", true).toBool();
     settings.endGroup();
 
     emit blinkChanged();
@@ -82,6 +83,7 @@ void TohoSettings::readSettings()
     emit displayOffWhenMainActiveChanged();
     emit analogClockFaceChanged();
     emit showAlarmsPresentChanged();
+    emit showCurrentTemperatureChanged();
 }
 
 TohoSettings::~TohoSettings()

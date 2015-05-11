@@ -165,6 +165,18 @@ Page
                 }
             }
 
+            TextSwitch
+            {
+                text: "Show current temperature"
+                description: "Show temperature of current location"
+                checked: tohosettings.showCurrentTemperature
+                automaticCheck: false
+                onClicked:
+                {
+                    tohosettings.showCurrentTemperature = !tohosettings.showCurrentTemperature
+                    tohosettings.writeSettings("showCurrentTemperature", tohosettings.showCurrentTemperature)
+                }
+            }
 
             SectionHeader
             {

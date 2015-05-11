@@ -271,7 +271,7 @@ void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
                         .arg(wifiPowered ? (wifiConnected ? 'W' : 'w') : ' ')
                         .arg(bluetoothPowered ? (bluetoothConnected ? 'B' : 'b') : ' ')
                         .arg((alarmsPresent && showAlarmsPresent) ? "A" : "")
-                        .arg(lastTemperature);
+                        .arg(showCurrentTemperature ? lastTemperature : "");
                 drawSmallText(40, 50, tmp.toLocal8Bit().data(), screenBuffer);
             }
         }
@@ -286,7 +286,7 @@ void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
             printf("Time now: %s Battery: %s (%d)\n", baNow.data(), babatNow.data(), timerCount );
 
             /* If we did not get temperature at start, don't retry ever */
-            if (!lastTemperature.isEmpty())
+            if (!lastTemperature.isEmpty() && showCurrentTemperature)
                 lastTemperature = getCurrentTemperature();
         }
 
@@ -390,6 +390,7 @@ void Toholed::reloadSettings()
     displayOffWhenMainActive = settings.value("displayOffWhenMainActive", false).toBool();
     analogClockFace = settings.value("analogClockFace", false).toBool();
     showAlarmsPresent = settings.value("showAlarmsPresent", true).toBool();
+    showCurrentTemperature = settings.value("showCurrentTemperature", true).toBool();
     settings.endGroup();
 }
 
@@ -428,6 +429,7 @@ QString Toholed::setSettings(const QDBusMessage &msg)
     displayOffWhenMainActive = map.value("displayOffWhenMainActive", displayOffWhenMainActive).toBool();
     analogClockFace = map.value("analogClockFace", analogClockFace ).toBool();
     showAlarmsPresent = map.value("showAlarmsPresent", showAlarmsPresent ).toBool();
+    showCurrentTemperature = map.value("showCurrentTemperature", showCurrentTemperature).toBool();
 
     ScreenCaptureOnProximity = map.value("ssp", ScreenCaptureOnProximity).toBool();
     ScreenCaptureOnProximityStorePath = map.value("sspPath", ScreenCaptureOnProximityStorePath).toString();
@@ -441,6 +443,7 @@ QString Toholed::setSettings(const QDBusMessage &msg)
     settings.setValue("displayOffWhenMainActive", displayOffWhenMainActive);
     settings.setValue("analogClockFace", analogClockFace);
     settings.setValue("showAlarmsPresent", showAlarmsPresent);
+    settings.setValue("showCurrentTemperature", showCurrentTemperature);
     settings.endGroup();
 
     if (proximityEnabled || alsEnabled)

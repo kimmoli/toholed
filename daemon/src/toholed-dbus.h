@@ -161,6 +161,7 @@ private:
     bool displayOffWhenMainActive;
     bool analogClockFace;
     bool showAlarmsPresent;
+    bool showCurrentTemperature;
 
     QString getCurrentProfile();
     void getCurrentNetworkConnectionStates();

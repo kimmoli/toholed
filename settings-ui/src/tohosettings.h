@@ -25,7 +25,7 @@ class TohoSettings : public QObject
     Q_PROPERTY(bool displayOffWhenMainActive READ readDisplayOffWhenMainActive WRITE writeDisplayOffWhenMainActive NOTIFY displayOffWhenMainActiveChanged())
     Q_PROPERTY(bool analogClockFace READ readAnalogClockFace WRITE writeAnalogClockFace NOTIFY analogClockFaceChanged())
     Q_PROPERTY(bool showAlarmsPresent READ readShowAlarmsPresent WRITE writeShowAlarmsPresent NOTIFY showAlarmsPresentChanged())
-
+    Q_PROPERTY(bool showCurrentTemperature READ readShowCurrentTemperature WRITE writeShowCurrentTemperature NOTIFY showCurrentTemperatureChanged())
 
 public:
     explicit TohoSettings(QObject *parent = 0);
@@ -40,6 +40,7 @@ public:
     void writeDisplayOffWhenMainActive(bool x) { m_displayOffWhenMainActive = x; emit displayOffWhenMainActiveChanged(); }
     void writeAnalogClockFace(bool x) { m_analogClockFace = x; emit analogClockFaceChanged(); }
     void writeShowAlarmsPresent(bool x) { m_showAlarmsPresent = x; emit showAlarmsPresentChanged(); }
+    void writeShowCurrentTemperature(bool x) { m_showCurrentTemperature = x; emit showCurrentTemperatureChanged(); }
 
     bool readBlink() { return m_blink; }
     bool readAls() { return m_als; }
@@ -48,6 +49,7 @@ public:
     bool readDisplayOffWhenMainActive() { return m_displayOffWhenMainActive; }
     bool readAnalogClockFace() { return m_analogClockFace; }
     bool readShowAlarmsPresent() { return m_showAlarmsPresent; }
+    bool readShowCurrentTemperature() { return m_showCurrentTemperature; }
 
     Q_INVOKABLE void readSettings();
     Q_INVOKABLE void writeSettings(QString key, bool value);
@@ -68,6 +70,7 @@ signals:
     void displayOffWhenMainActiveChanged();
     void analogClockFaceChanged();
     void showAlarmsPresentChanged();
+    void showCurrentTemperatureChanged();
     void screenShotChanged();
 
 private:
@@ -78,6 +81,7 @@ private:
     bool m_displayOffWhenMainActive;
     bool m_analogClockFace;
     bool m_showAlarmsPresent;
+    bool m_showCurrentTemperature;
 };
 
 
