@@ -45,7 +45,8 @@ Toholed::Toholed()
 {
     oledInitDone = false;
     vddEnabled = false;
-    interruptsEnabled = false;
+    gpioInterruptEnabled = false;
+    proximityInterruptEnabled = false;
     timerCount = 0;
     prevBrightness = BRIGHTNESS_MED;
     prevProx = 0;
@@ -81,6 +82,9 @@ Toholed::Toholed()
     blinkTimerCount = 0;
     blinkNow = false;
 
+    screenshotFilter = new QTimer(this);
+    screenshotFilter->setSingleShot(true);
+
     activity = new BackgroundActivity(this);
     connect(activity, SIGNAL(running()), this, SLOT(heartbeatReceived()));
     activity->wait(BackgroundActivity::ThirtySeconds);
@@ -89,25 +93,13 @@ Toholed::Toholed()
 
     memset(screenBuffer, 0x00, SCREENBUFFERSIZE);
 
-    thread = new QThread();
-    worker = new Worker();
-
-    worker->moveToThread(thread);
-    connect(worker, SIGNAL(gpioInterruptCaptured()), this, SLOT(handleGpioInterrupt()));
-    connect(worker, SIGNAL(proxInterruptCaptured()), this, SLOT(handleProxInterrupt()));
-    connect(worker, SIGNAL(workRequested()), thread, SLOT(start()));
-    connect(thread, SIGNAL(started()), worker, SLOT(doWork()));
-    connect(worker, SIGNAL(finished()), thread, SLOT(quit()), Qt::DirectConnection);
-
-    interruptsEnabled = false;
-
     /* Get the current profile status */
     silentProfile = (getCurrentProfile() == "silent");
 
     /* do this automatically at startup */
     setVddState(true);
     enableOled();
-    setInterruptEnable(true);
+    setInterruptEnable(true, ScreenCaptureOnProximity);
 
     printf("initialisation complete\n");
 
@@ -410,6 +402,8 @@ QString Toholed::setSettings(const QDBusMessage &msg)
         tsl2772_enableInterrupts(fd);
         tsl2772_closeComms(fd);
     }
+
+    setInterruptEnable(true, ScreenCaptureOnProximity);
 
     updateDisplay(true);
 
@@ -724,22 +718,31 @@ void Toholed::enableOled()
  */
 
 
-int Toholed::setInterruptEnable(bool turn)
+void Toholed::setInterruptEnable(bool enableGpio, bool enableProximity)
 {
     int fd;
 
-    if(turn)
+    if(enableGpio && !gpioInterruptEnabled)
     {
         mutex.lock();
 
-        printf("Enabling interrupts\n");
+        gpioThread = new QThread();
+        gpioWorker = new Worker();
+
+        gpioWorker->moveToThread(gpioThread);
+        connect(gpioWorker, SIGNAL(interruptCaptured()), this, SLOT(handleGpioInterrupt()));
+        connect(gpioWorker, SIGNAL(workRequested()), gpioThread, SLOT(start()));
+        connect(gpioThread, SIGNAL(started()), gpioWorker, SLOT(doWork()));
+        connect(gpioWorker, SIGNAL(finished()), gpioThread, SLOT(quit()), Qt::DirectConnection);
+
+        printf("Enabling gpio interrupt\n");
 
         fd = tsl2772_initComms(0x39);
         if (fd <0)
         {
             printf("Failed to start communication with TSL2772\n");
             mutex.unlock();
-            return -1;
+            return;
         }
         tsl2772_initialize(fd);
         tsl2772_clearInterrupt(fd);
@@ -750,54 +753,125 @@ int Toholed::setInterruptEnable(bool turn)
         gpio_fd = getTohInterrupt();
 
         if (gpio_fd > -1)
-            printf("TOH Interrupt registered\n");
+            printf("gpio Interrupt registered\n");
+
+        if (gpio_fd > -1)
+        {
+            gpioWorker->abort();
+            gpioThread->wait(); // If the thread is not running, this will immediately return.
+
+            gpioWorker->requestWork(gpio_fd, Worker::PollPri);
+
+            printf("Worker for gpio interrupt started\n");
+
+            gpioInterruptEnabled = true;
+            mutex.unlock();
+
+            return;
+        }
+        else
+        {
+            printf("Failed to register gpio interrupt\n");
+            gpioInterruptEnabled = false;
+
+            delete gpioThread;
+            delete gpioWorker;
+            gpioThread = 0;
+            gpioWorker = 0;
+
+            mutex.unlock();
+            return;
+        }
+    }
+    else if (!enableGpio && gpioInterruptEnabled)
+    {
+        printf("Disabling gpio interrupt\n");
+
+        mutex.lock();
+
+        gpioInterruptEnabled = false;
+
+        gpioWorker->abort();
+        gpioThread->wait();
+        delete gpioThread;
+        delete gpioWorker;
+        gpioThread = 0;
+        gpioWorker = 0;
+
+        releaseTohInterrupt(gpio_fd);
+
+        mutex.unlock();
+        return;
+    }
+
+    if(enableProximity && !proximityInterruptEnabled)
+    {
+        mutex.lock();
+
+        proximityThread = new QThread();
+        proximityWorker = new Worker();
+
+        proximityWorker->moveToThread(proximityThread);
+        connect(proximityWorker, SIGNAL(interruptCaptured()), this, SLOT(handleProxInterrupt()));
+        connect(proximityWorker, SIGNAL(workRequested()), proximityThread, SLOT(start()));
+        connect(proximityThread, SIGNAL(started()), proximityWorker, SLOT(doWork()));
+        connect(proximityWorker, SIGNAL(finished()), proximityThread, SLOT(quit()), Qt::DirectConnection);
+
+        printf("Enabling proximity interrupt\n");
 
         proximity_fd = getProximityInterrupt();
 
         if (proximity_fd > -1)
             printf("Proximity Interrupt registered\n");
 
-        if ((gpio_fd > -1) && (proximity_fd > -1))
+        if (proximity_fd > -1)
         {
-            worker->abort();
-            thread->wait(); // If the thread is not running, this will immediately return.
+            proximityWorker->abort();
+            proximityThread->wait(); // If the thread is not running, this will immediately return.
 
-            worker->requestWork(gpio_fd, proximity_fd);
+            proximityWorker->requestWork(proximity_fd, Worker::PollIn);
 
-            printf("Worker started\n");
+            printf("Worker for proximity interrupt started\n");
 
-            interruptsEnabled = true;
+            proximityInterruptEnabled = true;
             mutex.unlock();
 
-            return 1;
+            return;
         }
         else
         {
-            printf("Failed to register TOH or proximity interrupt\n");
-            interruptsEnabled = false;
+            printf("Failed to register proximity interrupt\n");
+            proximityInterruptEnabled = false;
+
+            delete proximityThread;
+            delete proximityWorker;
+            proximityThread = 0;
+            proximityWorker = 0;
+
             mutex.unlock();
-            return -1;
+            return ;
         }
     }
-    else
+    else if (!enableProximity && proximityInterruptEnabled)
     {
+        printf("Disabling proximity interrupt\n");
 
-        printf("Disabling interrupts\n");
+        mutex.lock();
 
-        interruptsEnabled = false;
+        proximityInterruptEnabled = false;
 
-        worker->abort();
-        thread->wait();
-        delete thread;
-        delete worker;
+        proximityWorker->abort();
+        proximityThread->wait();
+        delete proximityThread;
+        delete proximityWorker;
+        proximityThread = 0;
+        proximityWorker = 0;
 
-        releaseTohInterrupt(gpio_fd);
         releaseProximityInterrupt(proximity_fd);
 
         mutex.unlock();
-        return 1;
+        return;
     }
-
 }
 
 /* Tweetian handler */
@@ -947,6 +1021,8 @@ void Toholed::handleGpioInterrupt()
     unsigned long alsC0, alsC1, prox;
     unsigned int newBrightness = BRIGHTNESS_MED;
 
+    activity->setState(BackgroundActivity::Running);
+
     mutex.lock();
 
     fd = tsl2772_initComms(0x39);
@@ -954,6 +1030,7 @@ void Toholed::handleGpioInterrupt()
     {
         printf("failed to start communication with TSL2772\n");
         mutex.unlock();
+        activity->wait();
         return;
     }
     tsl2772_disableInterrupts(fd);
@@ -1026,6 +1103,7 @@ void Toholed::handleGpioInterrupt()
     tsl2772_closeComms(fd);
 
     mutex.unlock();
+    activity->wait();
 
 }
 
@@ -1033,12 +1111,19 @@ void Toholed::handleGpioInterrupt()
 
 void Toholed::handleProxInterrupt()
 {
-    bool prox = getProximityStatus();
+    printf("Proximity interrupt\n");
 
-    if (prox && ScreenCaptureOnProximity) /* If enabled, we save screen-capture on front proximity interrupt */
+    if (!ScreenCaptureOnProximity) /* We should not be here if this is disabled */
+        return;
+
+    if (screenshotFilter->isActive()) /* Filter out duplicates */
+        return;
+
+    if (getProximityStatus()) /* If enabled, we save screen-capture on front proximity interrupt */
     {
-        printf("Proximity interrupt - proximity, taking screenshot\n");
+        printf("Taking screenshot\n");
 
+        screenshotFilter->start(1000); /* Filter for 1 sec */
 
         QDate ssDate = QDate::currentDate();
         QTime ssTime = QTime::currentTime();

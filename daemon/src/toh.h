@@ -9,4 +9,4 @@ unsigned int getEepromConfig(int number);
 
 #define GPIO_INT "67"
 #define GPIO_INT_EDGE "falling"
-#define POLL_TIMEOUT 600000
+#define POLL_TIMEOUT 1000

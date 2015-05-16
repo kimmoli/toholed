@@ -3,6 +3,16 @@
 
 #include <QObject>
 #include <QMutex>
+#include <QTimer>
+#include <QEventLoop>
+
+#include <QThread>
+#include <QtDBus/QtDBus>
+#include <QDBusConnection>
+#include <QDBusMessage>
+
+#include <poll.h>
+#include "toh.h"
 
 class Worker : public QObject
 {
@@ -10,21 +20,27 @@ class Worker : public QObject
 
 public:
     explicit Worker(QObject *parent = 0);
-    void requestWork(int gpio_fd, int proximity_fd);
+    void requestWork(int fd, short events);
     void abort();
+
+    enum event
+    {
+        PollPri = POLLPRI,
+        PollIn = POLLIN,
+        PollOut = POLLOUT
+    };
 
 private:
     bool _abort;
     bool _working;
-    int _gpio_fd;
-    int _proximity_fd;
+    int _fd;
+    short _events;
 
     QMutex mutex;
 
 signals:
     void workRequested();
-    void gpioInterruptCaptured();
-    void proxInterruptCaptured();
+    void interruptCaptured();
     void finished();
 
 public slots:

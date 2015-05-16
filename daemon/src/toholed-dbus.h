@@ -33,7 +33,7 @@ public:
         /* Disable everything */
         delete(activity);
 
-        setInterruptEnable(false);
+        setInterruptEnable(false, false);
         deinitOled();
         setVddState(false);
         printf("Toholed terminated!\n");
@@ -56,7 +56,7 @@ private slots:
     void reloadSettings();
 
     /* interrupts */
-    int setInterruptEnable(bool turn);
+    void setInterruptEnable(bool enableGpio, bool enableProximity);
     void handleGpioInterrupt();
     void handleProxInterrupt();
 
@@ -96,14 +96,17 @@ private slots:
     void heartbeatReceived();
 
 private:
-    QThread *thread;
-    Worker *worker;
+    QThread *gpioThread;
+    Worker *gpioWorker;
+    QThread *proximityThread;
+    Worker *proximityWorker;
 
     bool ScreenCaptureOnProximity;
 
     bool oledInitDone;
     bool vddEnabled;
-    bool interruptsEnabled;
+    bool gpioInterruptEnabled;
+    bool proximityInterruptEnabled;
 
     unsigned int prevBrightness;
     unsigned int prevProx;
@@ -120,6 +123,8 @@ private:
     int blinkTimerCount;
     QTimer *blinkTimer;
     bool blinkNow;
+
+    QTimer *screenshotFilter;
 
     QMutex mutex;
 

@@ -1,14 +1,4 @@
 #include "worker.h"
-#include <QTimer>
-#include <QEventLoop>
-#include <poll.h>
-#include "toh.h"
-
-#include <QThread>
-#include <QtDBus/QtDBus>
-#include <QDBusConnection>
-#include <QDBusMessage>
-
 
 Worker::Worker(QObject *parent) :
     QObject(parent)
@@ -17,13 +7,13 @@ Worker::Worker(QObject *parent) :
     _abort = false;
 }
 
-void Worker::requestWork(int gpio_fd, int proximity_fd)
+void Worker::requestWork(int fd, short events)
 {
     mutex.lock();
     _working = true;
-    _gpio_fd = gpio_fd;
-    _proximity_fd = proximity_fd;
+    _fd = fd;
     _abort = false;
+    _events = events;
 
     mutex.unlock();
 
@@ -42,8 +32,8 @@ void Worker::abort()
 
 void Worker::doWork()
 {
-    struct pollfd fdset[2]; // 2
-    int nfds = 2; // 2
+    struct pollfd fdset[1];
+    int nfds = 1;
 
     int timeout;
     int dummy = 0;
@@ -66,25 +56,16 @@ void Worker::doWork()
 
         memset((void*)fdset, 0, sizeof(fdset));
 
-        fdset[0].fd = _gpio_fd;
-        fdset[0].events = POLLPRI;
-        fdset[1].fd = _proximity_fd;
-        fdset[1].events = POLLIN;
+        fdset[0].fd = _fd;
+        fdset[0].events = _events;
 
         poll(fdset, nfds, timeout);
 
-        if (fdset[0].revents & POLLPRI)
+        if (fdset[0].revents & _events)
         {
             dummy += read(fdset[0].fd, buf, 20);
-            emit gpioInterruptCaptured();
+            emit interruptCaptured();
         }
-        if (fdset[1].revents != 0)
-        {
-            dummy += read(fdset[1].fd, buf, 20);
-            emit proxInterruptCaptured();
-        }
-
-
     }
 
     mutex.lock();
