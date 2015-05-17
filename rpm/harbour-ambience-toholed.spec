@@ -61,9 +61,8 @@ desktop-file-install --delete-original       \
 %config /etc/systemd/system/harbour-toholed.service
 %config /etc/udev/rules.d/95-harbour-toholed.rules
 %config /etc/dbus-1/system.d/harbour-toholed.conf
-%{_datadir}/ambience/%{name}
 %{_datadir}/ambience/%{name}/%{name}.ambience
-%{_datadir}/ambience/%{name}/images/*
+%{_datadir}/ambience/%{name}/images/%{name}.jpg
 %{_datadir}/harbour-toholed-settings-ui
 %{_datadir}/applications/harbour-toholed-settings-ui.desktop
 %{_datadir}/icons/hicolor/86x86/apps/harbour-toholed-settings-ui.png

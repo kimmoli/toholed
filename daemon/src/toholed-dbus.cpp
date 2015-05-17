@@ -25,6 +25,7 @@
 #include <poll.h>
 
 #include "toholed-dbus.h"
+
 #include "toholed.h"
 #include "toh.h"
 #include "oled.h"
@@ -1314,7 +1315,7 @@ void Toholed::handleNetworkRegistration(const QDBusMessage& msg)
     QVariant val = args.at(1).value<QDBusVariant>().variant();
 
     printf("NetworkRegistration: %s changed: ", qPrintable(args.at(0).toString()) );
-    if (val.type() == 10)
+    if (val.type() == QVariant::String)
     {
         printf("%s\n", qPrintable(val.toString()));
     }

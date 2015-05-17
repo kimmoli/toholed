@@ -1,5 +1,7 @@
 #include "worker.h"
 
+const int Worker::timeout = 1000;
+
 Worker::Worker(QObject *parent) :
     QObject(parent)
 {
@@ -35,11 +37,8 @@ void Worker::doWork()
     struct pollfd fdset[1];
     int nfds = 1;
 
-    int timeout;
     int dummy = 0;
     char *buf[20];
-
-    timeout = POLL_TIMEOUT;
 
     for (;;)
     {

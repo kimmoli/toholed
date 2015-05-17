@@ -12,7 +12,6 @@
 #include <QDBusMessage>
 
 #include <poll.h>
-#include "toh.h"
 
 class Worker : public QObject
 {
@@ -37,6 +36,8 @@ private:
     short _events;
 
     QMutex mutex;
+
+    static const int timeout;
 
 signals:
     void workRequested();
