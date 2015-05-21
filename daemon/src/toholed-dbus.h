@@ -10,6 +10,7 @@
 #include <QElapsedTimer>
 #include "oled.h"
 #include "worker.h"
+#include "weather.h"
 
 #include <contextproperty.h>
 
@@ -95,6 +96,8 @@ private slots:
 
     void heartbeatReceived();
 
+    void weatherChanged(QString newWeather);
+
 private:
     QThread *gpioThread;
     Worker *gpioWorker;
@@ -174,10 +177,11 @@ private:
     QScopedPointer<ContextProperty> propertyAlarmPresent;
     QScopedPointer<ContextProperty> propertyBatteryIsCharging;
 
-    QString getCurrentTemperature();
     QString lastTemperature;
 
     BackgroundActivity *activity;
+
+    Weather *weather;
 };
 
 

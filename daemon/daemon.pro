@@ -61,7 +61,8 @@ SOURCES += \
     src/mceiface.cpp \
     3rdparty/nemo-keepalive/lib/backgroundactivity.cpp \
     3rdparty/nemo-keepalive/lib/backgroundactivity_p.cpp \
-    3rdparty/nemo-keepalive/lib/heartbeat.cpp
+    3rdparty/nemo-keepalive/lib/heartbeat.cpp \
+    src/weather.cpp
 
 HEADERS += \
     3rdparty/libiphb/src/libiphb.h \
@@ -84,7 +85,8 @@ HEADERS += \
     src/mceiface.h \
     3rdparty/nemo-keepalive/lib/backgroundactivity.h \
     3rdparty/nemo-keepalive/lib/backgroundactivity_p.h \
-    3rdparty/nemo-keepalive/lib/heartbeat.h
+    3rdparty/nemo-keepalive/lib/heartbeat.h \
+    src/weather.h
 
 OTHER_FILES += \
     rpm/toholed.spec \

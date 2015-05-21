@@ -74,6 +74,7 @@ Toholed::Toholed()
     lockDrawingMode = false;
     lockDrawingModeAppName = QString();
     alarmsPresent = false;
+    lastTemperature = QString();
 
     reloadSettings();
 
@@ -112,7 +113,14 @@ Toholed::Toholed()
     propertyBatteryIsCharging.reset(new ContextProperty("Battery.IsCharging", this));
     QObject::connect(propertyBatteryIsCharging.data(), SIGNAL(valueChanged()), this, SLOT(propertyBatteryIsChargingChanged()));
 
-    lastTemperature = getCurrentTemperature();
+    weather = new Weather();
+    QObject::connect(weather, SIGNAL(weatherUpdated(QString)), this, SLOT(weatherChanged(QString)));
+
+    if (showCurrentTemperature)
+    {
+        weather->triggerUpdate();
+        weather->startWatching();
+    }
 
     updateDisplay(true);
 }
@@ -249,10 +257,6 @@ void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
         if (!timeUpdateOverride)
         {
             printf("Time now: %s Battery: %s (%d)\n", baNow.data(), babatNow.data(), timerCount );
-
-            /* If we did not get temperature at start, don't retry ever */
-            if (!lastTemperature.isEmpty() && showCurrentTemperature)
-                lastTemperature = getCurrentTemperature();
         }
 
         if ((blinks > 0) && blinkOnNotification)
@@ -405,6 +409,11 @@ QString Toholed::setSettings(const QDBusMessage &msg)
     }
 
     setInterruptEnable(true, ScreenCaptureOnProximity);
+
+    if (showCurrentTemperature)
+        weather->startWatching();
+    else
+        weather->stopWatching();
 
     updateDisplay(true);
 
@@ -1670,30 +1679,8 @@ void Toholed::propertyBatteryIsChargingChanged()
     updateDisplay(true);
 }
 
-QString Toholed::getCurrentTemperature()
+void Toholed::weatherChanged(QString newWeather)
 {
-    QFile weather("/home/nemo/.local/share/sailfish-weather/weather.json");
-
-    /* If weather file does not exists, return string */
-    if (!weather.exists())
-        return QString();
-
-    /* If the file is not readable, return empty string */
-    if (!weather.open(QFile::ReadOnly | QFile::Text))
-        return QString();
-
-    QTextStream in(&weather);
-    QString weatherString = in.readAll();
-
-    QJsonDocument weatherJson = QJsonDocument::fromJson(weatherString.toUtf8());
-
-    QJsonObject weatherObject = weatherJson.object();
-    QJsonObject currentLocation = weatherObject["currentLocation"].toObject();
-    QJsonObject currentWeather = currentLocation["weather"].toObject();
-
-    printf("Temperature in %s is %d degrees (updated %s)\n", qPrintable(currentLocation["city"].toString()),
-            currentWeather["temperature"].toInt(),
-            qPrintable(currentWeather["timestamp"].toString()));
-
-    return QString("%1d").arg(currentWeather["temperature"].toInt());
+    lastTemperature = newWeather;
+    updateDisplay(true);
 }
