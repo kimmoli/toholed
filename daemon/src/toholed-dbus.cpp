@@ -411,9 +411,14 @@ QString Toholed::setSettings(const QDBusMessage &msg)
     setInterruptEnable(true, ScreenCaptureOnProximity);
 
     if (showCurrentTemperature)
+    {
+        weather->triggerUpdate();
         weather->startWatching();
+    }
     else
+    {
         weather->stopWatching();
+    }
 
     updateDisplay(true);
 
