@@ -1,10 +1,12 @@
 #include "weather.h"
 
-const QString Weather::_weatherFile = "/home/nemo/.local/share/sailfish-weather/weather.json";
+const QString Weather::_weatherSailfish = "/home/nemo/.local/share/sailfish-weather/weather.json";
+const QString Weather::_weatherMeecast = "/home/nemo/.cache/harbour-meecast/current.xml";
 
 Weather::Weather(QObject *parent) :
     QObject(parent), watching(false)
 {
+    _timestamp = 0;
 }
 
 Weather::~Weather()
@@ -17,20 +19,30 @@ bool Weather::startWatching()
     if (watching)
         return true;
 
-    QFile weather(_weatherFile);
+    _weatherSailfishFile.setFileName(_weatherSailfish);
 
     /* If weather file does not exists, return string */
-    if (!weather.exists())
-        return false;
+    if (_weatherSailfishFile.exists()) {
+        _weatherSailfishNotifier = new QFileSystemWatcher(QStringList() << _weatherSailfish, this);
 
-    _weatherFileNotifier = new QFileSystemWatcher(QStringList() << _weatherFile, this);
+        connect(_weatherSailfishNotifier, SIGNAL(fileChanged(QString)), this, SLOT(processSailfish(QString)));
 
-    connect(_weatherFileNotifier, SIGNAL(fileChanged(QString)), this, SLOT(processFile(QString)));
+        watching = true;
+        printf("Started watching Sailfish weather changes.\n");
+    }
 
-    watching = true;
-    printf("Started watching weather changes.\n");
+    _weatherMeecastFile.setFileName(_weatherMeecast);
 
-    return true;
+    if (_weatherMeecastFile.exists()) {
+        _weatherMeecastNotifier = new QFileSystemWatcher(QStringList() << _weatherMeecast, this);
+
+        connect(_weatherMeecastNotifier, SIGNAL(fileChanged(QString)), this, SLOT(processMeecast(QString)));
+
+        watching = true;
+        printf("Started watching Meecast weather changes.\n");
+    }
+
+    return watching;
 }
 
 void Weather::stopWatching()
@@ -40,29 +52,38 @@ void Weather::stopWatching()
 
     watching = false;
 
-    _weatherFileNotifier->disconnect(SIGNAL(fileChanged(QString)));
-    delete _weatherFileNotifier;
-    _weatherFileNotifier = 0;
+    if (_weatherSailfishNotifier) {
+        _weatherSailfishNotifier->disconnect(SIGNAL(fileChanged(QString)));
+        delete _weatherSailfishNotifier;
+        _weatherSailfishNotifier = 0;
+    }
+
+    if (_weatherMeecastNotifier) {
+        _weatherMeecastNotifier->disconnect(SIGNAL(fileChanged(QString)));
+        delete _weatherMeecastNotifier;
+        _weatherMeecastNotifier = 0;
+    }
 
     printf("Stopped watching weather changes.\n");
 }
 
 void Weather::triggerUpdate()
 {
-    processFile(_weatherFile);
+    processSailfish(_weatherSailfish);
+    processMeecast(_weatherMeecast);
 }
 
-void Weather::processFile(QString filename)
+void Weather::processSailfish(QString filename)
 {
     QFile weather(filename);
 
-    if (!weather.exists())
+    if (!weather.exists() && !_weatherMeecastFile.exists())
     {
         stopWatching();
         return;
     }
 
-    if (!weather.open(QFile::ReadOnly | QFile::Text))
+    if (!weather.open(QFile::ReadOnly | QFile::Text) && !_weatherMeecastFile.exists())
     {
         stopWatching();
         return;
@@ -83,10 +104,60 @@ void Weather::processFile(QString filename)
     QDateTime timestamp = QDateTime::fromString(currentWeather["timestamp"].toString(), Qt::ISODate);
     timestamp.setTimeSpec(Qt::UTC);
 
-    printf("Temperature in %s is %d degrees (updated %s)\n", qPrintable(currentLocation["city"].toString()),
-            currentWeather["temperature"].toInt(),
-            qPrintable(timestamp.toLocalTime().toString(Qt::SystemLocaleLongDate)));
+    if (timestamp.toTime_t() > _timestamp) {
+        _timestamp = timestamp.toTime_t();
 
-    emit weatherUpdated(QString("%1d").arg(currentWeather["temperature"].toInt()));
+        printf("Temperature in %s is %d degrees (updated %s)\n", qPrintable(currentLocation["city"].toString()),
+                currentWeather["temperature"].toInt(),
+                qPrintable(timestamp.toLocalTime().toString(Qt::SystemLocaleLongDate)));
+
+        emit weatherUpdated(QString("%1d").arg(currentWeather["temperature"].toInt()));
+    }
+}
+
+void Weather::processMeecast(QString filename)
+{
+    QFile weather(filename);
+
+    if (!weather.exists() && !_weatherSailfishFile.exists())
+    {
+        stopWatching();
+        return;
+    }
+
+    if (!weather.open(QFile::ReadOnly | QFile::Text) && !_weatherSailfishFile.exists())
+    {
+        stopWatching();
+        return;
+    }
+
+    QXmlQuery query;
+    query.setFocus(&weather);
+    QString endTimestamp;
+    query.setQuery("/meecast/station/period[@current=\"true\"]/@end/string()");
+    query.evaluateTo(&endTimestamp);
+    endTimestamp = endTimestamp.trimmed();
+
+    if (endTimestamp.toUInt() > _timestamp) {
+        _timestamp = endTimestamp.toUInt();
+
+        QString temperature;
+        query.setQuery("/meecast/station/period[@current=\"true\"]/temperature/string()");
+        query.evaluateTo(&temperature);
+        temperature = temperature.trimmed();
+
+        QString station;
+        query.setQuery("/meecast/station/@name/string()");
+        query.evaluateTo(&station);
+        station = station.trimmed();
+
+        printf("Temperature in %s is %d degrees (updated %s)\n", qPrintable(station),
+                temperature.toInt(),
+                qPrintable(QDateTime::fromTime_t(_timestamp).toString(Qt::SystemLocaleLongDate)));
+
+        emit weatherUpdated(QString("%1d").arg(temperature.toInt()));
+    }
+
+    weather.close();
 }
 
