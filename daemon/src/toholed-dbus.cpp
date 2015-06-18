@@ -195,6 +195,11 @@ void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
                 drawIcon(110, 33, TWEET, screenBuffer);
             if (iconIRC)
                 drawIcon(110, 50, IRC, screenBuffer);
+            else if (showCurrentTemperature)
+            {
+                QString temp = QString("%1").arg(lastTemperature);
+                drawSmallText(100, 50, temp.toLocal8Bit().data(), screenBuffer);
+            }
 
             /* Network type indicator is coded in pienifontti, g=2G, u=3G, l=4G (gms, umts, lte) */
             /* Wifi active = w */
