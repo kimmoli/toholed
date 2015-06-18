@@ -26,6 +26,8 @@ BuildRequires:  pkgconfig(Qt5Qml)
 BuildRequires:  pkgconfig(libiphb)
 BuildRequires:  pkgconfig(contextkit-statefs)
 BuildRequires:  pkgconfig(sailfishapp) >= 0.0.10
+BuildRequires:  pkgconfig(Qt5Xml)
+BuildRequires:  pkgconfig(Qt5XmlPatterns)
 BuildRequires:  desktop-file-utils
 
 Requires:   ambienced
