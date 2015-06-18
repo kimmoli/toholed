@@ -75,6 +75,7 @@ Toholed::Toholed()
     lockDrawingModeAppName = QString();
     alarmsPresent = false;
     lastTemperature = QString();
+    gpioInterruptCounter = 0;
 
     reloadSettings();
 
@@ -1037,6 +1038,43 @@ void Toholed::handleGpioInterrupt()
     unsigned int newBrightness = BRIGHTNESS_MED;
 
     activity->setState(BackgroundActivity::Running);
+
+    if (gpioInterruptCounter == 0)
+    {
+        gpioInterruptFloodDetect.start();
+    }
+
+    /* if there is 100 interrupts in less than one minute, reinitialize proximity/als sensor
+     * strace showed case where over 700 interrupts were triggered within one sec (thanks mdxth)
+     * shows also on top, toholoed process takes 15-25 % of CPU time */
+
+    if (++gpioInterruptCounter >= 100)
+    {
+        int tmsec = gpioInterruptFloodDetect.elapsed();
+        if (tmsec < 60000)
+        {
+            mutex.lock();
+
+            printf("Interrupt flooding detected, over 100 interrupts in %d ms\n", tmsec);
+            printf("REINITIALISING Proximity sensor!\n");
+
+            fd = tsl2772_initComms(0x39);
+            tsl2772_disableInterrupts(fd);
+            tsl2772_initialize(fd);
+            tsl2772_closeComms(fd);
+
+            prevBrightness = BRIGHTNESS_MED;
+            setContrastOled(prevBrightness);
+
+            mutex.unlock();
+        }
+        else
+        {
+            printf("100 interrupts in %d ms\n", tmsec);
+        }
+
+        gpioInterruptCounter = 0;
+    }
 
     mutex.lock();
 

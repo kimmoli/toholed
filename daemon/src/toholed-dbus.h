@@ -182,6 +182,9 @@ private:
     BackgroundActivity *activity;
 
     Weather *weather;
+
+    int gpioInterruptCounter;
+    QTime gpioInterruptFloodDetect;
 };
 
 
