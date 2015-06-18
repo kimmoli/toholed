@@ -3,7 +3,7 @@ TARGET = harbour-toholed
 CONFIG += console link_pkgconfig
 PKGCONFIG += contextkit-statefs
 
-QT += dbus
+QT += dbus xml xmlpatterns
 
 LIBS += -lrt
 

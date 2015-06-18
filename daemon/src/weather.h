@@ -8,6 +8,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QDateTime>
+#include <QXmlQuery>
 
 class Weather : public QObject
 {
@@ -26,11 +27,18 @@ public slots:
     void triggerUpdate();
 
 private slots:
-    void processFile(QString filename);
+    void processSailfish(QString filename);
+    void processMeecast(QString filename);
 
 private:
-    static const QString _weatherFile;
-    QFileSystemWatcher *_weatherFileNotifier;
+    QFile _weatherSailfishFile;
+    QFile _weatherMeecastFile;
+    static const QString _weatherSailfish;
+    static const QString _weatherMeecast;
+    QFileSystemWatcher *_weatherSailfishNotifier;
+    QFileSystemWatcher *_weatherMeecastNotifier;
+
+    uint _timestamp;
 
 };
 
