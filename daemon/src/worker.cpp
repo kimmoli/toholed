@@ -1,4 +1,5 @@
 #include "worker.h"
+#include <unistd.h>
 
 const int Worker::timeout = 1000;
 
