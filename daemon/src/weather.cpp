@@ -7,6 +7,12 @@ Weather::Weather(QObject *parent) :
     QObject(parent), watching(false)
 {
     _timestamp = 0;
+
+    _weatherSailfishNotifier = 0;
+    _weatherMeecastNotifier = 0;
+
+    _weatherSailfishFile.setFileName(_weatherSailfish);
+    _weatherMeecastFile.setFileName(_weatherMeecast);
 }
 
 Weather::~Weather()
@@ -19,27 +25,24 @@ bool Weather::startWatching()
     if (watching)
         return true;
 
-    _weatherSailfishFile.setFileName(_weatherSailfish);
-
-    /* If weather file does not exists, return string */
     if (_weatherSailfishFile.exists()) {
-        _weatherSailfishNotifier = new QFileSystemWatcher(QStringList() << _weatherSailfish, this);
-
+        _weatherSailfishNotifier = new QFileSystemWatcher(this);
+        _weatherSailfishNotifier->addPath(_weatherSailfish);
         connect(_weatherSailfishNotifier, SIGNAL(fileChanged(QString)), this, SLOT(processSailfish(QString)));
+        processSailfish(_weatherSailfish);
+        printf("Started watching Sailfish weather changes.\n");
 
         watching = true;
-        printf("Started watching Sailfish weather changes.\n");
     }
 
-    _weatherMeecastFile.setFileName(_weatherMeecast);
-
     if (_weatherMeecastFile.exists()) {
-        _weatherMeecastNotifier = new QFileSystemWatcher(QStringList() << _weatherMeecast, this);
-
+        _weatherMeecastNotifier = new QFileSystemWatcher(this);
+        _weatherMeecastNotifier->addPath(_weatherMeecast);
         connect(_weatherMeecastNotifier, SIGNAL(fileChanged(QString)), this, SLOT(processMeecast(QString)));
+        processMeecast(_weatherMeecast);
+        printf("Started watching Meecast weather changes.\n");
 
         watching = true;
-        printf("Started watching Meecast weather changes.\n");
     }
 
     return watching;
@@ -69,27 +72,20 @@ void Weather::stopWatching()
 
 void Weather::triggerUpdate()
 {
-    processSailfish(_weatherSailfish);
-    processMeecast(_weatherMeecast);
+    if (watching) {
+        processSailfish(_weatherSailfish);
+        processMeecast(_weatherMeecast);
+    }
 }
 
-void Weather::processSailfish(QString filename)
+void Weather::processSailfish(const QString &)
 {
-    QFile weather(filename);
-
-    if (!weather.exists() && !_weatherMeecastFile.exists())
+    if (!_weatherSailfishFile.exists() || !_weatherSailfishFile.open(QFile::ReadOnly | QFile::Text))
     {
-        stopWatching();
         return;
     }
 
-    if (!weather.open(QFile::ReadOnly | QFile::Text) && !_weatherMeecastFile.exists())
-    {
-        stopWatching();
-        return;
-    }
-
-    QTextStream in(&weather);
+    QTextStream in(&_weatherSailfishFile);
     QString weatherString = in.readAll();
 
     if (weatherString.isEmpty())
@@ -113,36 +109,29 @@ void Weather::processSailfish(QString filename)
 
         emit weatherUpdated(QString("%1d").arg(currentWeather["temperature"].toInt()));
     }
+
+    _weatherSailfishFile.close();
 }
 
-void Weather::processMeecast(QString filename)
+void Weather::processMeecast(const QString &)
 {
-    QFile weather(filename);
-
-    if (!weather.exists() && !_weatherSailfishFile.exists())
+    if (!_weatherMeecastFile.exists() || !_weatherMeecastFile.open(QFile::ReadOnly | QFile::Text))
     {
-        stopWatching();
-        return;
-    }
-
-    if (!weather.open(QFile::ReadOnly | QFile::Text) && !_weatherSailfishFile.exists())
-    {
-        stopWatching();
         return;
     }
 
     QXmlQuery query;
-    query.setFocus(&weather);
-    QString endTimestamp;
-    query.setQuery("/meecast/station/period[@current=\"true\"]/@end/string()");
-    query.evaluateTo(&endTimestamp);
-    endTimestamp = endTimestamp.trimmed();
+    query.setFocus(&_weatherMeecastFile);
+    QString timestamp;
+    query.setQuery("/meecast/station/period[@itemnumber=\"1\"]/@start/string()");
+    query.evaluateTo(&timestamp);
+    timestamp = timestamp.trimmed();
 
-    if (endTimestamp.toUInt() > _timestamp) {
-        _timestamp = endTimestamp.toUInt();
+    if (timestamp.toUInt() > _timestamp) {
+        _timestamp = timestamp.toUInt();
 
         QString temperature;
-        query.setQuery("/meecast/station/period[@current=\"true\"]/temperature/string()");
+        query.setQuery("/meecast/station/period[@itemnumber=\"1\"]/temperature/string()");
         query.evaluateTo(&temperature);
         temperature = temperature.trimmed();
 
@@ -158,6 +147,6 @@ void Weather::processMeecast(QString filename)
         emit weatherUpdated(QString("%1d").arg(temperature.toInt()));
     }
 
-    weather.close();
+    _weatherMeecastFile.close();
 }
 

@@ -27,8 +27,8 @@ public slots:
     void triggerUpdate();
 
 private slots:
-    void processSailfish(QString filename);
-    void processMeecast(QString filename);
+    void processSailfish(const QString &);
+    void processMeecast(const QString &);
 
 private:
     QFile _weatherSailfishFile;
