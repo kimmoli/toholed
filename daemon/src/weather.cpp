@@ -89,7 +89,10 @@ void Weather::processSailfish(const QString &)
     QString weatherString = in.readAll();
 
     if (weatherString.isEmpty())
+    {
+        _weatherSailfishFile.close();
         return;
+    }
 
     QJsonDocument weatherJson = QJsonDocument::fromJson(weatherString.toUtf8());
 
