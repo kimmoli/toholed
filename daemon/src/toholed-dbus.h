@@ -89,6 +89,7 @@ private slots:
     void handleOtherNotify();
     void handleCallMissedNotify();
     void handleMitakuuluu();
+    void handleSailorgramNotify();
 
     void updateDisplay(bool timeUpdateOverride = false, int blinks = 0);
     void blinkTimerTimeout( );
@@ -140,6 +141,7 @@ private:
     bool iconTWEET;
     bool iconIRC;
     bool iconMITAKUULUU;
+    bool iconSAILORGRAM;
     bool systemUpdate;
 
     bool blinkOnNotification;

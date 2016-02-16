@@ -225,6 +225,7 @@ int main(int argc, char **argv)
     notifications.connect(&notifications, SIGNAL(otherNotify()), &toholed, SLOT(handleOtherNotify()));
     notifications.connect(&notifications, SIGNAL(callMissedNotify()), &toholed, SLOT(handleCallMissedNotify()));
     notifications.connect(&notifications, SIGNAL(mitakuuluuNotify()), &toholed, SLOT(handleMitakuuluu()));
+    notifications.connect(&notifications, SIGNAL(sailorgramNotify()), &toholed, SLOT(handleSailorgramNotify()));
 
     toholed.connect(&toholed, SIGNAL(iDontWantToLiveOnThisPlanet()), &app, SLOT(quit()));
 

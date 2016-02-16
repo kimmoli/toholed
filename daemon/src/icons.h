@@ -7,8 +7,9 @@
 #define TWEET 3
 #define IRC 4
 #define MITAKUULUU 5
+#define SAILORGRAM 6
 
-#define LASTICON MITAKUULUU
+#define LASTICON SAILORGRAM
 
 extern const char iconsBitmaps[];
 extern const int iconsWidthPages;

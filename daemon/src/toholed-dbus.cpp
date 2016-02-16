@@ -58,6 +58,7 @@ Toholed::Toholed()
     iconIRC = false;
     systemUpdate = false;
     iconMITAKUULUU = false;
+    iconSAILORGRAM = false;
     ScreenCaptureOnProximity = false;
     ScreenCaptureOnProximityStorePath = QString();
     activeHighlights = 0;
@@ -174,18 +175,21 @@ void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
 
         clearOled(screenBuffer);
 
+        QByteArray msgIcons; /* These icons share same location */
+
+        if (iconSMS)
+            msgIcons.append(MESSAGE);
+        if (iconMITAKUULUU)
+            msgIcons.append(MITAKUULUU);
+        if (iconSAILORGRAM)
+            msgIcons.append(SAILORGRAM);
+
         if (analogClockFace) /* Experimental */
         {
             drawAnalogClock(current.hour(), current.minute(), screenBuffer);
 
-            if ((iconSMS && iconMITAKUULUU && (timerCount & 1)) || (iconSMS && !iconMITAKUULUU))
-            {
-                drawIcon(110, 0, MESSAGE, screenBuffer);
-            }
-            else if ((iconSMS && iconMITAKUULUU && !(timerCount & 1)) || (!iconSMS && iconMITAKUULUU))
-            {
-                drawIcon(110, 0, MITAKUULUU, screenBuffer);
-            }
+            if (msgIcons.length() > 0)
+                drawIcon(110, 0, msgIcons.at(timerCount % msgIcons.length()), screenBuffer);
 
             if (iconCALL)
                 drawIcon(95, 0, CALL, screenBuffer);
@@ -220,14 +224,8 @@ void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
         { /* Digital clock face */
             drawTime(0, 0, baNow.data(), screenBuffer);
 
-            if ((iconSMS && iconMITAKUULUU && (timerCount & 1)) || (iconSMS && !iconMITAKUULUU))
-            {
-                drawIcon(iconPos[MESSAGE], 50, MESSAGE, screenBuffer);
-            }
-            else if ((iconSMS && iconMITAKUULUU && !(timerCount & 1)) || (!iconSMS && iconMITAKUULUU))
-            {
-                drawIcon(iconPos[MITAKUULUU], 50, MITAKUULUU, screenBuffer);
-            }
+            if (msgIcons.length() > 0)
+                drawIcon(iconPos[(int)msgIcons.at(timerCount % msgIcons.length())], 50, msgIcons.at(timerCount % msgIcons.length()), screenBuffer);
 
             if (iconCALL)
                 drawIcon(iconPos[CALL], 50, CALL, screenBuffer);
@@ -238,7 +236,7 @@ void Toholed::updateDisplay(bool timeUpdateOverride, int blinks)
             if (iconIRC)
                 drawIcon(iconPos[IRC], 50, IRC, screenBuffer);
 
-            if (!iconCALL && !iconEMAIL && !iconIRC && !iconMITAKUULUU && !iconSMS && !iconTWEET)
+            if (!iconCALL && !iconEMAIL && !iconIRC && !iconMITAKUULUU && !iconSMS && !iconTWEET && !iconSAILORGRAM)
             {
                 /* No notifications shown, we can show other stuff instead */
                 /* Network type indicator is coded in pienifontti, g=2G, u=3G, l=4G (gms, umts, lte) */
@@ -1027,6 +1025,7 @@ void Toholed::handleNotificationClosed(const QDBusMessage& msg)
     iconTWEET = false;
     iconIRC = false;
     iconMITAKUULUU = false;
+    iconSAILORGRAM = false;
     systemUpdate = false;
 
     blinkTimerCount = 0;
@@ -1625,6 +1624,13 @@ void Toholed::handleSystemUpdateNotify()
 void Toholed::handleMitakuuluu()
 {
     iconMITAKUULUU = true;
+
+    updateDisplay(true, 2);
+}
+
+void Toholed::handleSailorgramNotify()
+{
+    iconSAILORGRAM = true;
 
     updateDisplay(true, 2);
 }

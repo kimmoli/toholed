@@ -145,6 +145,10 @@ uint NotificationManager::Notify(const QString &app_name, uint replaces_id, cons
     {
         emit this->mitakuuluuNotify();
     }
+    else if (category == "harbour.sailorgram.notification")
+    {
+        emit this->sailorgramNotify();
+    }
 #ifdef NOTIFICATIONDEBUG
     else /* Other notification */
     {
