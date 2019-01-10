@@ -1,5 +1,5 @@
 # Toholed udev rules. Start daemon on insert, stop on remove
 # TOH_VID = 0x4b4c, TOH_PID = 0x0002
 #
-KERNEL=="toh-core.0", ATTR{vendor}=="19276", ATTR{product}=="2", ACTION=="add", RUN+="/bin/systemctl start harbour-toholed"
-KERNEL=="toh-core.0", ACTION=="remove", RUN+="/bin/systemctl stop harbour-toholed"
+KERNEL=="toh-core.0", ATTR{vendor}=="19276", ATTR{product}=="2", ACTION=="add", RUN+="/bin/systemctl --no-block start harbour-toholed"
+KERNEL=="toh-core.0", ACTION=="remove", RUN+="/bin/systemctl --no-block stop harbour-toholed"
